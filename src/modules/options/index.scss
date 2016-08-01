@@ -1,0 +1,66 @@
+@import 'foundation-sites/scss/foundation';
+@include foundation-everything;
+
+body {
+  font-family: 'Proxima Nova', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 100%;
+}
+
+#navigation {
+  position: fixed;
+  top: 54px;
+  bottom: 0;
+  left: 0;
+
+  padding: 1rem 0;
+  overflow-y: auto;
+
+  background: #fafafa;
+
+  a {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+
+    font-size: 0.85rem;
+  }
+
+  a:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  li.title, li.title-link {
+    padding: 1rem 0 0 0;
+
+    font-size: 0.75rem;
+    font-weight: bold;
+
+    text-transform: uppercase;
+    line-height: 1;
+
+    color: #999;
+  }
+
+  li.title {
+    padding-left: 1rem;
+  }
+
+  li.disabled > a {
+    cursor: pointer;
+    pointer-events: none;
+
+    color: #bbb;
+  }
+
+  li > a {
+    display: block;
+    padding: 0.7rem 1rem;
+
+    line-height: 1;
+  }
+
+  li.title-link > a {
+    color: inherit;
+
+    font-size: 0.75rem;
+  }
+}
