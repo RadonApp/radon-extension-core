@@ -7,22 +7,68 @@ export class Scrobble {
         Bus.configure('background/scrobble');
 
         // Events
-        Bus.on('activity.progress', this.onProgress)
+        Bus.on('activity.created', (session) => this._onActivityUpdate('created', session));
+        Bus.on('activity.started', (session) => this._onActivityUpdate('started', session));
+        Bus.on('activity.progress', (session) => this._onActivityUpdate('progress', session));
+        Bus.on('activity.paused', (session) => this._onActivityUpdate('paused', session));
+        Bus.on('activity.ended', (session) => this._onActivityUpdate('ended', session));
     }
 
-    onProgress(session) {
+    _onActivityUpdate(event, session) {
         var item = session.item;
 
         // Retrieve source key
         var sourceKey = item.source.id.substring(item.source.id.lastIndexOf('.') + 1);
 
-        // Log status message
+        // Log session status
         if(item.type === 'movie') {
-            console.log('[' + sourceKey + ': ' + item.id + '] ' + item.title + ' (' + item.year + ') [progress: ' + Math.round(session.progress * 100) + ']');
+            console.debug(
+                '%o (%d) (%s: %o) : [event: %o, state: %o, progress: %o]',
+                item.title,
+                item.year,
+
+                // Identifier
+                sourceKey,
+                item.id,
+
+                // Status
+                event,
+                session.state,
+                Math.round(session.progress * 100)
+            );
         } else if(item.type === 'episode') {
-            console.log('[' + sourceKey + ': ' + item.id + '] ' + item.show.title + ' ' + item.season.number + 'x' + item.number + ' [progress: ' + Math.round(session.progress * 100) + ']');
+            console.debug(
+                '%o - Season %d (%d) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
+                item.show.title,
+                item.season.number,
+                item.season.year,
+                item.number,
+
+                // Identifier
+                sourceKey,
+                item.id,
+
+                // Status
+                event,
+                session.state,
+                Math.round(session.progress * 100)
+            );
         } else if(item.type === 'track') {
-            console.log('[' + sourceKey + ': ' + item.id + '] ' + item.title + ' - ' + item.artist.title + ' [progress: ' + Math.round(session.progress * 100) + ']');
+            console.debug(
+                '%o - %o (%s: %o) : [event: %o, state: %o, progress: %o]',
+                // Name
+                item.artist.title,
+                item.title,
+
+                // Identifier
+                sourceKey,
+                item.id,
+
+                // Status
+                event,
+                session.state,
+                Math.round(session.progress * 100)
+            );
         }
     }
 }

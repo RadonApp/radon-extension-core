@@ -1,1 +1,1 @@
-console.log('[eon/source/sync]');
+console.debug('[eon/source/sync]');

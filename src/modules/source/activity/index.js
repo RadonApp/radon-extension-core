@@ -19,7 +19,7 @@ function initialize() {
     // Initialize activity service
     var service = Registry.servicesByType['source/activity'][serviceIds[0]];
 
-    console.log('Initializing activity service: ' + service.id);
+    console.debug('Initializing activity service: ' + service.id);
     service.initialize();
 }
 
