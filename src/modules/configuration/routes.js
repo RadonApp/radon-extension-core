@@ -1,6 +1,6 @@
-import App from './components/App';
-import List from './components/List';
-import Options from './components/Options';
+import App from './views/App';
+import List from './views/List';
+import Options from './views/Options';
 
 import React from 'react'
 import {Route, IndexRedirect} from 'react-router'

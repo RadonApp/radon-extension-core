@@ -1,5 +1,7 @@
 import Registry from 'eon.extension.framework/core/registry';
 
+import Group from '../components/group';
+
 import React from 'react';
 
 
@@ -8,17 +10,22 @@ export default class Options extends React.Component {
         super(props);
 
         this.state = {
-            plugin: {}
+            plugin: {},
+            service: {}
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        // Retrieve plugin
+        // Find plugin
         var plugin = Registry.getPluginById(nextProps.params.pluginId);
+
+        // Find configuration service
+        var service = Registry.getPluginServiceByType(plugin.id, 'configuration');
 
         // Update component state
         this.setState({
-            plugin: plugin || {}
+            plugin: plugin || {},
+            service: service || {}
         });
     }
 
@@ -27,6 +34,7 @@ export default class Options extends React.Component {
             <div>
                 <h2>Options</h2>
                 <i>{this.state.plugin.id}</i>
+                <Group children={this.state.service.options}/>
             </div>
         );
     }
