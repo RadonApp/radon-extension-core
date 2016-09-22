@@ -11,30 +11,35 @@ export default class Options extends React.Component {
 
         this.state = {
             plugin: {},
-            service: {}
+            configuration: {}
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        // Find plugin
         var plugin = Registry.getPluginById(nextProps.params.pluginId);
 
-        // Find configuration service
-        var service = Registry.getPluginServiceByType(plugin.id, 'configuration');
+        // Try find configuration service
+        var configuration;
+
+        if(plugin) {
+            configuration = Registry.getPluginServiceByType(plugin.id, 'configuration')
+        }
 
         // Update component state
         this.setState({
             plugin: plugin || {},
-            service: service || {}
+            configuration: configuration || {}
         });
     }
 
     render() {
         return (
-            <div>
-                <h2>Options</h2>
-                <i>{this.state.plugin.id}</i>
-                <Group children={this.state.service.options}/>
+            <div className="options row">
+                <Group
+                    type="flat"
+                    title={this.state.plugin.title}
+                    children={this.state.configuration.options}
+                />
             </div>
         );
     }

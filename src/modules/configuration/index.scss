@@ -5,6 +5,10 @@ body {
   font-size: 100%;
 }
 
+#app {
+  padding: 0;
+}
+
 #navigation {
   position: fixed;
   top: 54px;
@@ -14,7 +18,7 @@ body {
   padding: 1rem 0;
   overflow-y: auto;
 
-  background: #fafafa;
+  background: #e6e6e6;
 
   a {
     padding-top: 0.5rem;
