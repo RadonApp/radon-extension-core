@@ -1,10 +1,10 @@
-import {default as _CheckboxOption} from './checkbox';
-import {default as _EnableOption} from './enable';
+import {default as _CheckboxComponent} from './checkbox';
+import {default as _EnableComponent} from './enable';
 
-export {_CheckboxOption as CheckboxOption};
-export {_EnableOption as EnableOption};
+export {_CheckboxComponent as CheckboxComponent};
+export {_EnableComponent as EnableComponent};
 
 export var Options = {
-    checkbox: _CheckboxOption,
-    enable: _EnableOption
+    checkbox: _CheckboxComponent,
+    enable: _EnableComponent
 };

@@ -1,11 +1,11 @@
 import {Preferences} from 'eon.extension.browser';
 
+import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
+
 import React from 'react';
 
-import Option from './base';
 
-
-export default class EnableOption extends Option {
+export default class EnableComponent extends OptionComponent {
     constructor() {
         super();
 

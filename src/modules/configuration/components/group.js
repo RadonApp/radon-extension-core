@@ -1,9 +1,9 @@
-import Model from 'eon.extension.framework/services/configuration/models/base';
-
-import {Options} from './options';
+import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
+import {Model, PluginOption} from 'eon.extension.framework/services/configuration/models';
 
 import React from 'react';
 
+import {Options} from './options';
 import './group.scss';
 
 
@@ -92,15 +92,30 @@ export default class Group extends React.Component {
             />;
         }
 
-        // Find matching option component
-        var Option = Options[item.type];
+        // Try retrieve option component
+        var Component;
 
-        if(typeof Option === 'undefined') {
-            console.warn('Unknown option type: %o', item.type);
+        if(item instanceof PluginOption) {
+            Component = item.options.component;
+        } else {
+            Component = Options[item.type];
+        }
+
+        // Verify component has been found
+        if(typeof Component === 'undefined' || Component === null) {
+            console.warn('Unable to find option component for: %o', item.type);
             return null;
         }
 
-        return <Option
+        if(!(Component.prototype instanceof OptionComponent)) {
+            console.warn('Unsupported option component: %O', Component);
+            return null;
+        }
+
+        console.debug(' - component: %O', Component);
+
+        // Render option component
+        return <Component
             key={item.key}
             id={item.id}
             label={item.label}
