@@ -1,5 +1,5 @@
-import App from './views/App';
-import List from './views/List';
+import App from './views/app';
+import List from './views/list';
 import Settings from './views/settings';
 
 import React from 'react'
