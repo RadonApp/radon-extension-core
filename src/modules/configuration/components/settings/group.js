@@ -8,7 +8,24 @@ import './group.scss';
 
 
 export default class Group extends React.Component {
+    shouldComponentUpdate(nextProps) {
+        console.timeStamp('Group.shouldComponentUpdate()');
+
+        if(nextProps.children.length !== this.props.children.length) {
+            return true;
+        }
+
+        for(var i = 0; i < nextProps.children.length; ++i) {
+            if(nextProps.children[i].id !== this.props.children[i].id) {
+                return true;
+            }
+        }
+
+        return false;}
+
     render() {
+        console.timeStamp('Group.render()');
+
         if(this.props.children && !(this.props.children instanceof Array)) {
             console.warn('Invalid options definition: %O', this.props.children);
             return (
@@ -22,13 +39,13 @@ export default class Group extends React.Component {
         // Render flat group (if no title has been defined)
         if(this.props.type === 'flat') {
             return (
-                <div className="group group-flat row">
+                <div data-component="eon.extension.core:group" className="group group-flat row">
                     <div className="header columns">
                         <div className="header-inner large-8 row">
-                            <div className="header-title large-6 columns">
+                            <div className="header-title small-10 columns">
                                 <h3>{this.props.title || 'Unknown Title'}</h3>
                             </div>
-                            {enable && <div className="header-option large-6 columns" style={{textAlign: 'right'}}>
+                            {enable && <div className="header-option small-2 columns" style={{textAlign: 'right'}}>
                                 {this.renderItem(enable)}
                             </div>}
                         </div>
@@ -50,13 +67,13 @@ export default class Group extends React.Component {
 
         // Render boxed group
         return (
-            <div className="group group-box row">
+            <div data-component="eon.extension.core:settings.group" className="box group group-box row">
                 <div className="header columns">
                     <div className="header-inner row">
-                        <div className="header-title large-6 columns">
+                        <div className="header-title small-10 columns">
                             <h3>{this.props.title || 'Unknown Title'}</h3>
                         </div>
-                        {enable && <div className="header-option large-6 columns" style={{textAlign: 'right'}}>
+                        {enable && <div className="header-option small-2 columns" style={{textAlign: 'right'}}>
                             {this.renderItem(enable)}
                         </div>}
                     </div>
@@ -81,8 +98,6 @@ export default class Group extends React.Component {
             console.warn('Ignoring invalid option: %O', item);
             return null;
         }
-
-        console.debug('Rendering item: %O', item);
 
         if(item.type === 'group') {
             return <Group
@@ -111,8 +126,6 @@ export default class Group extends React.Component {
             console.warn('Unsupported option component: %O', Component);
             return null;
         }
-
-        console.debug(' - component: %O', Component);
 
         // Render option component
         return <Component

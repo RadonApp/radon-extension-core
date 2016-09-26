@@ -10,16 +10,42 @@ export default class EnableComponent extends OptionComponent {
         super();
 
         this.state = {
+            id: null,
             enabled: false
         };
     }
 
     componentWillMount() {
+        console.timeStamp('EnableComponent.componentWillMount()');
+        this.refresh(this.props.id);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.timeStamp('EnableComponent.componentWillReceiveProps()');
+        this.refresh(nextProps.id);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        console.timeStamp('EnableComponent.shouldComponentUpdate()');
+
+        if(nextProps.id !== this.state.id) {
+            return true;
+        }
+
+        if(nextState.enabled !== this.state.enabled) {
+            return true;
+        }
+
+        return false;
+    }
+
+    refresh(id) {
         // Retrieve option state
-        Preferences.getBoolean(this.props.id).then((enabled) => {
-            console.debug('[%s] enabled: %o', this.props.id, enabled);
+        Preferences.getBoolean(id).then((enabled) => {
+            console.debug('[%s] enabled: %o', id, enabled);
 
             this.setState({
+                id: id,
                 enabled: enabled
             });
         });
@@ -39,8 +65,10 @@ export default class EnableComponent extends OptionComponent {
     }
 
     render() {
+        console.timeStamp('EnableComponent.render()');
+
         return (
-            <div className="switch tiny">
+            <div data-component="eon.extension.core:settings.options.enable" className="switch tiny">
                 <input
                     className="switch-input"
                     id={this.props.id}

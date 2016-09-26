@@ -1,8 +1,9 @@
 import Registry from 'eon.extension.framework/core/registry';
 
-import Group from '../components/group';
-
 import React from 'react';
+
+import Group from '../components/settings/group';
+import './settings.scss';
 
 
 export default class Options extends React.Component {
@@ -16,6 +17,8 @@ export default class Options extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        console.timeStamp('Settings.componentWillReceiveProps()');
+
         var plugin = Registry.getPluginById(nextProps.params.pluginId);
 
         // Try find configuration service
@@ -33,8 +36,10 @@ export default class Options extends React.Component {
     }
 
     render() {
+        console.timeStamp('Settings.render()');
+
         return (
-            <div className="options row">
+            <div data-view="eon.extension.core:settings" className="options row">
                 <Group
                     type="flat"
                     title={this.state.plugin.title}

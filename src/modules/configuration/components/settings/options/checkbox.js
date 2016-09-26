@@ -10,16 +10,42 @@ export default class CheckboxComponent extends OptionComponent {
         super();
 
         this.state = {
+            id: null,
             checked: false
         };
     }
 
     componentWillMount() {
+        console.timeStamp('CheckboxComponent.componentWillMount()');
+        this.refresh(this.props.id);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.timeStamp('CheckboxComponent.componentWillReceiveProps()');
+        this.refresh(nextProps.id);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        console.timeStamp('CheckboxComponent.shouldComponentUpdate()');
+
+        if(nextProps.id !== this.state.id) {
+            return true;
+        }
+
+        if(nextState.checked !== this.state.checked) {
+            return true;
+        }
+
+        return false;
+    }
+
+    refresh(id) {
         // Retrieve option state
-        Preferences.getBoolean(this.props.id).then((checked) => {
-            console.debug('[%s] checked: %o', this.props.id, checked);
+        Preferences.getBoolean(id).then((checked) => {
+            console.debug('[%s] checked: %o', id, checked);
 
             this.setState({
+                id: id,
                 checked: checked
             });
         });
@@ -39,8 +65,10 @@ export default class CheckboxComponent extends OptionComponent {
     }
 
     render() {
+        console.timeStamp('CheckboxComponent.render()');
+
         return (
-            <div className="option option-checkbox large-8">
+            <div data-component="eon.extension.core:settings.options.checkbox" className="option option-checkbox">
                 <input
                     id={this.props.id}
                     type="checkbox"

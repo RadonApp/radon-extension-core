@@ -1,0 +1,17 @@
+[data-view="eon.extension.core:settings"] {
+  .children > .box {
+    margin: 0 0 30px;
+  }
+
+  .children > .box:last-child {
+    margin-bottom: 0;
+  }
+
+  .children > .option {
+    margin: 0 0 15px;
+  }
+
+  .children > .option:last-child {
+    margin-bottom: 0;
+  }
+}
