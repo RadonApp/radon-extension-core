@@ -1,6 +1,8 @@
 import Callbacks from 'eon.extension.framework/core/callbacks';
 import Registry from 'eon.extension.framework/core/registry';
 
+import groupBy from 'lodash-es/groupBy';
+import sortBy from 'lodash-es/sortBy';
 import React from 'react';
 import {Link} from 'react-router';
 
@@ -92,21 +94,19 @@ export default class App extends React.Component {
     //
 
     listPlugins(type) {
-        var plugins = Registry.listPlugins(type, {
+        let plugins = Registry.listPlugins(type, {
             disabled: true
         });
 
         // Group by plugin enabled/disabled state
-        var groups = _.groupBy(plugins, function(plugin) { return plugin.enabled; });
+        let groups = groupBy(plugins, (plugin) => {
+            return plugin.enabled;
+        });
 
         // Sort groups
-        for(var key in groups) {
-            if(!groups.hasOwnProperty(key)) {
-                continue;
-            }
-
-            groups[key] = _.sortBy(groups[key], 'title');
-        }
+        Object.keys(groups).forEach((key) => {
+            groups[key] = sortBy(groups[key], ['title']);
+        });
 
         // Merge groups, display enabled plugins first
         return (groups[true] || []).concat(groups[false] || []);
