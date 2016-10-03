@@ -19,13 +19,13 @@ export default class Options extends React.Component {
     componentWillReceiveProps(nextProps) {
         console.timeStamp('Settings.componentWillReceiveProps()');
 
-        var plugin = Registry.getPluginById(nextProps.params.pluginId);
+        let plugin = Registry.getPluginById(nextProps.params.pluginId);
 
         // Try find configuration service
-        var configuration;
+        let configuration;
 
         if(plugin) {
-            configuration = Registry.getPluginServiceByType(plugin.id, 'configuration')
+            configuration = Registry.getPluginServiceByType(plugin.id, 'configuration');
         }
 
         // Update component state

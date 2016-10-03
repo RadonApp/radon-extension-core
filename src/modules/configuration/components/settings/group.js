@@ -3,7 +3,7 @@ import {Model, PluginOption} from 'eon.extension.framework/services/configuratio
 
 import React from 'react';
 
-import {Options} from './options';
+import Options from './options';
 import './group.scss';
 
 
@@ -15,13 +15,14 @@ export default class Group extends React.Component {
             return true;
         }
 
-        for(var i = 0; i < nextProps.children.length; ++i) {
+        for(let i = 0; i < nextProps.children.length; ++i) {
             if(nextProps.children[i].id !== this.props.children[i].id) {
                 return true;
             }
         }
 
-        return false;}
+        return false;
+    }
 
     render() {
         console.timeStamp('Group.render()');
@@ -34,7 +35,7 @@ export default class Group extends React.Component {
         }
 
         // Try retrieve `EnableOption` from children
-        var enable = this._findEnableOption(this.props.children);
+        let enable = this._findEnableOption(this.props.children);
 
         // Render flat group (if no title has been defined)
         if(this.props.type === 'flat') {
@@ -108,7 +109,7 @@ export default class Group extends React.Component {
         }
 
         // Try retrieve option component
-        var Component;
+        let Component;
 
         if(item instanceof PluginOption) {
             Component = item.options.component;
@@ -137,8 +138,8 @@ export default class Group extends React.Component {
     }
 
     _findEnableOption(children) {
-        for(var i = 0; i < children.length; ++i) {
-            var item = children[i];
+        for(let i = 0; i < children.length; ++i) {
+            let item = children[i];
 
             if(item.type === 'enable') {
                 return item;

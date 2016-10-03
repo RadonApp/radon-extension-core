@@ -69,11 +69,13 @@ export default class App extends React.Component {
                 </div>
 
                 <div className="expanded row">
-                    <div id="app" className="small-11 medium-9 large-10 small-push-1 medium-push-3 large-push-2 columns">
+                    <div id="app"
+                         className="small-11 medium-9 large-10 small-push-1 medium-push-3 large-push-2 columns">
                         {this.props.children}
                     </div>
 
-                    <div id="navigation" className="small-1 medium-3 large-2 small-pull-11 medium-pull-9 large-pull-10 columns">
+                    <div id="navigation"
+                         className="small-1 medium-3 large-2 small-pull-11 medium-pull-9 large-pull-10 columns">
                         <ul className="vertical menu">
                             <li><Link to="/general">General</Link></li>
 

@@ -2,8 +2,8 @@ import App from './views/app';
 import List from './views/list';
 import Settings from './views/settings';
 
-import React from 'react'
-import {Route, IndexRedirect} from 'react-router'
+import React from 'react';
+import {Route, IndexRedirect} from 'react-router';
 
 
 export const routes = (

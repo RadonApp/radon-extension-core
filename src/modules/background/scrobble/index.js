@@ -20,10 +20,10 @@ export class Scrobble {
     }
 
     onSessionUpdated(event, session) {
-        var item = session.item;
+        let item = session.item;
 
         // Retrieve source key
-        var sourceKey = item.source.id.substring(item.source.id.lastIndexOf('.') + 1);
+        let sourceKey = item.source.id.substring(item.source.id.lastIndexOf('.') + 1);
 
         // Log session status
         if(item.type.media === MediaTypes.Video.Movie) {
@@ -77,15 +77,15 @@ export class Scrobble {
         }
 
         // Emit event to services
-        var services = this.services[item.type.media];
+        let services = this.services[item.type.media];
 
         if(typeof services === 'undefined') {
             console.log('No services available for media: %o', item.type.media);
             return;
         }
 
-        for(var i = 0; i < services.length; ++i) {
-            var service = services[i];
+        for(let i = 0; i < services.length; ++i) {
+            let service = services[i];
 
             if(!service.plugin.enabled) {
                 console.log('Plugin %o is disabled', service.plugin.id);
@@ -104,23 +104,23 @@ export class Scrobble {
     // region Private methods
 
     _getServices() {
-        var result = {};
+        let result = {};
 
         // Iterate over scrobble services
-        var services = Registry.listServices('destination/scrobble', {
+        let services = Registry.listServices('destination/scrobble', {
             disabled: true
         });
 
-        for(var i = 0; i < services.length; ++i) {
-            var service = services[i];
+        for(let i = 0; i < services.length; ++i) {
+            let service = services[i];
 
             if(typeof service.accepts === 'undefined' || service.accepts === null) {
                 console.warn('Service %o has an invalid value specified for the "accepts" property', service.id);
                 continue;
             }
 
-            for(var j = 0; j < service.accepts.length; ++j) {
-                var media = service.accepts[j];
+            for(let j = 0; j < service.accepts.length; ++j) {
+                let media = service.accepts[j];
 
                 if(typeof result[media] === 'undefined') {
                     result[media] = [];
