@@ -133,7 +133,7 @@ export default class Group extends React.Component {
             key={item.key}
             id={item.id}
             label={item.label}
-            summary={item.options.summary}
+            options={item.options}
         />;
     }
 

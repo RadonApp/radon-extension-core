@@ -78,11 +78,20 @@ export default class EnableComponent extends OptionComponent {
                 />
 
                 <label className="switch-paddle" htmlFor={this.props.id}>
-                    {this.props.summary && <span className="show-for-sr">
-                        {this.props.summary}
+                    {this.props.options.summary && <span className="show-for-sr">
+                        {this.props.options.summary}
                     </span>}
                 </label>
             </div>
         );
     }
 }
+
+EnableComponent.defaultProps = {
+    id: null,
+    label: null,
+
+    options: {
+        summary: null,
+    }
+};
