@@ -14,16 +14,18 @@ export default class EnableComponent extends OptionComponent {
             id: null,
             enabled: false
         };
+
+        this._currentRefreshId = 0;
     }
 
     componentWillMount() {
         console.timeStamp('EnableComponent.componentWillMount()');
-        this.refresh(this.props.id, this.props.options);
+        this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         console.timeStamp('EnableComponent.componentWillReceiveProps()');
-        this.refresh(nextProps.id, nextProps.options);
+        this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -40,25 +42,36 @@ export default class EnableComponent extends OptionComponent {
         return false;
     }
 
-    refresh(id, options) {
+    refresh(props) {
+        let id = ++this._currentRefreshId;
+
         // Retrieve option state
-        return Preferences.getBoolean(id).then((enabled) => {
+        return Preferences.getBoolean(props.id).then((enabled) => {
+            if(this._currentRefreshId !== id) {
+                return false;
+            }
+
             if(!enabled) {
-                this.setState({id: id, enabled: false});
-                return Promise.resolve();
+                this.setState({id: props.id, enabled: false});
+                return true;
             }
 
             // Ensure permissions have been granted (if defined)
-            if(options.permissions) {
-                let {permissions, origins} = options.permissions;
+            if(props.options.permissions) {
+                let {permissions, origins} = props.options.permissions;
 
                 return Permissions.contains(permissions, origins).then((granted) => {
-                    this.setState({id: id, enabled: granted});
+                    if(this._currentRefreshId !== id) {
+                        return false;
+                    }
+
+                    this.setState({id: props.id, enabled: granted});
+                    return true;
                 });
             }
 
-            this.setState({id: id, enabled: true});
-            return Promise.resolve();
+            this.setState({id: props.id, enabled: true});
+            return true;
         });
     }
 
@@ -69,6 +82,14 @@ export default class EnableComponent extends OptionComponent {
         return this.updatePermissions(enabled)
             .then(() => this.updateContentScripts(enabled))
             .then(() => this.updatePreference(enabled))
+            .then(() => {
+                if(this.props.onChange === null) {
+                    return;
+                }
+
+                // Trigger callback
+                this.props.onChange(enabled);
+            })
             .catch((error) => {
                 console.warn('Unable to update permissions: %o', error);
             });
@@ -191,5 +212,7 @@ EnableComponent.defaultProps = {
 
         contentScripts: [],
         permissions: {}
-    }
+    },
+
+    onChange: null
 };

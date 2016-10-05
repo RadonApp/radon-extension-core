@@ -42,8 +42,6 @@ export default class CheckboxComponent extends OptionComponent {
     refresh(id) {
         // Retrieve option state
         Preferences.getBoolean(id).then((checked) => {
-            console.debug('[%s] checked: %o', id, checked);
-
             this.setState({
                 id: id,
                 checked: checked
