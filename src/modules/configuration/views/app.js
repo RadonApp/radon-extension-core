@@ -1,4 +1,3 @@
-import Callbacks from 'eon.extension.framework/core/callbacks';
 import Registry from 'eon.extension.framework/core/registry';
 
 import groupBy from 'lodash-es/groupBy';
@@ -39,19 +38,6 @@ export default class App extends React.Component {
                     </li>
                 );
             })
-        });
-
-        // Retrieve callback details
-        Callbacks.get().then((callback) => {
-            if(callback === null) {
-                console.debug('No callback has been set');
-                return;
-            }
-
-            // Navigate to callback plugin
-            window.location.hash = callback.hash;
-        }, (e) => {
-            console.debug('Error processing callback: %O', e);
         });
     }
 
