@@ -1,4 +1,3 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
 
