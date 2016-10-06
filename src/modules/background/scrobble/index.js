@@ -1,6 +1,6 @@
 import {MediaTypes} from 'eon.extension.framework/core/enums';
-import Bus from 'eon.extension.framework/core/bus';
 import Registry from 'eon.extension.framework/core/registry';
+import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
 
 export class Scrobble {
@@ -8,15 +8,19 @@ export class Scrobble {
         // Retrieve scrobble services, group by supported media
         this.services = this._getServices();
 
-        // Configure event bus
-        Bus.configure('background/scrobble');
+        // Construct messaging bus
+        this.bus = new MessagingBus('eon.extension.core:scrobble', {
+            context: ContextTypes.Background
+        });
+
+        window.bus = this.bus;
 
         // Events
-        Bus.on('activity.created', (session) => this.onSessionUpdated('created', session));
-        Bus.on('activity.started', (session) => this.onSessionUpdated('started', session));
-        Bus.on('activity.progress', (session) => this.onSessionUpdated('progress', session));
-        Bus.on('activity.paused', (session) => this.onSessionUpdated('paused', session));
-        Bus.on('activity.ended', (session) => this.onSessionUpdated('ended', session));
+        this.bus.on('activity.created', (session) => this.onSessionUpdated('created', session));
+        this.bus.on('activity.started', (session) => this.onSessionUpdated('started', session));
+        this.bus.on('activity.progress', (session) => this.onSessionUpdated('progress', session));
+        this.bus.on('activity.paused', (session) => this.onSessionUpdated('paused', session));
+        this.bus.on('activity.ended', (session) => this.onSessionUpdated('ended', session));
     }
 
     onSessionUpdated(event, session) {

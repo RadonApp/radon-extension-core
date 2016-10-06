@@ -1,10 +1,12 @@
-import Bus from 'eon.extension.framework/core/bus';
+import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
 
 export class Sync {
     constructor() {
-        // Configure event bus
-        Bus.configure('background/sync');
+        // Construct messaging bus
+        this.bus = new MessagingBus('eon.extension.core:sync', {
+            context: ContextTypes.Background
+        });
     }
 }
 
