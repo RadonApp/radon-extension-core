@@ -1,4 +1,6 @@
-import {DeclarativeContent, Permissions, Preferences} from 'eon.extension.browser';
+import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.extension.browser/declarative/content';
+import Permissions from 'eon.extension.browser/permissions';
+import Preferences from 'eon.extension.browser/preferences';
 
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
@@ -58,9 +60,7 @@ export default class EnableComponent extends OptionComponent {
 
             // Ensure permissions have been granted (if defined)
             if(props.options.permissions) {
-                let {permissions, origins} = props.options.permissions;
-
-                return Permissions.contains(permissions, origins).then((granted) => {
+                return Permissions.contains(props.options.permissions).then((granted) => {
                     if(this._currentRefreshId !== id) {
                         return false;
                     }
@@ -134,13 +134,16 @@ export default class EnableComponent extends OptionComponent {
 
             rules.push({
                 id: script.id,
-                conditions: script.conditions,
+
                 actions: [
-                    {
+                    new RequestContentScript({
                         css: script.css,
                         js: script.js
-                    }
-                ]
+                    })
+                ],
+                conditions: script.conditions.map((condition) => {
+                    return new PageStateMatcher(condition);
+                })
             });
         });
 
@@ -160,15 +163,13 @@ export default class EnableComponent extends OptionComponent {
             return Promise.resolve();
         }
 
-        let {permissions, origins} = this.props.options.permissions;
-
         if(enabled) {
             console.debug('Requesting permissions...');
-            return Permissions.request(permissions, origins);
+            return Permissions.request(this.props.options.permissions);
         }
 
         console.debug('Removing permissions...');
-        return Permissions.remove(permissions, origins);
+        return Permissions.remove(this.props.options.permissions);
     }
 
     updatePreference(enabled) {
