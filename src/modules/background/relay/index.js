@@ -1,13 +1,13 @@
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
 
-export class Sync {
+export class Relay {
     constructor() {
         // Construct messaging bus
-        this.bus = new MessagingBus('eon.extension.core:sync', {
+        this.bus = new MessagingBus('eon.extension.core:relay', {
             context: ContextTypes.Background
         });
     }
 }
 
-export default new Sync();
+export default new Relay();
