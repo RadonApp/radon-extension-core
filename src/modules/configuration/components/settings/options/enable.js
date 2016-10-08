@@ -1,7 +1,8 @@
-import {Preferences} from 'eon.extension.browser';
+import {DeclarativeContent, Permissions, Preferences} from 'eon.extension.browser';
 
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
+import merge from 'lodash-es/merge';
 import React from 'react';
 
 
@@ -13,16 +14,18 @@ export default class EnableComponent extends OptionComponent {
             id: null,
             enabled: false
         };
+
+        this._currentRefreshId = 0;
     }
 
     componentWillMount() {
         console.timeStamp('EnableComponent.componentWillMount()');
-        this.refresh(this.props.id);
+        this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         console.timeStamp('EnableComponent.componentWillReceiveProps()');
-        this.refresh(nextProps.id);
+        this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -39,29 +42,142 @@ export default class EnableComponent extends OptionComponent {
         return false;
     }
 
-    refresh(id) {
-        // Retrieve option state
-        Preferences.getBoolean(id).then((enabled) => {
-            console.debug('[%s] enabled: %o', id, enabled);
+    refresh(props) {
+        let id = ++this._currentRefreshId;
 
-            this.setState({
-                id: id,
-                enabled: enabled
-            });
+        // Retrieve option state
+        return Preferences.getBoolean(props.id).then((enabled) => {
+            if(this._currentRefreshId !== id) {
+                return false;
+            }
+
+            if(!enabled) {
+                this.setState({id: props.id, enabled: false});
+                return true;
+            }
+
+            // Ensure permissions have been granted (if defined)
+            if(props.options.permissions) {
+                let {permissions, origins} = props.options.permissions;
+
+                return Permissions.contains(permissions, origins).then((granted) => {
+                    if(this._currentRefreshId !== id) {
+                        return false;
+                    }
+
+                    this.setState({id: props.id, enabled: granted});
+                    return true;
+                });
+            }
+
+            this.setState({id: props.id, enabled: true});
+            return true;
         });
     }
 
     onChanged(event) {
-        var enabled = event.target.checked;
+        let enabled = event.target.checked;
 
-        // Update option state
-        Preferences.putBoolean(this.props.id, enabled).then(() => {
-            console.debug('[%s] enabled: %o', this.props.id, enabled);
+        // Process state change event
+        return this.updatePermissions(enabled)
+            .then(() => this.updateContentScripts(enabled))
+            .then(() => this.updatePreference(enabled))
+            .then(() => {
+                if(this.props.onChange === null) {
+                    return;
+                }
 
-            this.setState({
-                enabled: enabled
+                // Trigger callback
+                this.props.onChange(enabled);
+            })
+            .catch((error) => {
+                console.warn('Unable to update permissions: %o', error);
+            });
+    }
+
+    updateContentScripts(enabled) {
+        if(!this.props.options.contentScripts) {
+            console.debug('No content scripts required');
+            return Promise.resolve();
+        }
+
+        // Build list of declarative rules
+        let rules = [];
+        let ruleIds = [];
+
+        this.props.options.contentScripts.forEach((script) => {
+            script = merge({
+                id: null,
+                conditions: [],
+                css: [],
+                js: []
+            }, script);
+
+            if(script.id === null) {
+                console.warn('Ignoring invalid content script: %O (invalid/missing "id" property)', script);
+                return;
+            }
+
+            // Add rule identifier
+            if(ruleIds.indexOf(script.id) !== -1) {
+                console.warn('Content script with identifier %o has already been defined', script.id);
+                return;
+            }
+
+            ruleIds.push(script.id);
+
+            // Build rule
+            if(!Array.isArray(script.conditions) || script.conditions.length < 1) {
+                console.warn('Ignoring invalid content script: %O (invalid/missing "conditions" property)', script);
+                return;
+            }
+
+            rules.push({
+                id: script.id,
+                conditions: script.conditions,
+                actions: [
+                    {
+                        css: script.css,
+                        js: script.js
+                    }
+                ]
             });
         });
+
+        if(enabled) {
+            console.debug('Updating declarative rules...');
+            return DeclarativeContent.removeRules(ruleIds)
+                .then(() => DeclarativeContent.addRules(rules));
+        }
+
+        console.debug('Removing declarative rules...');
+        return DeclarativeContent.removeRules(ruleIds);
+    }
+
+    updatePermissions(enabled) {
+        if(!this.props.options.permissions) {
+            console.debug('No permissions required');
+            return Promise.resolve();
+        }
+
+        let {permissions, origins} = this.props.options.permissions;
+
+        if(enabled) {
+            console.debug('Requesting permissions...');
+            return Permissions.request(permissions, origins);
+        }
+
+        console.debug('Removing permissions...');
+        return Permissions.remove(permissions, origins);
+    }
+
+    updatePreference(enabled) {
+        // Update preference
+        return Preferences.putBoolean(this.props.id, enabled)
+            .then(() => {
+                // Update component
+                this.setState({enabled: enabled});
+            });
     }
 
     render() {
@@ -78,11 +194,25 @@ export default class EnableComponent extends OptionComponent {
                 />
 
                 <label className="switch-paddle" htmlFor={this.props.id}>
-                    {this.props.summary && <span className="show-for-sr">
-                        {this.props.summary}
+                    {this.props.options.summary && <span className="show-for-sr">
+                        {this.props.options.summary}
                     </span>}
                 </label>
             </div>
         );
     }
 }
+
+EnableComponent.defaultProps = {
+    id: null,
+    label: null,
+
+    options: {
+        summary: null,
+
+        contentScripts: [],
+        permissions: {}
+    },
+
+    onChange: null
+};

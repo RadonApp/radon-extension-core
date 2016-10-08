@@ -42,8 +42,6 @@ export default class CheckboxComponent extends OptionComponent {
     refresh(id) {
         // Retrieve option state
         Preferences.getBoolean(id).then((checked) => {
-            console.debug('[%s] checked: %o', id, checked);
-
             this.setState({
                 id: id,
                 checked: checked
@@ -78,10 +76,19 @@ export default class CheckboxComponent extends OptionComponent {
 
                 <label htmlFor={this.props.id} style={{fontSize: 14}}>{this.props.label}</label>
 
-                {this.props.summary && <div className="summary" style={{color: '#999', fontSize: 14}}>
-                    {this.props.summary}
+                {this.props.options.summary && <div className="summary" style={{color: '#999', fontSize: 14}}>
+                    {this.props.options.summary}
                 </div>}
             </div>
         );
     }
 }
+
+CheckboxComponent.defaultProps = {
+    id: null,
+    label: null,
+
+    options: {
+        summary: null
+    }
+};

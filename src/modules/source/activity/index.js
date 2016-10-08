@@ -1,5 +1,4 @@
 import Registry from 'eon.extension.framework/core/registry';
-import Bus from 'eon.extension.framework/core/bus';
 
 
 function initialize() {
@@ -9,16 +8,21 @@ function initialize() {
         return;
     }
 
-    var serviceIds = Object.keys(Registry.servicesByType['source/activity']);
+    let serviceIds = Object.keys(Registry.servicesByType['source/activity']);
 
     if(serviceIds.length !== 1) {
         console.error('Unable to initialize activity module, exactly one activity service should be defined');
         return;
     }
 
-    // Initialize activity service
-    var service = Registry.servicesByType['source/activity'][serviceIds[0]];
+    // Retrieve service
+    let service = Registry.servicesByType['source/activity'][serviceIds[0]];
 
+    if(service.initialized) {
+        return;
+    }
+
+    // Initialize service
     console.debug('Initializing activity service: ' + service.id);
     service.initialize();
 }

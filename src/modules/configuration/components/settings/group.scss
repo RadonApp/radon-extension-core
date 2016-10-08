@@ -1,3 +1,16 @@
+.group {
+  .overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    background: rgba(50, 50, 50, 0.6);
+    display: none;
+  }
+}
+
 .group > .header {
   .header-option {
     padding: 0;
@@ -58,6 +71,16 @@
   margin-bottom: 0;
 }
 
+.group-box:not(.enabled) > .content {
+  padding: 0;
+
+  border-top: none;
+}
+
+.group-box:not(.enabled) > .content > .children {
+  display: none;
+}
+
 .group-flat > .header {
   padding: 0 30px;
 
@@ -81,7 +104,14 @@
 }
 
 .group-flat > .content {
+  position: relative;
+  height: 100%;
+
   padding: 20px 30px 0;
 
   background-color: #FFF;
+}
+
+.group-flat:not(.enabled) > .content > .overlay {
+  display: block;
 }

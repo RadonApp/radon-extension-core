@@ -1,6 +1,7 @@
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
-import {Model, PluginOption} from 'eon.extension.framework/services/configuration/models';
+import {Model, EnableOption, PluginOption} from 'eon.extension.framework/services/configuration/models';
 
+import classNames from 'classnames';
 import React from 'react';
 
 import Options from './options';
@@ -8,8 +9,37 @@ import './group.scss';
 
 
 export default class Group extends React.Component {
-    shouldComponentUpdate(nextProps) {
+    constructor() {
+        super();
+
+        this.state = {
+            enabled: true,
+            option: null
+        };
+
+        this._currentRefreshId = 0;
+    }
+
+    componentWillMount() {
+        console.timeStamp('Group.componentWillMount()');
+        this.refresh(this.props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.timeStamp('Group.componentWillReceiveProps()');
+        this.refresh(nextProps);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
         console.timeStamp('Group.shouldComponentUpdate()');
+
+        if(nextState.enabled !== this.state.enabled) {
+            return true;
+        }
+
+        if(nextState.option !== this.state.option) {
+            return true;
+        }
 
         if(nextProps.children.length !== this.props.children.length) {
             return true;
@@ -24,6 +54,56 @@ export default class Group extends React.Component {
         return false;
     }
 
+    refresh(props) {
+        let id = ++this._currentRefreshId;
+        let option = this._getHeaderOption(props.children);
+
+        if(option == null) {
+            // No header option defined
+            this.setState({
+                enabled: true,
+                option: null
+            });
+
+            return true;
+        }
+
+        // Process header option
+        if(option instanceof EnableOption) {
+            // Retrieve enabled state
+            return option.isEnabled().then((enabled) => {
+                if(this._currentRefreshId !== id) {
+                    return false;
+                }
+
+                // Update interface
+                this.setState({
+                    enabled: enabled,
+                    option: option
+                });
+
+                return true;
+            });
+        }
+
+        // Update interface
+        this.setState({
+            enabled: true,
+            option: null
+        });
+
+        // Unknown header option
+        return Promise.reject(new Error(
+            'Unknown header option: ' + option
+        ));
+    }
+
+    onEnableChanged(enabled) {
+        this.setState({
+            enabled: enabled
+        });
+    }
+
     render() {
         console.timeStamp('Group.render()');
 
@@ -34,53 +114,41 @@ export default class Group extends React.Component {
             );
         }
 
-        // Try retrieve `EnableOption` from children
-        let enable = this._findEnableOption(this.props.children);
+        // Render group
+        let type = this.props.type;
 
-        // Render flat group (if no title has been defined)
-        if(this.props.type === 'flat') {
-            return (
-                <div data-component="eon.extension.core:group" className="group group-flat row">
-                    <div className="header columns">
-                        <div className="header-inner large-8 row">
-                            <div className="header-title small-10 columns">
-                                <h3>{this.props.title || 'Unknown Title'}</h3>
-                            </div>
-                            {enable && <div className="header-option small-2 columns" style={{textAlign: 'right'}}>
-                                {this.renderItem(enable)}
-                            </div>}
-                        </div>
-                    </div>
-                    <div className="content columns">
-                        <div className="children large-8 row">
-                            {this.props.children.map((item) => {
-                                if(item.type === 'enable') {
-                                    return null;
-                                }
-
-                                return this.renderItem(item);
-                            })}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Render boxed group
         return (
-            <div data-component="eon.extension.core:settings.group" className="box group group-box row">
+            <div data-component="eon.extension.core:settings.group" className={classNames('group', 'row', {
+                'box': type !== 'flat',
+                'group-box': type !== 'flat',
+                'group-flat': type === 'flat',
+                'enabled': this.state.enabled
+            })}>
                 <div className="header columns">
-                    <div className="header-inner row">
+                    <div className={classNames('header-inner', 'row', {
+                        'large-8': type === 'flat'
+                    })}>
                         <div className="header-title small-10 columns">
                             <h3>{this.props.title || 'Unknown Title'}</h3>
                         </div>
-                        {enable && <div className="header-option small-2 columns" style={{textAlign: 'right'}}>
-                            {this.renderItem(enable)}
+                        {this.state.option && <div className="header-option small-2 columns" style={{
+                            textAlign: 'right'
+                        }}>
+                            {this.renderItem(
+                                this.state.option,
+
+                                // Bind to change event
+                                this.state.option instanceof EnableOption ?
+                                    this.onEnableChanged.bind(this) :
+                                    null
+                            )}
                         </div>}
                     </div>
                 </div>
                 <div className="content columns">
-                    <div className="children row">
+                    <div className={classNames('children', 'row', {
+                        'large-8': type === 'flat'
+                    })}>
                         {this.props.children.map((item) => {
                             if(item.type === 'enable') {
                                 return null;
@@ -89,15 +157,21 @@ export default class Group extends React.Component {
                             return this.renderItem(item);
                         })}
                     </div>
+
+                    <div className="overlay"/>
                 </div>
             </div>
         );
     }
 
-    renderItem(item) {
+    renderItem(item, onChanged) {
         if(!(item instanceof Model)) {
             console.warn('Ignoring invalid option: %O', item);
             return null;
+        }
+
+        if(typeof onChanged === 'undefined') {
+            onChanged = null;
         }
 
         if(item.type === 'group') {
@@ -133,11 +207,12 @@ export default class Group extends React.Component {
             key={item.key}
             id={item.id}
             label={item.label}
-            summary={item.options.summary}
+            options={item.options}
+            onChange={onChanged}
         />;
     }
 
-    _findEnableOption(children) {
+    _getHeaderOption(children) {
         for(let i = 0; i < children.length; ++i) {
             let item = children[i];
 
