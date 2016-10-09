@@ -59,7 +59,7 @@ export default class EnableComponent extends OptionComponent {
             }
 
             // Ensure permissions have been granted (if defined)
-            if(props.options.permissions) {
+            if(Permissions.supported && props.options.permissions) {
                 return Permissions.contains(props.options.permissions).then((granted) => {
                     if(this._currentRefreshId !== id) {
                         return false;
@@ -96,8 +96,7 @@ export default class EnableComponent extends OptionComponent {
     }
 
     updateContentScripts(enabled) {
-        if(!this.props.options.contentScripts) {
-            console.debug('No content scripts required');
+        if(!DeclarativeContent.supported || !this.props.options.contentScripts) {
             return Promise.resolve();
         }
 
@@ -158,8 +157,7 @@ export default class EnableComponent extends OptionComponent {
     }
 
     updatePermissions(enabled) {
-        if(!this.props.options.permissions) {
-            console.debug('No permissions required');
+        if(!Permissions.supported || !this.props.options.permissions) {
             return Promise.resolve();
         }
 

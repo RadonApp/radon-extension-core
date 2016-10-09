@@ -5,8 +5,21 @@ body {
   font-size: 100%;
 }
 
-#app {
-  padding: 0;
+app {
+  display: block;
+}
+
+#header {
+  position: fixed;
+  width: 100%;
+
+  z-index: 999;
+}
+
+#container {
+  height: 100%;
+
+  padding: 54px 0 0;
 }
 
 #navigation {
@@ -65,5 +78,28 @@ body {
     color: inherit;
 
     font-size: 0.75rem;
+  }
+}
+
+#content {
+  float: left;
+
+  padding: 0;
+}
+
+app.embedded {
+  #header {
+    display: none;
+  }
+
+  #container {
+    padding-top: 0;
+  }
+
+  #navigation {
+    top: 0;
+
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px 0 0 3px;
   }
 }

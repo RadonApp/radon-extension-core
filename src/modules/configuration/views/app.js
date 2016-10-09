@@ -1,7 +1,12 @@
-import Registry from 'eon.extension.framework/core/registry';
+import Platform, {Platforms} from 'eon.extension.browser/platform';
 
+import Registry from 'eon.extension.framework/core/registry';
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
+import classNames from 'classnames';
 import groupBy from 'lodash-es/groupBy';
 import sortBy from 'lodash-es/sortBy';
+import querystring from 'querystring';
 import React from 'react';
 import {Link} from 'react-router';
 
@@ -19,8 +24,30 @@ export default class App extends React.Component {
     componentWillMount() {
         console.timeStamp('App.componentWillMount()');
 
+        // Parse query parameters
+        let query = {};
+
+        if(window.location.search.length > 1) {
+            query = querystring.decode(window.location.search.substring(1));
+        }
+
+        // Detect embedded configuration frame
+        let embedded = isDefined(query.embedded);
+
+        if(Platform.name === Platforms.Chrome) {
+            if(window.innerHeight > 550) {
+                embedded = false;
+            }
+        } else if(Platform.name === Platforms.Firefox) {
+            if(window.innerHeight > 500) {
+                embedded = false;
+            }
+        }
+
         // Update state
         this.setState({
+            embedded: embedded,
+
             // Map destinations
             destinations: this.listPlugins('destination').map(function(plugin) {
                 return (
@@ -45,8 +72,10 @@ export default class App extends React.Component {
         console.timeStamp('App.render()');
 
         return (
-            <app data-view="eon.extension.core:app">
-                <div className="top-bar">
+            <app data-view="eon.extension.core:app" data-platform={Platform.name} className={classNames({
+                'embedded': this.state.embedded
+            })}>
+                <div id="header" className="top-bar">
                     <div className="top-bar-left">
                         <ul className="menu">
                             <li className="menu-text">Eon</li>
@@ -54,12 +83,7 @@ export default class App extends React.Component {
                     </div>
                 </div>
 
-                <div className="expanded row">
-                    <div id="app"
-                         className="small-11 medium-9 large-10 small-push-1 medium-push-3 large-push-2 columns">
-                        {this.props.children}
-                    </div>
-
+                <div id="container" className="expanded row">
                     <div id="navigation"
                          className="small-1 medium-3 large-2 small-pull-11 medium-pull-9 large-pull-10 columns">
                         <ul className="vertical menu">
@@ -71,6 +95,11 @@ export default class App extends React.Component {
                             <li className="title-link"><Link to="/sources">Sources</Link></li>
                             {this.state.sources}
                         </ul>
+                    </div>
+
+                    <div id="content"
+                         className="small-11 medium-9 large-10 small-push-1 medium-push-3 large-push-2 columns">
+                        {this.props.children}
                     </div>
                 </div>
             </app>

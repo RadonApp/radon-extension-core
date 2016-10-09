@@ -1,13 +1,13 @@
 import React from 'react';
-import ReactPerf from 'react-addons-perf';
 import ReactDOM from 'react-dom';
 import {Router, hashHistory} from 'react-router';
 
 import {routes} from './routes';
-import './index.scss';
 
-
-window.ReactPerf = ReactPerf;
+// Import application stylesheet
+import './app.scss';
+import './app.chrome.scss';
+import './app.firefox.scss';
 
 // Initialize React
 ReactDOM.render(
