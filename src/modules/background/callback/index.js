@@ -2,7 +2,6 @@ import Extension from 'eon.extension.browser/extension';
 import Tabs from 'eon.extension.browser/tabs';
 import WebRequest from 'eon.extension.browser/web/request';
 
-import merge from 'lodash-es/merge';
 import URI from 'urijs';
 
 
@@ -29,27 +28,24 @@ export class Callback {
         // Retrieve url segments
         let parts = url.segmentCoded();
 
-        if(parts.length < 3) {
+        if(parts.length < 2) {
             console.warn('Invalid callback url:', url);
             return;
         }
 
         // Retrieve parameters
-        let extensionId = parts[0];
-        let callbackId = parts[1];
-        let path = parts.slice(2).join('/');
+        let extensionKey = parts[0];
+        let path = parts.slice(1).join('/');
 
         // Verify extension id matches
-        if(extensionId !== Extension.id) {
-            console.warn('Callback doesn\'t match extension identifier');
+        if(extensionKey !== Extension.key) {
+            console.warn('Callback doesn\'t match extension key');
             return;
         }
 
         // Build destination url
         let destinationUrl = new URI(Extension.getUrl(path))
-            .search(merge(url.search(true), {
-                id: callbackId
-            }))
+            .search(url.search(true))
             .toString();
 
         // Navigate to callback page
