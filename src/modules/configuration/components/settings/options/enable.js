@@ -2,6 +2,7 @@ import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.ex
 import Permissions from 'eon.extension.browser/permissions';
 import Preferences from 'eon.extension.browser/preferences';
 
+import {isDefined} from 'eon.extension.framework/core/helpers';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
 import merge from 'lodash-es/merge';
@@ -47,31 +48,13 @@ export default class EnableComponent extends OptionComponent {
     refresh(props) {
         let id = ++this._currentRefreshId;
 
-        // Retrieve option state
-        return Preferences.getBoolean(props.id).then((enabled) => {
+        // Check plugin enabled state
+        this.isEnabled(props.id, props.options).then((enabled) => {
             if(this._currentRefreshId !== id) {
-                return false;
+                return;
             }
 
-            if(!enabled) {
-                this.setState({id: props.id, enabled: false});
-                return true;
-            }
-
-            // Ensure permissions have been granted (if defined)
-            if(Permissions.supported && props.options.permissions) {
-                return Permissions.contains(props.options.permissions).then((granted) => {
-                    if(this._currentRefreshId !== id) {
-                        return false;
-                    }
-
-                    this.setState({id: props.id, enabled: granted});
-                    return true;
-                });
-            }
-
-            this.setState({id: props.id, enabled: true});
-            return true;
+            this.setState({id: props.id, enabled: enabled});
         });
     }
 
@@ -95,16 +78,150 @@ export default class EnableComponent extends OptionComponent {
             });
     }
 
+    // region Check state
+
+    isEnabled(id, options) {
+        return Preferences.getBoolean(id)
+            .then((enabled) => {
+                if(!enabled) {
+                    return Promise.reject(new Error('Plugin hasn\'t been enabled'));
+                }
+
+                return enabled;
+            })
+            .then(() => this.isPermissionGranted(options.permissions))
+            .then(() => this.isContentScriptsEnabled(options.contentScripts))
+            .catch(() => {
+                return false;
+            });
+    }
+
+    isPermissionGranted(permissions) {
+        if(!Permissions.supported || !permissions || permissions.length < 1) {
+            return Promise.resolve(true);
+        }
+
+        // Check if `permissions` have been granted
+        return Permissions.contains(permissions).then((granted) => {
+            if(!granted) {
+                return Promise.reject(new Error('Plugin permissions haven\'t been granted'));
+            }
+
+            return granted;
+        });
+    }
+
+    isContentScriptsEnabled(contentScripts) {
+        if(!DeclarativeContent.supported || !contentScripts || contentScripts.length < 1) {
+            return Promise.resolve(true);
+        }
+
+        // Create declarative rules
+        let {rules, rulesMap, ruleIds} = this._createDeclarativeRules(contentScripts);
+
+        // Retrieve existing content scripts
+        return DeclarativeContent.getRules(ruleIds).then((existingRules) => {
+            if(rules.length !== existingRules.length) {
+                return false;
+            }
+
+            // Build map of existing rules
+            let existingRulesMap = {};
+
+            existingRules.forEach((rule) => {
+                existingRulesMap[rule.id] = rule;
+            });
+
+            // Verify rules match
+            let matched = true;
+
+            Object.keys(rulesMap).forEach((ruleId) => {
+                let rule = rulesMap[ruleId];
+
+                // Retrieve existing rule
+                let existingRule = existingRulesMap[ruleId];
+
+                if(!isDefined(existingRule)) {
+                    matched = false;
+                    return;
+                }
+
+                // Check if the rules match
+                if(!DeclarativeContent.matches(rule, existingRule)) {
+                    matched = false;
+                }
+            });
+
+            console.log('rulesMap: %o, existingRulesMap: %o, matched: %o', rulesMap, existingRulesMap, matched);
+            return matched;
+        });
+    }
+
+    // endregion
+
+    // region Update state
+
     updateContentScripts(enabled) {
         if(!DeclarativeContent.supported || !this.props.options.contentScripts) {
             return Promise.resolve();
         }
 
-        // Build list of declarative rules
+        if(this.props.options.contentScripts.length < 1) {
+            return Promise.resolve();
+        }
+
+        // Create declarative rules
+        let {rules, ruleIds} = this._createDeclarativeRules(this.props.options.contentScripts);
+
+        // Update declarative rules
+        if(enabled) {
+            console.debug('Updating declarative rules...');
+            return DeclarativeContent.removeRules(ruleIds)
+                .then(() => DeclarativeContent.addRules(rules));
+        }
+
+        console.debug('Removing declarative rules...');
+        return DeclarativeContent.removeRules(ruleIds);
+    }
+
+    updatePermissions(enabled) {
+        if(!Permissions.supported || !this.props.options.permissions) {
+            return Promise.resolve();
+        }
+
+        if(Object.keys(this.props.options.permissions).length < 1) {
+            return Promise.resolve();
+        }
+
+        if(enabled) {
+            console.debug('Requesting permissions...');
+            return Permissions.request(this.props.options.permissions);
+        }
+
+        console.debug('Removing permissions...');
+        return Permissions.remove(this.props.options.permissions);
+    }
+
+    updatePreference(enabled) {
+        // Update preference
+        return Preferences.putBoolean(this.props.id, enabled)
+            .then(() => {
+                // Update component
+                this.setState({enabled: enabled});
+            });
+    }
+
+    // endregion
+
+    // region Helpers
+
+    _createDeclarativeRules(contentScripts) {
         let rules = [];
+        let rulesMap = {};
         let ruleIds = [];
 
-        this.props.options.contentScripts.forEach((script) => {
+        // Create declarative rules from content scripts
+        contentScripts.forEach((script) => {
             script = merge({
                 id: null,
                 conditions: [],
@@ -131,7 +248,7 @@ export default class EnableComponent extends OptionComponent {
                 return;
             }
 
-            rules.push({
+            let rule = {
                 id: script.id,
 
                 actions: [
@@ -143,41 +260,22 @@ export default class EnableComponent extends OptionComponent {
                 conditions: script.conditions.map((condition) => {
                     return new PageStateMatcher(condition);
                 })
-            });
+            };
+
+            // Store rule
+            rules.push(rule);
+            rulesMap[script.id] = rule;
         });
 
-        if(enabled) {
-            console.debug('Updating declarative rules...');
-            return DeclarativeContent.removeRules(ruleIds)
-                .then(() => DeclarativeContent.addRules(rules));
-        }
+        return {
+            rules: rules,
+            rulesMap: rulesMap,
 
-        console.debug('Removing declarative rules...');
-        return DeclarativeContent.removeRules(ruleIds);
+            ruleIds: ruleIds
+        };
     }
 
-    updatePermissions(enabled) {
-        if(!Permissions.supported || !this.props.options.permissions) {
-            return Promise.resolve();
-        }
-
-        if(enabled) {
-            console.debug('Requesting permissions...');
-            return Permissions.request(this.props.options.permissions);
-        }
-
-        console.debug('Removing permissions...');
-        return Permissions.remove(this.props.options.permissions);
-    }
-
-    updatePreference(enabled) {
-        // Update preference
-        return Preferences.putBoolean(this.props.id, enabled)
-            .then(() => {
-                // Update component
-                this.setState({enabled: enabled});
-            });
-    }
+    // endregion
 
     render() {
         console.timeStamp('EnableComponent.render()');
