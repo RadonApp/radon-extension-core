@@ -32,7 +32,7 @@ export class Scrobble {
         // Log session status
         if(item.type.media === MediaTypes.Video.Movie) {
             console.log(
-                '%o (%d) (%s: %o) : [event: %o, state: %o, progress: %o]',
+                '%o (%o) (%s: %o) : [event: %o, state: %o, progress: %o]',
                 item.title,
                 item.year,
 
@@ -47,7 +47,7 @@ export class Scrobble {
             );
         } else if(item.type.media === MediaTypes.Video.Episode) {
             console.log(
-                '%o - Season %d (%d) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
+                '%o - Season %d (%o) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
                 item.show.title,
                 item.season.number,
                 item.season.year,
