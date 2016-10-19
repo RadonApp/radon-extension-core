@@ -1,7 +1,6 @@
 import {
     Group,
     Page,
-    EnableOption,
     SelectOption
 } from 'eon.extension.framework/services/configuration/models';
 
