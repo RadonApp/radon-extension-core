@@ -20,6 +20,7 @@ export class Scrobble {
         // Events
         this.bus.on('activity.created', (session) => this.onSessionUpdated('created', session));
         this.bus.on('activity.started', (session) => this.onSessionUpdated('started', session));
+        this.bus.on('activity.seeked', (session) => this.onSessionUpdated('seeked', session));
         this.bus.on('activity.progress', (session) => this.onSessionUpdated('progress', session));
         this.bus.on('activity.paused', (session) => this.onSessionUpdated('paused', session));
         this.bus.on('activity.ended', (session) => this.onSessionUpdated('ended', session));
@@ -45,7 +46,7 @@ export class Scrobble {
                 // Status
                 event,
                 session.state,
-                Math.round(session.progress * 100)
+                session.progress
             );
         } else if(item.type.media === MediaTypes.Video.Episode) {
             Log.debug(
@@ -62,7 +63,7 @@ export class Scrobble {
                 // Status
                 event,
                 session.state,
-                Math.round(session.progress * 100)
+                session.progress
             );
         } else if(item.type.media === MediaTypes.Music.Track) {
             Log.debug(
@@ -78,7 +79,7 @@ export class Scrobble {
                 // Status
                 event,
                 session.state,
-                Math.round(session.progress * 100)
+                session.progress
             );
         }
 
