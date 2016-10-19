@@ -1,7 +1,9 @@
-import Registry from 'eon.extension.framework/core/registry';
+import Preferences from 'eon.extension.browser/preferences';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import React from 'react';
 
+import Log from '../../../core/logger';
 import Group from '../components/settings/group';
 import './settings.scss';
 
@@ -11,39 +13,45 @@ export default class Options extends React.Component {
         super(props);
 
         this.state = {
-            plugin: {},
-            configuration: {}
+            page: {}
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        console.timeStamp('Settings.componentWillReceiveProps()');
+        let type = nextProps.params.type || 'eon';
+        let pluginId = nextProps.params.pluginId || 'eon.extension';
+        let key = nextProps.params.key || null;
 
-        let plugin = Registry.getPluginById(nextProps.params.pluginId);
+        // Build page identifier
+        let pageId;
 
-        // Try find configuration service
-        let configuration;
-
-        if(plugin) {
-            configuration = Registry.getPluginServiceByType(plugin.id, 'configuration');
+        if(isDefined(key)) {
+            pageId = pluginId + ':' + key;
+        } else {
+            pageId = pluginId;
         }
 
-        // Update component state
+        // Try find matching preference page
+        let page = Preferences.pages[type][pageId];
+
+        if(!isDefined(page)) {
+            Log.warn('Unable to find %o preference page: %o', type, pageId);
+            return;
+        }
+
+        // Update state
         this.setState({
-            plugin: plugin || {},
-            configuration: configuration || {}
+            page: page || {}
         });
     }
 
     render() {
-        console.timeStamp('Settings.render()');
-
         return (
             <div data-view="eon.extension.core:settings" className="options row">
                 <Group
                     type="flat"
-                    title={this.state.plugin.title}
-                    children={this.state.configuration.options}
+                    title={this.state.page.title}
+                    children={this.state.page.children}
                 />
             </div>
         );

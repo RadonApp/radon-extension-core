@@ -1,10 +1,11 @@
 import Platform, {Platforms} from 'eon.extension.browser/platform';
-
+import Preferences from 'eon.extension.browser/preferences';
 import Registry from 'eon.extension.framework/core/registry';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import classNames from 'classnames';
 import groupBy from 'lodash-es/groupBy';
+import merge from 'lodash-es/merge';
 import sortBy from 'lodash-es/sortBy';
 import querystring from 'querystring';
 import React from 'react';
@@ -16,14 +17,17 @@ export default class App extends React.Component {
         super();
 
         this.state = {
-            destinations: [],
-            sources: []
+            embedded: false,
+
+            pages: {
+                core: [],
+                destinations: [],
+                sources: []
+            }
         };
     }
 
     componentWillMount() {
-        console.timeStamp('App.componentWillMount()');
-
         // Parse query parameters
         let query = {};
 
@@ -48,29 +52,15 @@ export default class App extends React.Component {
         this.setState({
             embedded: embedded,
 
-            // Map destinations
-            destinations: this.listPlugins('destination').map(function(plugin) {
-                return (
-                    <li key={plugin.id} className={plugin.enabled ? '' : 'disabled'}>
-                        <Link to={'/destinations/' + plugin.id}>{plugin.title}</Link>
-                    </li>
-                );
-            }),
-
-            // Map sources
-            sources: this.listPlugins('source').map(function(plugin) {
-                return (
-                    <li key={plugin.id} className={plugin.enabled ? '' : 'disabled'}>
-                        <Link to={'/sources/' + plugin.id}>{plugin.title}</Link>
-                    </li>
-                );
-            })
+            pages: merge({
+                core: [],
+                destination: [],
+                source: []
+            }, Preferences.pages)
         });
     }
 
     render() {
-        console.timeStamp('App.render()');
-
         return (
             <app data-view="eon.extension.core:app" data-platform={Platform.name} className={classNames({
                 'embedded': this.state.embedded
@@ -87,13 +77,37 @@ export default class App extends React.Component {
                     <div id="navigation"
                          className="small-1 medium-3 large-2 small-pull-11 medium-pull-9 large-pull-10 columns">
                         <ul className="vertical menu">
-                            <li><Link to="/general">General</Link></li>
+                            {Object.keys(this.state.pages['eon']).map((id) => {
+                                let page = this.state.pages['eon'][id];
+
+                                return (
+                                    <li key={page.id}><Link to={'/' + page.key}>
+                                        {page.title}
+                                    </Link></li>
+                                );
+                            })}
 
                             <li className="title-link"><Link to="/destinations">Destinations</Link></li>
-                            {this.state.destinations}
+                            {Object.keys(this.state.pages['destination']).map((id) => {
+                                let page = this.state.pages['destination'][id];
+
+                                return (
+                                    <li key={page.id}><Link to={'/destination/' + page.plugin.id}>
+                                        {page.title}
+                                    </Link></li>
+                                );
+                            })}
 
                             <li className="title-link"><Link to="/sources">Sources</Link></li>
-                            {this.state.sources}
+                            {Object.keys(this.state.pages['source']).map((id) => {
+                                let page = this.state.pages['source'][id];
+
+                                return (
+                                    <li key={page.id}><Link to={'/source/' + page.plugin.id}>
+                                        {page.title}
+                                    </Link></li>
+                                );
+                            })}
                         </ul>
                     </div>
 

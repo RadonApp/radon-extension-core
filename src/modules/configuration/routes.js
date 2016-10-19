@@ -10,12 +10,11 @@ export const routes = (
     <Route path="/" component={App}>
         <IndexRedirect to="/general"/>
 
-        <Route path="general" component={Settings}/>
-
         <Route path="destinations" component={List}/>
-        <Route path="destinations/:pluginId" component={Settings}/>
-
         <Route path="sources" component={List}/>
-        <Route path="sources/:pluginId" component={Settings}/>
+
+        <Route path=":type/:pluginId/:key" component={Settings}/>
+        <Route path=":type/:pluginId" component={Settings}/>
+        <Route path=":key" component={Settings}/>
     </Route>
 );
