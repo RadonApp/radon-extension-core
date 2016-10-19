@@ -1,6 +1,8 @@
 import {default as _Storage} from 'eon.extension.browser/storage';
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
+import Log from '../../../core/logger';
+
 
 export class Storage {
     constructor() {
@@ -14,22 +16,18 @@ export class Storage {
     }
 
     get(key, callback) {
-        console.debug('Requesting item %o from storage...', key);
-
         _Storage.get(key).then((value) => {
-            console.debug('Got value: %o', value);
-
             callback({
                 success: true,
                 value: value
             });
         }, (err) => {
-            console.warn('Unable to retrieve storage entry %o:', key, err.stack);
+            Log.warn('Unable to retrieve storage entry %o:', key, err.stack);
 
             callback({
                 success: false
             });
-        })
+        });
     }
 }
 

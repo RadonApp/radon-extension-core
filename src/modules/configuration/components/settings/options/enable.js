@@ -1,12 +1,13 @@
 import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.extension.browser/declarative/content';
 import Permissions from 'eon.extension.browser/permissions';
 import Preferences from 'eon.extension.browser/preferences';
-
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
 import merge from 'lodash-es/merge';
 import React from 'react';
+
+import Log from '../../../../../core/logger';
 
 
 export default class EnableComponent extends OptionComponent {
@@ -22,18 +23,14 @@ export default class EnableComponent extends OptionComponent {
     }
 
     componentWillMount() {
-        console.timeStamp('EnableComponent.componentWillMount()');
         this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        console.timeStamp('EnableComponent.componentWillReceiveProps()');
         this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        console.timeStamp('EnableComponent.shouldComponentUpdate()');
-
         if(nextProps.id !== this.state.id) {
             return true;
         }
@@ -74,7 +71,7 @@ export default class EnableComponent extends OptionComponent {
                 this.props.onChange(enabled);
             })
             .catch((error) => {
-                console.warn('Unable to update permissions: %o', error);
+                Log.warn('Unable to update permissions: %o', error);
             });
     }
 
@@ -152,7 +149,6 @@ export default class EnableComponent extends OptionComponent {
                 }
             });
 
-            console.log('rulesMap: %o, existingRulesMap: %o, matched: %o', rulesMap, existingRulesMap, matched);
             return matched;
         });
     }
@@ -175,12 +171,14 @@ export default class EnableComponent extends OptionComponent {
 
         // Update declarative rules
         if(enabled) {
-            console.debug('Updating declarative rules...');
+            Log.debug('Updating declarative rules...');
+
             return DeclarativeContent.removeRules(ruleIds)
                 .then(() => DeclarativeContent.addRules(rules));
         }
 
-        console.debug('Removing declarative rules...');
+        Log.debug('Removing declarative rules...');
+
         return DeclarativeContent.removeRules(ruleIds);
     }
 
@@ -194,11 +192,13 @@ export default class EnableComponent extends OptionComponent {
         }
 
         if(enabled) {
-            console.debug('Requesting permissions...');
+            Log.debug('Requesting permissions...');
+
             return Permissions.request(this.props.options.permissions);
         }
 
-        console.debug('Removing permissions...');
+        Log.debug('Removing permissions...');
+
         return Permissions.remove(this.props.options.permissions);
     }
 
@@ -230,13 +230,13 @@ export default class EnableComponent extends OptionComponent {
             }, script);
 
             if(script.id === null) {
-                console.warn('Ignoring invalid content script: %O (invalid/missing "id" property)', script);
+                Log.warn('Ignoring invalid content script: %O (invalid/missing "id" property)', script);
                 return;
             }
 
             // Add rule identifier
             if(ruleIds.indexOf(script.id) !== -1) {
-                console.warn('Content script with identifier %o has already been defined', script.id);
+                Log.warn('Content script with identifier %o has already been defined', script.id);
                 return;
             }
 
@@ -244,7 +244,7 @@ export default class EnableComponent extends OptionComponent {
 
             // Build rule
             if(!Array.isArray(script.conditions) || script.conditions.length < 1) {
-                console.warn('Ignoring invalid content script: %O (invalid/missing "conditions" property)', script);
+                Log.warn('Ignoring invalid content script: %O (invalid/missing "conditions" property)', script);
                 return;
             }
 
@@ -278,8 +278,6 @@ export default class EnableComponent extends OptionComponent {
     // endregion
 
     render() {
-        console.timeStamp('EnableComponent.render()');
-
         return (
             <div data-component="eon.extension.core:settings.options.enable" className="switch tiny">
                 <input

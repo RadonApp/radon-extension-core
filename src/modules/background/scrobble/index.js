@@ -2,6 +2,8 @@ import {MediaTypes} from 'eon.extension.framework/core/enums';
 import Registry from 'eon.extension.framework/core/registry';
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 
+import Log from '../../../core/logger';
+
 
 export class Scrobble {
     constructor() {
@@ -31,7 +33,7 @@ export class Scrobble {
 
         // Log session status
         if(item.type.media === MediaTypes.Video.Movie) {
-            console.log(
+            Log.debug(
                 '%o (%o) (%s: %o) : [event: %o, state: %o, progress: %o]',
                 item.title,
                 item.year,
@@ -46,7 +48,7 @@ export class Scrobble {
                 Math.round(session.progress * 100)
             );
         } else if(item.type.media === MediaTypes.Video.Episode) {
-            console.log(
+            Log.debug(
                 '%o - Season %d (%o) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
                 item.show.title,
                 item.season.number,
@@ -63,7 +65,7 @@ export class Scrobble {
                 Math.round(session.progress * 100)
             );
         } else if(item.type.media === MediaTypes.Music.Track) {
-            console.log(
+            Log.debug(
                 '%o - %o (%s: %o) : [event: %o, state: %o, progress: %o]',
                 // Name
                 item.artist.title,
@@ -84,7 +86,7 @@ export class Scrobble {
         let services = this.services[item.type.media];
 
         if(typeof services === 'undefined') {
-            console.log('No services available for media: %o', item.type.media);
+            Log.notice('No services available for media: %o', item.type.media);
             return;
         }
 
@@ -92,12 +94,12 @@ export class Scrobble {
             let service = services[i];
 
             if(!service.plugin.enabled) {
-                console.log('Plugin %o is disabled', service.plugin.id);
+                Log.debug('Plugin %o is disabled', service.plugin.id);
                 continue;
             }
 
             if(!service.enabled) {
-                console.log('Service %o is disabled', service.id);
+                Log.debug('Service %o is disabled', service.id);
                 continue;
             }
 
@@ -119,7 +121,7 @@ export class Scrobble {
             let service = services[i];
 
             if(typeof service.accepts === 'undefined' || service.accepts === null) {
-                console.warn('Service %o has an invalid value specified for the "accepts" property', service.id);
+                Log.warn('Service %o has an invalid value specified for the "accepts" property', service.id);
                 continue;
             }
 

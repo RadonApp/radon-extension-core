@@ -1,5 +1,4 @@
 import Preferences from 'eon.extension.browser/preferences';
-
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
 import React from 'react';
@@ -16,18 +15,14 @@ export default class CheckboxComponent extends OptionComponent {
     }
 
     componentWillMount() {
-        console.timeStamp('CheckboxComponent.componentWillMount()');
         this.refresh(this.props.id);
     }
 
     componentWillReceiveProps(nextProps) {
-        console.timeStamp('CheckboxComponent.componentWillReceiveProps()');
         this.refresh(nextProps.id);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        console.timeStamp('CheckboxComponent.shouldComponentUpdate()');
-
         if(nextProps.id !== this.state.id) {
             return true;
         }
@@ -54,8 +49,6 @@ export default class CheckboxComponent extends OptionComponent {
 
         // Update option state
         Preferences.putBoolean(this.props.id, checked).then(() => {
-            console.debug('[%s] checked: %o', this.props.id, checked);
-
             this.setState({
                 checked: checked
             });
@@ -63,8 +56,6 @@ export default class CheckboxComponent extends OptionComponent {
     }
 
     render() {
-        console.timeStamp('CheckboxComponent.render()');
-
         return (
             <div data-component="eon.extension.core:settings.options.checkbox" className="option option-checkbox">
                 <input

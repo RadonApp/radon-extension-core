@@ -1,17 +1,19 @@
 import Registry from 'eon.extension.framework/core/registry';
 
+import Log from '../../../core/logger';
+
 
 function initialize() {
     // Validate activity services
     if(typeof Registry.servicesByType['source/activity'] === 'undefined') {
-        console.error('Unable to initialize activity module, no activity services are available');
+        Log.error('Unable to initialize activity module, no activity services are available');
         return;
     }
 
     let serviceIds = Object.keys(Registry.servicesByType['source/activity']);
 
     if(serviceIds.length !== 1) {
-        console.error('Unable to initialize activity module, exactly one activity service should be defined');
+        Log.error('Unable to initialize activity module, exactly one activity service should be defined');
         return;
     }
 
@@ -23,7 +25,7 @@ function initialize() {
     }
 
     // Initialize service
-    console.debug('Initializing activity service: ' + service.id);
+    Log.debug('Initializing activity service: ' + service.id);
     service.initialize();
 }
 

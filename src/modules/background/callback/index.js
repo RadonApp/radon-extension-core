@@ -4,6 +4,8 @@ import WebRequest from 'eon.extension.browser/web/request';
 
 import URI from 'urijs';
 
+import Log from '../../../core/logger';
+
 
 /*
  * Due to a bug with "web_accessible_resources" on firefox, we need to catch
@@ -19,7 +21,7 @@ export class Callback {
             {urls: [callbackPattern]}
         );
 
-        console.debug('Listening for callback requests matching "%s"...', callbackPattern);
+        Log.debug('Listening for callback requests matching "%s"...', callbackPattern);
     }
 
     onBeforeRequest(request) {
@@ -29,7 +31,7 @@ export class Callback {
         let parts = url.segmentCoded();
 
         if(parts.length < 2) {
-            console.warn('Invalid callback url:', url);
+            Log.warn('Invalid callback url:', url);
             return;
         }
 
@@ -39,7 +41,7 @@ export class Callback {
 
         // Verify extension id matches
         if(extensionKey !== Extension.key) {
-            console.warn('Callback doesn\'t match extension key');
+            Log.warn('Callback doesn\'t match extension key');
             return;
         }
 
@@ -49,7 +51,7 @@ export class Callback {
             .toString();
 
         // Navigate to callback page
-        console.log('Navigating tab %s to "%s"', request.tabId, destinationUrl);
+        Log.debug('Navigating tab %s to "%s"', request.tabId, destinationUrl);
 
         Tabs.update(request.tabId, {
             url: destinationUrl

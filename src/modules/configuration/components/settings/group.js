@@ -4,6 +4,7 @@ import {Model, EnableOption, PluginOption} from 'eon.extension.framework/service
 import classNames from 'classnames';
 import React from 'react';
 
+import Log from '../../../../core/logger';
 import Options from './options';
 import './group.scss';
 
@@ -21,18 +22,14 @@ export default class Group extends React.Component {
     }
 
     componentWillMount() {
-        console.timeStamp('Group.componentWillMount()');
         this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        console.timeStamp('Group.componentWillReceiveProps()');
         this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        console.timeStamp('Group.shouldComponentUpdate()');
-
         if(nextState.enabled !== this.state.enabled) {
             return true;
         }
@@ -105,10 +102,8 @@ export default class Group extends React.Component {
     }
 
     render() {
-        console.timeStamp('Group.render()');
-
         if(this.props.children && !(this.props.children instanceof Array)) {
-            console.warn('Invalid options definition: %O', this.props.children);
+            Log.warn('Invalid options definition: %O', this.props.children);
             return (
                 <div>Invalid plugin options definition</div>
             );
@@ -166,7 +161,7 @@ export default class Group extends React.Component {
 
     renderItem(item, onChanged) {
         if(!(item instanceof Model)) {
-            console.warn('Ignoring invalid option: %O', item);
+            Log.warn('Ignoring invalid option: %O', item);
             return null;
         }
 
@@ -193,12 +188,12 @@ export default class Group extends React.Component {
 
         // Verify component has been found
         if(typeof Component === 'undefined' || Component === null) {
-            console.warn('Unable to find option component for: %o', item.type);
+            Log.warn('Unable to find option component for: %o', item.type);
             return null;
         }
 
         if(!(Component.prototype instanceof OptionComponent)) {
-            console.warn('Unsupported option component: %O', Component);
+            Log.warn('Unsupported option component: %O', Component);
             return null;
         }
 
