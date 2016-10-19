@@ -17,10 +17,30 @@ export default class Options extends React.Component {
         };
     }
 
+    componentWillMount() {
+        this.refresh(this.props);
+    }
+
     componentWillReceiveProps(nextProps) {
-        let type = nextProps.params.type || 'eon';
-        let pluginId = nextProps.params.pluginId || 'eon.extension';
-        let key = nextProps.params.key || null;
+        this.refresh(nextProps);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if(nextProps.type !== this.state.type) {
+            return true;
+        }
+
+        if(nextProps.pageId !== this.state.pageId) {
+            return true;
+        }
+
+        return false;
+    }
+
+    refresh(props) {
+        let type = props.params.type || 'eon';
+        let pluginId = props.params.pluginId || 'eon.extension';
+        let key = props.params.key || null;
 
         // Build page identifier
         let pageId;
@@ -41,6 +61,8 @@ export default class Options extends React.Component {
 
         // Update state
         this.setState({
+            type: type || null,
+            pageId: pageId || null,
             page: page || {}
         });
     }
