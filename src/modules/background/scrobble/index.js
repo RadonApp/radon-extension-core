@@ -23,58 +23,58 @@ export class Scrobble {
         this.bus.on('activity.seeked', (session) => this.onSessionUpdated('seeked', session));
         this.bus.on('activity.progress', (session) => this.onSessionUpdated('progress', session));
         this.bus.on('activity.paused', (session) => this.onSessionUpdated('paused', session));
-        this.bus.on('activity.ended', (session) => this.onSessionUpdated('ended', session));
+        this.bus.on('activity.stopped', (session) => this.onSessionUpdated('stopped', session));
     }
 
     onSessionUpdated(event, session) {
-        let item = session.item;
+        let metadata = session.metadata;
 
         // Retrieve source key
-        let sourceKey = item.source.id.substring(item.source.id.lastIndexOf('.') + 1);
+        let sourceKey = metadata.source.id.substring(metadata.source.id.lastIndexOf('.') + 1);
 
         // Log session status
-        if(item.type.media === MediaTypes.Video.Movie) {
+        if(metadata.type.media === MediaTypes.Video.Movie) {
             Log.debug(
                 '%o (%o) (%s: %o) : [event: %o, state: %o, progress: %o]',
-                item.title,
-                item.year,
+                metadata.title,
+                metadata.year,
 
                 // Identifier
                 sourceKey,
-                item.id,
+                metadata.id,
 
                 // Status
                 event,
                 session.state,
                 session.progress
             );
-        } else if(item.type.media === MediaTypes.Video.Episode) {
+        } else if(metadata.type.media === MediaTypes.Video.Episode) {
             Log.debug(
                 '%o - Season %d (%o) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
-                item.show.title,
-                item.season.number,
-                item.season.year,
-                item.number,
+                metadata.show.title,
+                metadata.season.number,
+                metadata.season.year,
+                metadata.number,
 
                 // Identifier
                 sourceKey,
-                item.id,
+                metadata.id,
 
                 // Status
                 event,
                 session.state,
                 session.progress
             );
-        } else if(item.type.media === MediaTypes.Music.Track) {
+        } else if(metadata.type.media === MediaTypes.Music.Track) {
             Log.debug(
                 '%o - %o (%s: %o) : [event: %o, state: %o, progress: %o]',
                 // Name
-                item.artist.title,
-                item.title,
+                metadata.artist.title,
+                metadata.title,
 
                 // Identifier
                 sourceKey,
-                item.id,
+                metadata.id,
 
                 // Status
                 event,
@@ -84,10 +84,10 @@ export class Scrobble {
         }
 
         // Emit event to services
-        let services = this.services[item.type.media];
+        let services = this.services[metadata.type.media];
 
         if(typeof services === 'undefined') {
-            Log.notice('No services available for media: %o', item.type.media);
+            Log.notice('No services available for media: %o', metadata.type.media);
             return;
         }
 
