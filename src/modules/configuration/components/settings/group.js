@@ -1,10 +1,12 @@
+import Registry from 'eon.extension.framework/core/registry';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 import {Model, EnableOption, PluginOption} from 'eon.extension.framework/services/configuration/models';
 
 import classNames from 'classnames';
 import React from 'react';
 
-import Log from '../../../../core/logger';
+import Log from 'eon.extension.core/core/logger';
 import Options from './options';
 import './group.scss';
 
@@ -180,8 +182,8 @@ export default class Group extends React.Component {
         // Try retrieve option component
         let Component;
 
-        if(item instanceof PluginOption) {
-            Component = item.options.component;
+        if(item instanceof PluginOption && isDefined(item.options.componentId)) {
+            Component = Registry.components[item.options.componentId];
         } else {
             Component = Options[item.type];
         }
