@@ -1,12 +1,9 @@
 import Platform, {Platforms} from 'eon.extension.browser/platform';
 import Preferences from 'eon.extension.browser/preferences';
-import Registry from 'eon.extension.framework/core/registry';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import classNames from 'classnames';
-import groupBy from 'lodash-es/groupBy';
 import merge from 'lodash-es/merge';
-import sortBy from 'lodash-es/sortBy';
 import querystring from 'querystring';
 import React from 'react';
 import {Link} from 'react-router';
@@ -118,28 +115,5 @@ export default class App extends React.Component {
                 </div>
             </app>
         );
-    }
-
-    //
-    // Helpers
-    //
-
-    listPlugins(type) {
-        let plugins = Registry.listPlugins(type, {
-            disabled: true
-        });
-
-        // Group by plugin enabled/disabled state
-        let groups = groupBy(plugins, (plugin) => {
-            return plugin.enabled;
-        });
-
-        // Sort groups
-        Object.keys(groups).forEach((key) => {
-            groups[key] = sortBy(groups[key], ['title']);
-        });
-
-        // Merge groups, display enabled plugins first
-        return (groups[true] || []).concat(groups[false] || []);
     }
 }
