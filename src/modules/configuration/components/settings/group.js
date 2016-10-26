@@ -204,6 +204,7 @@ export default class Group extends React.Component {
             key={item.key}
             id={item.id}
             label={item.label}
+            plugin={item.plugin}
             options={item.options}
             onChange={onChanged}
         />;

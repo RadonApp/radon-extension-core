@@ -83,61 +83,52 @@ export class Scrobble {
             );
         }
 
-        // Emit event to services
-        let services = this.services[metadata.type.media];
+        // Retrieve current services
+        this.services.then((services) => {
+            // Find media services
+            services = services[metadata.type.media];
 
-        if(typeof services === 'undefined') {
-            Log.notice('No services available for media: %o', metadata.type.media);
-            return;
-        }
-
-        for(let i = 0; i < services.length; ++i) {
-            let service = services[i];
-
-            if(!service.plugin.enabled) {
-                Log.debug('Plugin %o is disabled', service.plugin.id);
-                continue;
+            if(typeof services === 'undefined') {
+                Log.notice('No services available for media: %o', metadata.type.media);
+                return;
             }
 
-            if(!service.enabled) {
-                Log.debug('Service %o is disabled', service.id);
-                continue;
-            }
+            // Emit event to matching services
+            for(let i = 0; i < services.length; ++i) {
+                let service = services[i];
 
-            service.onSessionUpdated(event, session);
-        }
+                service.onSessionUpdated(event, session);
+            }
+        });
     }
 
     // region Private methods
 
     _getServices() {
-        let result = {};
+        return Registry.listServices('destination/scrobble').then((services) => {
+            let result = {};
 
-        // Iterate over scrobble services
-        let services = Registry.listServices('destination/scrobble', {
-            disabled: true
-        });
+            for(let i = 0; i < services.length; ++i) {
+                let service = services[i];
 
-        for(let i = 0; i < services.length; ++i) {
-            let service = services[i];
-
-            if(typeof service.accepts === 'undefined' || service.accepts === null) {
-                Log.warn('Service %o has an invalid value specified for the "accepts" property', service.id);
-                continue;
-            }
-
-            for(let j = 0; j < service.accepts.length; ++j) {
-                let media = service.accepts[j];
-
-                if(typeof result[media] === 'undefined') {
-                    result[media] = [];
+                if(typeof service.accepts === 'undefined' || service.accepts === null) {
+                    Log.warn('Service %o has an invalid value specified for the "accepts" property', service.id);
+                    continue;
                 }
 
-                result[media].push(service);
-            }
-        }
+                for(let j = 0; j < service.accepts.length; ++j) {
+                    let media = service.accepts[j];
 
-        return result;
+                    if(typeof result[media] === 'undefined') {
+                        result[media] = [];
+                    }
+
+                    result[media].push(service);
+                }
+            }
+
+            return result;
+        });
     }
 
     // region endregion

@@ -1,13 +1,10 @@
-import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.extension.browser/declarative/content';
-import Permissions from 'eon.extension.browser/permissions';
 import Preferences from 'eon.extension.browser/preferences';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isString} from 'eon.extension.framework/core/helpers';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
-import merge from 'lodash-es/merge';
 import React from 'react';
 
-import Log from '../../../../../core/logger';
+import Log from 'eon.extension.core/core/logger';
 
 
 export default class EnableComponent extends OptionComponent {
@@ -30,6 +27,10 @@ export default class EnableComponent extends OptionComponent {
         this.refresh(nextProps);
     }
 
+    componentWillUnmount() {
+        this._currentRefreshId++;
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
         if(nextProps.id !== this.state.id) {
             return true;
@@ -46,7 +47,7 @@ export default class EnableComponent extends OptionComponent {
         let id = ++this._currentRefreshId;
 
         // Check plugin enabled state
-        this.isEnabled(props.id, props.options).then((enabled) => {
+        this.isEnabled(props).then((enabled) => {
             if(this._currentRefreshId !== id) {
                 return;
             }
@@ -59,9 +60,9 @@ export default class EnableComponent extends OptionComponent {
         let enabled = event.target.checked;
 
         // Process state change event
-        return this.updatePermissions(enabled)
-            .then(() => this.updateContentScripts(enabled))
-            .then(() => this.updatePreference(enabled))
+        return this.updatePermissions(this.props, enabled)
+            .then(() => this.updateContentScripts(this.props, enabled))
+            .then(() => this.updatePreference(this.props, enabled))
             .then(() => {
                 if(this.props.onChange === null) {
                     return;
@@ -77,79 +78,61 @@ export default class EnableComponent extends OptionComponent {
 
     // region Check state
 
-    isEnabled(id, options) {
-        return Preferences.getBoolean(id)
+    isEnabled(props) {
+        // Retrieve current plugin enabled state
+        return Preferences.getBoolean(props.id)
             .then((enabled) => {
                 if(!enabled) {
-                    return Promise.reject(new Error('Plugin hasn\'t been enabled'));
+                    if(props.options.type === 'plugin') {
+                        return Promise.reject('Plugin "' + props.plugin.id + '" hasn\'t been enabled');
+                    }
+
+                    return Promise.reject('Option "' + props.id + '" hasn\'t been enabled');
                 }
 
-                return enabled;
+                return true;
             })
-            .then(() => this.isPermissionGranted(options.permissions))
-            .then(() => this.isContentScriptsEnabled(options.contentScripts))
-            .catch(() => {
+            .then(() => this.isPermissionsGranted(props))
+            .then(() => this.isContentScriptsRegistered(props))
+            .catch((err) => {
+                if(isString(err)) {
+                    Log.info(err);
+                } else {
+                    Log.warn('Unable to check enabled state, error:', err.stack);
+                }
                 return false;
             });
     }
 
-    isPermissionGranted(permissions) {
-        if(!Permissions.supported || !permissions || permissions.length < 1) {
+    isPermissionsGranted(props) {
+        if(!props.options.permissions) {
             return Promise.resolve(true);
         }
 
-        // Check if `permissions` have been granted
-        return Permissions.contains(permissions).then((granted) => {
+        return props.plugin.isPermissionsGranted().then((granted) => {
             if(!granted) {
-                return Promise.reject(new Error('Plugin permissions haven\'t been granted'));
+                return Promise.reject(
+                    'Permissions for ' + props.options.type + ' "' + props.plugin.id + '" haven\'t been granted'
+                );
             }
 
-            return granted;
+            return true;
         });
     }
 
-    isContentScriptsEnabled(contentScripts) {
-        if(!DeclarativeContent.supported || !contentScripts || contentScripts.length < 1) {
+    isContentScriptsRegistered(props) {
+        if(!props.options.contentScripts) {
             return Promise.resolve(true);
         }
 
-        // Create declarative rules
-        let {rules, rulesMap, ruleIds} = this._createDeclarativeRules(contentScripts);
-
-        // Retrieve existing content scripts
-        return DeclarativeContent.getRules(ruleIds).then((existingRules) => {
-            if(rules.length !== existingRules.length) {
-                return false;
+        return props.plugin.isContentScriptsRegistered().then((registered) => {
+            if(!registered) {
+                return Promise.reject(
+                    'Content scripts for ' + props.options.type + ' "' + props.plugin.id + '" haven\'t been registered'
+                );
             }
 
-            // Build map of existing rules
-            let existingRulesMap = {};
-
-            existingRules.forEach((rule) => {
-                existingRulesMap[rule.id] = rule;
-            });
-
-            // Verify rules match
-            let matched = true;
-
-            Object.keys(rulesMap).forEach((ruleId) => {
-                let rule = rulesMap[ruleId];
-
-                // Retrieve existing rule
-                let existingRule = existingRulesMap[ruleId];
-
-                if(!isDefined(existingRule)) {
-                    matched = false;
-                    return;
-                }
-
-                // Check if the rules match
-                if(!DeclarativeContent.matches(rule, existingRule)) {
-                    matched = false;
-                }
-            });
-
-            return matched;
+            return true;
         });
     }
 
@@ -157,122 +140,39 @@ export default class EnableComponent extends OptionComponent {
 
     // region Update state
 
-    updateContentScripts(enabled) {
-        if(!DeclarativeContent.supported || !this.props.options.contentScripts) {
-            return Promise.resolve();
-        }
-
-        if(this.props.options.contentScripts.length < 1) {
-            return Promise.resolve();
-        }
-
-        // Create declarative rules
-        let {rules, ruleIds} = this._createDeclarativeRules(this.props.options.contentScripts);
-
-        // Update declarative rules
-        if(enabled) {
-            Log.debug('Updating declarative rules...');
-
-            return DeclarativeContent.removeRules(ruleIds)
-                .then(() => DeclarativeContent.addRules(rules));
-        }
-
-        Log.debug('Removing declarative rules...');
-
-        return DeclarativeContent.removeRules(ruleIds);
-    }
-
-    updatePermissions(enabled) {
-        if(!Permissions.supported || !this.props.options.permissions) {
-            return Promise.resolve();
-        }
-
-        if(Object.keys(this.props.options.permissions).length < 1) {
-            return Promise.resolve();
-        }
-
-        if(enabled) {
-            Log.debug('Requesting permissions...');
-
-            return Permissions.request(this.props.options.permissions);
-        }
-
-        Log.debug('Removing permissions...');
-
-        return Permissions.remove(this.props.options.permissions);
-    }
-
-    updatePreference(enabled) {
+    updatePreference(props, enabled) {
         // Update preference
-        return Preferences.putBoolean(this.props.id, enabled)
+        return Preferences.putBoolean(props.id, enabled)
             .then(() => {
                 // Update component
                 this.setState({enabled: enabled});
             });
     }
 
-    // endregion
+    updatePermissions(props, enabled) {
+        if(!props.options.permissions) {
+            return Promise.resolve();
+        }
 
-    // region Helpers
+        // Update permissions state
+        if(enabled) {
+            return this.props.plugin.requestPermissions();
+        }
 
-    _createDeclarativeRules(contentScripts) {
-        let rules = [];
-        let rulesMap = {};
-        let ruleIds = [];
+        return this.props.plugin.removePermissions();
+    }
 
-        // Create declarative rules from content scripts
-        contentScripts.forEach((script) => {
-            script = merge({
-                id: null,
-                conditions: [],
-                css: [],
-                js: []
-            }, script);
+    updateContentScripts(props, enabled) {
+        if(!props.options.contentScripts) {
+            return Promise.resolve();
+        }
 
-            if(script.id === null) {
-                Log.warn('Ignoring invalid content script: %O (invalid/missing "id" property)', script);
-                return;
-            }
+        // Update content scripts state
+        if(enabled) {
+            return this.props.plugin.registerContentScripts();
+        }
 
-            // Add rule identifier
-            if(ruleIds.indexOf(script.id) !== -1) {
-                Log.warn('Content script with identifier %o has already been defined', script.id);
-                return;
-            }
-
-            ruleIds.push(script.id);
-
-            // Build rule
-            if(!Array.isArray(script.conditions) || script.conditions.length < 1) {
-                Log.warn('Ignoring invalid content script: %O (invalid/missing "conditions" property)', script);
-                return;
-            }
-
-            let rule = {
-                id: script.id,
-
-                actions: [
-                    new RequestContentScript({
-                        css: script.css,
-                        js: script.js
-                    })
-                ],
-                conditions: script.conditions.map((condition) => {
-                    return new PageStateMatcher(condition);
-                })
-            };
-
-            // Store rule
-            rules.push(rule);
-            rulesMap[script.id] = rule;
-        });
-
-        return {
-            rules: rules,
-            rulesMap: rulesMap,
-
-            ruleIds: ruleIds
-        };
+        return this.props.plugin.removeContentScripts();
     }
 
     // endregion
@@ -301,12 +201,14 @@ export default class EnableComponent extends OptionComponent {
 EnableComponent.defaultProps = {
     id: null,
     label: null,
+    plugin: null,
 
     options: {
         summary: null,
 
-        contentScripts: [],
-        permissions: {}
+        type: 'option',
+        permissions: false,
+        contentScripts: false
     },
 
     onChange: null
