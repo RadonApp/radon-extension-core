@@ -90,22 +90,28 @@ export class Scrobble {
 
             if(typeof services === 'undefined') {
                 Log.notice('No services available for media: %o', metadata.type.media);
-                return;
+                return false;
             }
 
             // Emit event to matching services
-            for(let i = 0; i < services.length; ++i) {
-                let service = services[i];
+            return Promise.all(services.map((service) => {
+                return service.isEnabled().then((enabled) => {
+                    if(!enabled) {
+                        return false;
+                    }
 
-                service.onSessionUpdated(event, session);
-            }
+                    // Emit event
+                    service.onSessionUpdated(event, session);
+                    return true;
+                });
+            }));
         });
     }
 
     // region Private methods
 
     _getServices() {
-        return Registry.listServices('destination/scrobble').then((services) => {
+        return Registry.listServices('destination/scrobble', { disabled: true }).then((services) => {
             let result = {};
 
             for(let i = 0; i < services.length; ++i) {
