@@ -8,6 +8,9 @@ export class Main {
     constructor() {
         // Bind to extension events
         Extension.on('installed', this._onInstalled.bind(this));
+
+        // Update plugin registration
+        this._updatePlugins();
     }
 
     _onInstalled(details) {
