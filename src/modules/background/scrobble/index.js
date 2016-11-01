@@ -30,6 +30,42 @@ export class Scrobble {
         this.bus.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
         this.bus.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
 
+        // Channel events
+        this.bus.on('channel.disconnected', this.onChannelDisconnected.bind(this));
+    }
+
+    onChannelDisconnected(channelId) {
+        // Ensure disconnected channel was an "activity" service
+        let {plugin, service} = this._parseChannelId(channelId);
+
+        if(!isDefined(plugin) || plugin.indexOf('eon.extension.source.') !== 0) {
+            return;
+        }
+
+        if(!isDefined(service) || service !== 'activity') {
+            return;
+        }
+
+        Log.debug('Activity service disconnected: %o', channelId);
+
+        // Find active sessions created by this channel
+        SessionDatabase.find({
+            selector: {
+                channelId: channelId,
+                state: 'playing'
+            }
+        }).then((result) => {
+            Log.debug('Found %d active sessions for channel %o', result.docs.length, channelId);
+
+            // Fire "stopped" event for sessions that are still active
+            result.docs.forEach((session) => {
+                // Update state
+                session.state = SessionState.ended;
+
+                // Fire event
+                this.onSessionUpdated('stopped', session);
+            });
+        });
     }
 
     onSessionUpdated(event, data) {
