@@ -1,8 +1,13 @@
-import {MediaTypes} from 'eon.extension.framework/core/enums';
+/* eslint-disable no-multi-spaces, key-spacing */
 import Registry from 'eon.extension.framework/core/registry';
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
+import Parser from 'eon.extension.framework/models/core/parser';
+import {SessionState} from 'eon.extension.framework/models/session';
+import {MediaTypes} from 'eon.extension.framework/core/enums';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
-import Log from '../../../core/logger';
+import SessionDatabase from 'eon.extension.core/database/session';
+import Log from 'eon.extension.core/core/logger';
 
 
 export class Scrobble {
@@ -17,94 +22,90 @@ export class Scrobble {
 
         window.bus = this.bus;
 
-        // Events
-        this.bus.on('activity.created', (session) => this.onSessionUpdated('created', session));
-        this.bus.on('activity.started', (session) => this.onSessionUpdated('started', session));
-        this.bus.on('activity.seeked', (session) => this.onSessionUpdated('seeked', session));
-        this.bus.on('activity.progress', (session) => this.onSessionUpdated('progress', session));
-        this.bus.on('activity.paused', (session) => this.onSessionUpdated('paused', session));
-        this.bus.on('activity.stopped', (session) => this.onSessionUpdated('stopped', session));
+        // Activity events
+        this.bus.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
+        this.bus.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
+        this.bus.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
+        this.bus.on('activity.progress', this.onSessionUpdated.bind(this, 'progress'));
+        this.bus.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
+        this.bus.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
+
     }
 
-    onSessionUpdated(event, session) {
-        let metadata = session.metadata;
+    onSessionUpdated(event, data) {
+        // Parse session from `data` object
+        let session = Parser.parse(data);
 
-        // Retrieve source key
-        let sourceKey = metadata.source.id.substring(metadata.source.id.lastIndexOf('.') + 1);
-
-        // Log session status
-        if(metadata.type.media === MediaTypes.Video.Movie) {
-            Log.debug(
-                '%o (%o) (%s: %o) : [event: %o, state: %o, progress: %o]',
-                metadata.title,
-                metadata.year,
-
-                // Identifier
-                sourceKey,
-                metadata.id,
-
-                // Status
-                event,
-                session.state,
-                session.progress
-            );
-        } else if(metadata.type.media === MediaTypes.Video.Episode) {
-            Log.debug(
-                '%o - Season %d (%o) - Episode %d (%s: %o) : [event: %o, state: %o, progress: %o]',
-                metadata.show.title,
-                metadata.season.number,
-                metadata.season.year,
-                metadata.number,
-
-                // Identifier
-                sourceKey,
-                metadata.id,
-
-                // Status
-                event,
-                session.state,
-                session.progress
-            );
-        } else if(metadata.type.media === MediaTypes.Music.Track) {
-            Log.debug(
-                '%o - %o (%s: %o) : [event: %o, state: %o, progress: %o]',
-                // Name
-                metadata.artist.title,
-                metadata.title,
-
-                // Identifier
-                sourceKey,
-                metadata.id,
-
-                // Status
-                event,
-                session.state,
-                session.progress
-            );
+        if(!isDefined(session)) {
+            Log.warn('Unable to parse session: %o', data);
+            return;
         }
 
-        // Retrieve current services
-        this.services.then((services) => {
-            // Find media services
-            services = services[metadata.type.media];
+        // Retrieve session metadata
+        let metadata = session.metadata;
 
-            if(typeof services === 'undefined') {
-                Log.notice('No services available for media: %o', metadata.type.media);
-                return false;
+        // Store session in database
+        this.updateSession(data).then((previousState) => {
+            if(session.state !== previousState) {
+                Log.info('[%s] State changed from %o to %o', session.id, previousState, session.state);
             }
 
-            // Emit event to matching services
-            return Promise.all(services.map((service) => {
-                return service.isEnabled().then((enabled) => {
-                    if(!enabled) {
-                        return false;
-                    }
+            if(!this._shouldEmitEvent(event, previousState, session.state)) {
+                Log.info('[%s] Ignoring duplicate %o event', session.id, event);
+                return;
+            }
 
-                    // Emit event
-                    service.onSessionUpdated(event, session);
-                    return true;
-                });
-            }));
+            // Log session status
+            this._log(event, session, metadata);
+
+            // Emit event to available scrobble services
+            this.services.then((services) => {
+                // Find media services
+                services = services[metadata.type.media];
+
+                if(typeof services === 'undefined') {
+                    Log.notice('No services available for media: %o', metadata.type.media);
+                    return false;
+                }
+
+                // Emit event to matching services
+                return Promise.all(services.map((service) => {
+                    return service.isEnabled().then((enabled) => {
+                        if(!enabled) {
+                            return false;
+                        }
+
+                        // Emit event
+                        service.onSessionUpdated(event, session);
+                        return true;
+                    });
+                }));
+            });
+        });
+    }
+
+    updateSession(session) {
+        // Try retrieve existing session
+        return SessionDatabase.get(session._id).then((doc) => {
+            let previousState = doc.state;
+
+            // Use existing session "_rev"
+            session._rev = doc._rev;
+
+            // Update existing session
+            return SessionDatabase.put(session).then(() =>
+                previousState
+            );
+        }, (err) => {
+            // Create new session
+            if(err.status === 404) {
+                return SessionDatabase.put(session).then(() =>
+                    null
+                );
+            }
+
+            // Unknown error
+            return Promise.reject(err);
         });
     }
 
@@ -135,6 +136,83 @@ export class Scrobble {
 
             return result;
         });
+    }
+
+    _log(event, session, metadata) {
+        // Write logger message
+        if(metadata.type.media === MediaTypes.Video.Movie) {
+            Log.info(
+                '[%s] %o (%o) : [event: %o, state: %o, progress: %o] %O',
+                session.id,
+
+                // Name
+                metadata.title,
+                metadata.year,
+
+                // Status
+                event,
+                session.state,
+                session.progress,
+
+                session
+            );
+        } else if(metadata.type.media === MediaTypes.Video.Episode) {
+            Log.info(
+                '[%s] %o - Season %d (%o) - Episode %d : [event: %o, state: %o, progress: %o] %O',
+                session.id,
+
+                // Name
+                metadata.show.title,
+                metadata.season.number,
+                metadata.season.year,
+                metadata.number,
+
+                // Status
+                event,
+                session.state,
+                session.progress,
+
+                session
+            );
+        } else if(metadata.type.media === MediaTypes.Music.Track) {
+            Log.info(
+                '[%s] %o - %o : [event: %o, state: %o, progress: %o] %O',
+                session.id,
+
+                // Name
+                metadata.artist.title,
+                metadata.title,
+
+                // Status
+                event,
+                session.state,
+                session.progress,
+
+                session
+            );
+        }
+    }
+
+    _parseChannelId(channelId) {
+        let parts = channelId.split(':');
+
+        if(parts.length !== 3) {
+            return {};
+        }
+
+        return {
+            plugin: parts[0],
+            service: parts[1],
+            key: parts[2]
+        };
+    }
+
+    _shouldEmitEvent(event, previousState, currentState) {
+        if(event === 'progress') {
+            return true;
+        }
+
+        return previousState !== currentState;
     }
 
     // region endregion
