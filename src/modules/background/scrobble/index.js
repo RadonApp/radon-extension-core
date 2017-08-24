@@ -82,7 +82,7 @@ export class Scrobble {
 
         // Store session in database
         this.updateSession(data).then((previousState) => {
-            if(session.state !== previousState) {
+            if(isDefined(previousState) && session.state !== previousState) {
                 Log.info('[%s] State changed from %o to %o', session.id, previousState, session.state);
             }
 
@@ -177,7 +177,7 @@ export class Scrobble {
     _log(event, session, metadata) {
         // Write logger message
         if(metadata.type.media === MediaTypes.Video.Movie) {
-            Log.info(
+            Log.debug(
                 '[%s] %o (%o) : [event: %o, state: %o, progress: %o] %O',
                 session.id,
 
@@ -193,7 +193,7 @@ export class Scrobble {
                 session
             );
         } else if(metadata.type.media === MediaTypes.Video.Episode) {
-            Log.info(
+            Log.debug(
                 '[%s] %o - Season %d (%o) - Episode %d : [event: %o, state: %o, progress: %o] %O',
                 session.id,
 
@@ -211,7 +211,7 @@ export class Scrobble {
                 session
             );
         } else if(metadata.type.media === MediaTypes.Music.Track) {
-            Log.info(
+            Log.debug(
                 '[%s] %o - %o : [event: %o, state: %o, progress: %o] %O',
                 session.id,
 
