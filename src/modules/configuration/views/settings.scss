@@ -17,3 +17,9 @@
     margin-bottom: 0;
   }
 }
+
+[data-component="eon.extension.core:settings.options.select"] {
+  select {
+    font-size: 0.9rem;
+  }
+}
