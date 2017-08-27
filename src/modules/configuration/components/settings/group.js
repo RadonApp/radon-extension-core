@@ -17,7 +17,11 @@ export default class Group extends React.Component {
 
         this.state = {
             enabled: true,
-            option: null
+            options: [],
+
+            header: {
+                option: null
+            }
         };
 
         this._currentRefreshId = 0;
@@ -36,7 +40,7 @@ export default class Group extends React.Component {
             return true;
         }
 
-        if(nextState.option !== this.state.option) {
+        if(nextState.option !== this.state.header.option) {
             return true;
         }
 
@@ -55,43 +59,62 @@ export default class Group extends React.Component {
 
     refresh(props) {
         let id = ++this._currentRefreshId;
+
+        // Update options
+        this.setState({
+            options: props.children.filter(
+                (option) => option.type !== 'enable'
+            )
+        });
+
+        // Refresh header option
+        return this.refreshHeaderOption(id, props);
+    }
+
+    refreshHeaderOption(id, props) {
         let option = this._getHeaderOption(props.children);
 
-        if(option == null) {
-            // No header option defined
+        if(!isDefined(option)) {
             this.setState({
                 enabled: true,
-                option: null
+
+                header: {
+                    option: null
+                }
             });
 
             return true;
         }
 
-        // Process header option
+        // Process header enable/disable option
         if(option instanceof EnableOption) {
-            // Retrieve enabled state
             return option.isEnabled().then((enabled) => {
                 if(this._currentRefreshId !== id) {
                     return false;
                 }
 
-                // Update interface
                 this.setState({
                     enabled: enabled,
-                    option: option
+
+                    header: {
+                        option: option
+                    }
                 });
 
                 return true;
             });
         }
 
-        // Update interface
+        // Update state
         this.setState({
             enabled: true,
-            option: null
+
+            header: {
+                option: null
+            }
         });
 
-        // Unknown header option
+        // Return promise rejection
         return Promise.reject(new Error(
             'Unknown header option: ' + option
         ));
@@ -104,14 +127,6 @@ export default class Group extends React.Component {
     }
 
     render() {
-        if(this.props.children && !(this.props.children instanceof Array)) {
-            Log.warn('Invalid options definition: %O', this.props.children);
-            return (
-                <div>Invalid plugin options definition</div>
-            );
-        }
-
-        // Render group
         let type = this.props.type;
 
         return (
@@ -128,25 +143,25 @@ export default class Group extends React.Component {
                         <div className="header-title small-10 columns">
                             <h3>{this.props.title || 'Unknown Title'}</h3>
                         </div>
-                        {this.state.option && <div className="header-option small-2 columns" style={{
+                        {this.state.header.option && <div className="header-option small-2 columns" style={{
                             textAlign: 'right'
                         }}>
                             {this.renderItem(
-                                this.state.option,
+                                this.state.header.option,
 
                                 // Bind to change event
-                                this.state.option instanceof EnableOption ?
+                                this.state.header.option instanceof EnableOption ?
                                     this.onEnableChanged.bind(this) :
                                     null
                             )}
                         </div>}
                     </div>
                 </div>
-                <div className="content columns">
+                {this.state.options.length > 0 && <div className="content columns">
                     <div className={classNames('children', 'row', {
                         'large-8': type === 'flat'
                     })}>
-                        {this.props.children.map((item) => {
+                        {this.state.options.map((item) => {
                             if(item.type === 'enable') {
                                 return null;
                             }
@@ -156,7 +171,7 @@ export default class Group extends React.Component {
                     </div>
 
                     <div className="overlay"/>
-                </div>
+                </div>}
             </div>
         );
     }
