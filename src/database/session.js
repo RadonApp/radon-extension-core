@@ -5,7 +5,7 @@ import PouchFind from 'pouchdb-find';
 // Construct database
 let Database = new (PouchDB.plugin(PouchFind))('sessions', {
     'auto_compaction': true,
-    'revs_limit': 100
+    'revs_limit': 1
 });
 
 // Ensure indexes exist
