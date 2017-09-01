@@ -1,6 +1,6 @@
 {
   "name": "eon.extension.core",
-  "version": "0.3.3",
+  "version": "1.0.0-beta",
   "main": "./src",
   "devDependencies": {
     "babel-core": "^6.11.4",
