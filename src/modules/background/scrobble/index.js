@@ -1,11 +1,14 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Registry from 'eon.extension.framework/core/registry';
 import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
-import Parser from 'eon.extension.framework/models/core/parser';
-import {SessionState} from 'eon.extension.framework/models/session';
+import Session from 'eon.extension.framework/models/session';
+import {Track} from 'eon.extension.framework/models/item/music';
 import {MediaTypes} from 'eon.extension.framework/core/enums';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
+import IsPlainObject from 'lodash-es/isPlainObject';
+
+import ItemDatabase from 'eon.extension.core/database/item';
 import SessionDatabase from 'eon.extension.core/database/session';
 import Log from 'eon.extension.core/core/logger';
 
@@ -59,89 +62,259 @@ export class Scrobble {
 
             // Fire "stopped" event for sessions that are still active
             result.docs.forEach((session) => {
-                // Update state
-                session.state = SessionState.ended;
-
-                // Fire event
                 this.onSessionUpdated('stopped', session);
             });
         });
     }
 
     onSessionUpdated(event, data) {
-        // Parse session from `data` object
-        let session = Parser.parse(data);
+        let session = Session.fromPlainObject(data);
 
-        if(!isDefined(session)) {
+        if(!isDefined(session) || !isDefined(session.item)) {
             Log.warn('Unable to parse session: %o', data);
             return;
         }
 
-        // Retrieve session metadata
-        let metadata = session.metadata;
-
         // Store session in database
-        this.updateSession(data).then((previousState) => {
-            if(isDefined(previousState) && session.state !== previousState) {
-                Log.info('[%s] State changed from %o to %o', session.id, previousState, session.state);
-            }
-
-            if(!this._shouldEmitEvent(event, previousState, session.state)) {
-                Log.info('[%s] Ignoring duplicate %o event', session.id, event);
-                return;
-            }
-
-            // Log session status
-            this._log(event, session, metadata);
-
-            // Emit event to available scrobble services
-            this.services.then((services) => {
-                // Find media services
-                services = services[metadata.type.media];
-
-                if(typeof services === 'undefined') {
-                    Log.notice('No services available for media: %o', metadata.type.media);
-                    return false;
+        this.upsertItems(session.item)
+            .then((updated) => this.upsertSession(session).then((result) => ({
+                ...result,
+                updated
+            })))
+            .then(({session, created, updated, previous}) => {
+                if(created) {
+                    this.bus.emitTo(session.channelId, 'session.created', session.toPlainObject());
+                } else if(updated) {
+                    this.bus.emitTo(session.channelId, 'session.updated', session.toPlainObject());
                 }
 
-                // Emit event to matching services
-                return Promise.all(services.map((service) => {
-                    return service.isEnabled().then((enabled) => {
-                        if(!enabled) {
-                            return false;
-                        }
+                if(isDefined(previous) && session.state !== previous.state) {
+                    Log.debug('[%s] State changed from %o to %o', session.id, previous.state, session.state);
+                }
 
-                        // Emit event
-                        service.onSessionUpdated(event, session);
-                        return true;
-                    });
-                }));
+                if(isDefined(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
+                    Log.info('[%s] Ignoring duplicate %o event', session.id, event);
+                    return;
+                }
+
+                // Log session status
+                this._log(event, session);
+
+                // Emit event to available scrobble services
+                this.services.then((services) => {
+                    // Find media services
+                    services = services[session.item.type];
+
+                    if(typeof services === 'undefined') {
+                        Log.notice('No services available for media: %o', session.item.type);
+                        return false;
+                    }
+
+                    // Emit event to matching services
+                    return Promise.all(services.map((service) => {
+                        return service.isEnabled().then((enabled) => {
+                            if(!enabled) {
+                                return false;
+                            }
+
+                            // Emit event
+                            service.onSessionUpdated(event, session);
+                            return true;
+                        });
+                    }));
+                });
+            })
+            .catch((err) => {
+                Log.error('Unable to update session: %s', err.message, err);
+            });
+    }
+
+    upsertItems(item) {
+        let updated = false;
+
+        function resolve(result) {
+            if(result) {
+                updated = true;
+            }
+        }
+
+        if(item instanceof Track) {
+            return Promise.resolve()
+                .then(() => this.upsertItem(item.artist).then(resolve))
+                .then(() => this.upsertItem(item.album.artist, { force: updated }).then(resolve))
+                .then(() => this.upsertItem(item.album, { force: updated }).then(resolve))
+                .then(() => this.upsertItem(item, { force: updated }).then(resolve))
+                .then(() => updated);
+        }
+
+        return Promise.reject();
+    }
+
+    upsertItem(item, options) {
+        options = options || {};
+        options.force = options.force || false;
+
+        if(!isDefined(item)) {
+            return Promise.resolve(false);
+        }
+
+        // Ignore items that have already been matched
+        if(isDefined(item.id) && !item.changed && !options.force) {
+            return Promise.resolve(false);
+        }
+
+        Log.trace('Upserting item: %o', item);
+
+        // Build query
+        let query = {
+            fields: ['_id'],
+            selector: {$or: []}
+        };
+
+        function buildQuery(prefix, ids) {
+            for(let key in ids) {
+                if(!ids.hasOwnProperty(key)) {
+                    continue;
+                }
+
+                if(IsPlainObject(ids[key])) {
+                    buildQuery(prefix + '.' + key, ids[key]);
+                    continue;
+                }
+
+                // Create selector
+                let selector = {};
+
+                selector[prefix + '.' + key] = {$eq: ids[key]};
+
+                // Add selector to OR clause
+                query.selector['$or'].push(selector);
+            }
+        }
+
+        buildQuery('ids', item.ids);
+
+        // Find items
+        Log.trace('Finding items matching: %o', query);
+
+        return ItemDatabase.find(query).then((result) => {
+            if(result.docs.length > 0) {
+                // Update item
+                item.id = result.docs[0]['_id'];
+
+                // Update item in database
+                return this.updateItem(item);
+            }
+
+            return this.createItem(item);
+        }, (err) => {
+            // Unknown error
+            Log.warn('Unable to upsert item: %s', err.message, err);
+            return Promise.reject(err);
+        });
+    }
+
+    createItem(item) {
+        Log.trace('Creating item: %o', item);
+
+        let document = {
+            createdAt: Date.now(),
+            ...item.toDocument(),
+
+            seenAt: Date.now()
+        };
+
+        // Create item in database
+        return ItemDatabase.post(document).then((result) => {
+            item.id = result.id;
+            item.createdAt = document.createdAt;
+            item.updatedAt = document.updatedAt;
+            item.seenAt = document.seenAt;
+
+            item.changed = false;
+            return true;
+        });
+    }
+
+    updateItem(item) {
+        Log.trace('Updating item: %o', item);
+
+        // Update item in database
+        return ItemDatabase.get(item.id).then((doc) => {
+            let document = {
+                createdAt: Date.now(),
+                ...doc,
+                ...item.toDocument(),
+
+                updatedAt: Date.now(),
+                seenAt: Date.now()
+            };
+
+            return ItemDatabase.put(document).then(() => {
+                item.createdAt = document.createdAt;
+                item.updatedAt = document.updatedAt;
+                item.seenAt = document.seenAt;
+
+                item.changed = false;
+                return true;
             });
         });
     }
 
-    updateSession(session) {
-        // Try retrieve existing session
-        return SessionDatabase.get(session._id).then((doc) => {
-            let previousState = doc.state;
+    upsertSession(session) {
+        Log.trace('Upserting session: %o', session);
 
-            // Use existing session "_rev"
-            session._rev = doc._rev;
-
-            // Update existing session
-            return SessionDatabase.put(session).then(() =>
-                previousState
-            );
-        }, (err) => {
+        // Try update session
+        return this.updateSession(session).then((result) => ({
+            ...result,
+            created: false
+        }), (err) => {
             // Create new session
             if(err.status === 404) {
-                return SessionDatabase.put(session).then(() =>
-                    null
-                );
+                Log.trace('Session doesn\'t exist, creating it instead', err);
+
+                return this.createSession(session).then((result) => ({
+                    ...result,
+                    created: true,
+                    previous: null
+                }));
             }
 
             // Unknown error
+            Log.warn('Unable to upsert session: %s', err.message, err);
             return Promise.reject(err);
+        });
+    }
+
+    createSession(session) {
+        Log.trace('Creating session: %o', session);
+
+        // Create session in database
+        return SessionDatabase.put({
+            createdAt: Date.now(),
+            ...session.toDocument(),
+
+            updatedAt: Date.now()
+        }).then((result) => ({
+            session
+        }));
+    }
+
+    updateSession(session) {
+        Log.trace('Updating session: %o', session);
+
+        // Update session in database
+        return SessionDatabase.get(session.id).then((doc) => {
+            return SessionDatabase.put({
+                createdAt: Date.now(),
+                ...doc,
+                ...session.toDocument(),
+
+                updatedAt: Date.now()
+            }).then((result) => ({
+                session,
+                previous: doc
+            }));
         });
     }
 
@@ -174,57 +347,53 @@ export class Scrobble {
         });
     }
 
-    _log(event, session, metadata) {
+    _log(event, session) {
+        let item = session.item;
+
         // Write logger message
-        if(metadata.type.media === MediaTypes.Video.Movie) {
+        if(item.type === MediaTypes.Movie) {
             Log.debug(
-                '[%s] %o (%o) : [event: %o, state: %o, progress: %o] %O',
+                '[%s] %o (%o) : [event: %o, state: %o, progress: %o]',
                 session.id,
 
                 // Name
-                metadata.title,
-                metadata.year,
+                item.title,
+                item.year,
 
                 // Status
                 event,
                 session.state,
-                session.progress,
-
-                session
+                session.progress
             );
-        } else if(metadata.type.media === MediaTypes.Video.Episode) {
+        } else if(item.type === MediaTypes.Television.Episode) {
             Log.debug(
-                '[%s] %o - Season %d (%o) - Episode %d : [event: %o, state: %o, progress: %o] %O',
+                '[%s] %o - Season %d (%o) - Episode %d : [event: %o, state: %o, progress: %o]',
                 session.id,
 
                 // Name
-                metadata.show.title,
-                metadata.season.number,
-                metadata.season.year,
-                metadata.number,
+                item.show.title,
+                item.season.number,
+                item.season.year,
+                item.number,
 
                 // Status
                 event,
                 session.state,
-                session.progress,
-
-                session
+                session.progress
             );
-        } else if(metadata.type.media === MediaTypes.Music.Track) {
+        } else if(item.type === MediaTypes.Music.Track) {
             Log.debug(
-                '[%s] %o - %o : [event: %o, state: %o, progress: %o] %O',
+                '[%s] %o - %o : [event: %o, state: %o, progress: %o]',
                 session.id,
 
                 // Name
-                metadata.artist.title,
-                metadata.title,
+                item.artist.title,
+                item.title,
 
                 // Status
                 event,
                 session.state,
-                session.progress,
-
-                session
+                session.progress
             );
         }
     }
