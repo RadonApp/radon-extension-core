@@ -1,6 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Registry from 'eon.extension.framework/core/registry';
-import MessagingBus, {ContextTypes} from 'eon.extension.framework/messaging/bus';
 import Session from 'eon.extension.framework/models/session';
 import {Track} from 'eon.extension.framework/models/item/music';
 import {MediaTypes} from 'eon.extension.framework/core/enums';
@@ -11,6 +10,7 @@ import IsPlainObject from 'lodash-es/isPlainObject';
 import ItemDatabase from 'eon.extension.core/database/item';
 import SessionDatabase from 'eon.extension.core/database/session';
 import Log from 'eon.extension.core/core/logger';
+import Plugin from 'eon.extension.core/core/plugin';
 
 
 export class Scrobble {
@@ -18,23 +18,19 @@ export class Scrobble {
         // Retrieve scrobble services, group by supported media
         this.services = this._getServices();
 
-        // Construct messaging bus
-        this.bus = new MessagingBus('eon.extension.core:scrobble', {
-            context: ContextTypes.Background
-        });
-
-        window.bus = this.bus;
+        // Create messaging service
+        this.messaging = Plugin.messaging.service('scrobble');
 
         // Activity events
-        this.bus.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
-        this.bus.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
-        this.bus.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
-        this.bus.on('activity.progress', this.onSessionUpdated.bind(this, 'progress'));
-        this.bus.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
-        this.bus.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
+        this.messaging.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
+        this.messaging.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
+        this.messaging.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
+        this.messaging.on('activity.progress', this.onSessionUpdated.bind(this, 'progress'));
+        this.messaging.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
+        this.messaging.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
 
         // Channel events
-        this.bus.on('channel.disconnected', this.onChannelDisconnected.bind(this));
+        this.messaging.on('channel.disconnected', this.onChannelDisconnected.bind(this));
     }
 
     onChannelDisconnected(channelId) {
@@ -83,9 +79,9 @@ export class Scrobble {
             })))
             .then(({session, created, updated, previous}) => {
                 if(created) {
-                    this.bus.emitTo(session.channelId, 'session.created', session.toPlainObject());
+                    this.messaging.emitTo(session.channelId, 'session.created', session.toPlainObject());
                 } else if(updated) {
-                    this.bus.emitTo(session.channelId, 'session.updated', session.toPlainObject());
+                    this.messaging.emitTo(session.channelId, 'session.updated', session.toPlainObject());
                 }
 
                 if(isDefined(previous) && session.state !== previous.state) {
