@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import Storage from 'eon.extension.browser/storage';
 
 import BaseService from './core/base';
