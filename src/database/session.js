@@ -8,11 +8,26 @@ let Database = new (PouchDB.plugin(PouchFind))('sessions', {
     'revs_limit': 1
 });
 
-// Ensure indexes exist
+// Delete indexes
+let deleteIndexes = [
+    'channel'
+];
+
+Database.getIndexes().then((result) => {
+    for(let i = 0; i < result.indexes.length; i++) {
+        let index = result.indexes[i];
+
+        if(deleteIndexes.indexOf(index.name) >= 0) {
+            Database.deleteIndex(index);
+        }
+    }
+});
+
+// Ensure indexes have been created
 Database.createIndex({
     index: {
-        fields: ['channelId'],
-        name: 'channel'
+        fields: ['clientId'],
+        name: 'client'
     }
 });
 
