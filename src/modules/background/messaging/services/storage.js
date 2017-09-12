@@ -13,11 +13,13 @@ export class StorageService extends BaseService {
         this.requests.on('get',         this.get.bind(this, 'get'));
         this.requests.on('getBoolean',  this.get.bind(this, 'getBoolean'));
         this.requests.on('getObject',   this.get.bind(this, 'getObject'));
+        this.requests.on('getString',   this.get.bind(this, 'getString'));
 
         // Put
         this.requests.on('put',         this.put.bind(this, 'put'));
         this.requests.on('putBoolean',  this.put.bind(this, 'putBoolean'));
         this.requests.on('putObject',   this.put.bind(this, 'putObject'));
+        this.requests.on('putString',   this.put.bind(this, 'putString'));
     }
 
     get(name, params, resolve, reject) {
