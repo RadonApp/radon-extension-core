@@ -11,50 +11,52 @@ import ItemDatabase from 'eon.extension.core/database/item';
 import SessionDatabase from 'eon.extension.core/database/session';
 import Log from 'eon.extension.core/core/logger';
 import Plugin from 'eon.extension.core/core/plugin';
+import BaseService from './core/base';
 
 
-export class Scrobble {
+export class ScrobbleService extends BaseService {
     constructor() {
+        super(Plugin, 'scrobble');
+
+        this._activeClients = {};
+
         // Retrieve scrobble services, group by supported media
         this.services = this._getServices();
 
-        // Create messaging service
-        this.messaging = Plugin.messaging.service('scrobble');
-
         // Activity events
-        this.messaging.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
-        this.messaging.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
-        this.messaging.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
-        this.messaging.on('activity.progress', this.onSessionUpdated.bind(this, 'progress'));
-        this.messaging.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
-        this.messaging.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
-
-        // Channel events
-        this.messaging.on('channel.disconnected', this.onChannelDisconnected.bind(this));
+        this.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
+        this.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
+        this.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
+        this.on('activity.progress', this.onSessionUpdated.bind(this, 'progress'));
+        this.on('activity.paused',   this.onSessionUpdated.bind(this, 'paused'));
+        this.on('activity.stopped',  this.onSessionUpdated.bind(this, 'stopped'));
     }
 
-    onChannelDisconnected(channelId) {
-        // Ensure disconnected channel was an "activity" service
-        let {plugin, service} = this._parseChannelId(channelId);
-
-        if(!isDefined(plugin) || plugin.indexOf('eon.extension.source.') !== 0) {
+    onClientConnected(client) {
+        if(isDefined(this._activeClients[client.id])) {
             return;
         }
 
-        if(!isDefined(service) || service !== 'activity') {
-            return;
-        }
+        Log.debug('Client "%s" connected', client.id);
 
-        Log.debug('Activity service disconnected: %o', channelId);
+        // Store client reference
+        this._activeClients[client.id] = client;
+
+        // Bind to events
+        client.on('disconnect', this.onClientDisconnected.bind(this, client));
+    }
+
+    onClientDisconnected(client) {
+        Log.debug('Client "%s" disconnected, searching for active sessions...', client.id);
 
         // Find active sessions created by this channel
         SessionDatabase.find({
             selector: {
-                channelId: channelId,
+                clientId: client.id,
                 state: 'playing'
             }
         }).then((result) => {
-            Log.debug('Found %d active sessions for channel %o', result.docs.length, channelId);
+            Log.debug('Updating %d active session(s) for client "%s"', result.docs.length, client.id);
 
             // Fire "stopped" event for sessions that are still active
             result.docs.forEach((session) => {
@@ -63,11 +65,14 @@ export class Scrobble {
         });
     }
 
-    onSessionUpdated(event, data) {
-        let session = Session.fromPlainObject(data);
+    onSessionUpdated(event, payload, sender) {
+        this.onClientConnected(sender);
+
+        // Parse session
+        let session = Session.fromPlainObject(payload);
 
         if(!isDefined(session) || !isDefined(session.item)) {
-            Log.warn('Unable to parse session: %o', data);
+            Log.warn('Unable to parse session: %o', payload);
             return;
         }
 
@@ -79,9 +84,9 @@ export class Scrobble {
             })))
             .then(({session, created, updated, previous}) => {
                 if(created) {
-                    this.messaging.emitTo(session.channelId, 'session.created', session.toPlainObject());
+                    this.emitTo(sender.id, 'session.created', session.toPlainObject());
                 } else if(updated) {
-                    this.messaging.emitTo(session.channelId, 'session.updated', session.toPlainObject());
+                    this.emitTo(sender.id, 'session.updated', session.toPlainObject());
                 }
 
                 if(isDefined(previous) && session.state !== previous.state) {
@@ -394,20 +399,6 @@ export class Scrobble {
         }
     }
 
-    _parseChannelId(channelId) {
-        let parts = channelId.split(':');
-
-        if(parts.length !== 3) {
-            return {};
-        }
-
-        return {
-            plugin: parts[0],
-            service: parts[1],
-            key: parts[2]
-        };
-    }
-
     _shouldEmitEvent(event, previousState, currentState) {
         if(event === 'progress') {
             return true;
@@ -419,4 +410,4 @@ export class Scrobble {
     // region endregion
 }
 
-export default new Scrobble();
+export default new ScrobbleService();
