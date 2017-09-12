@@ -29,12 +29,13 @@ export default class MessageBrokerService extends EventEmitter {
         options = Merge({
             broadcast: true,
             broadcastExclude: [],
-            local: true
+            local: true,
+            localArguments: []
         }, options || {});
 
         // Emit event locally
         if(options.local) {
-            super.emit(name, payload);
+            super.emit(name, payload, ...options.localArguments);
         }
 
         // Send event to subscribed clients
@@ -56,6 +57,33 @@ export default class MessageBrokerService extends EventEmitter {
                 });
             }
         }
+
+        return true;
+    }
+
+    emitTo(clientId, name, payload, options) {
+        options = Merge({
+            local: true
+        }, options || {});
+
+        // Emit event locally
+        if(options.local) {
+            super.emit(name, payload);
+        }
+
+        // Ensure client exists
+        if(!isDefined(this.subscribed[clientId])) {
+            return false;
+        }
+
+        // Send event to client
+        this.subscribed[clientId].post({
+            type: 'event',
+            name: this.channel.name + '/' + this.name + '/' + name,
+            payload
+        });
+
+        return true;
     }
 
     subscribe(client) {

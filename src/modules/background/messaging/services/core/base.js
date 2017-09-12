@@ -17,4 +17,12 @@ export default class BaseService {
     emit(name, payload, options) {
         return this.service.emit(name, payload, options);
     }
+
+    emitTo(clientId, name, payload, options) {
+        return this.service.emitTo(clientId, name, payload, options);
+    }
+
+    on(name, callback) {
+        return this.service.on(name, callback);
+    }
 }

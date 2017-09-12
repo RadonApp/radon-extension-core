@@ -135,7 +135,8 @@ export class MessageBroker extends EventEmitter {
 
         // Emit event
         target.emit(event.name, message.payload, {
-            broadcastExclude: [sender.id]
+            broadcastExclude: [sender.id],
+            localArguments: [sender]
         });
     }
 
