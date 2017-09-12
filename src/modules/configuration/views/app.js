@@ -1,12 +1,13 @@
 import Platform, {Platforms} from 'eon.extension.browser/platform';
-import Preferences from 'eon.extension.browser/preferences';
-import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import classNames from 'classnames';
 import merge from 'lodash-es/merge';
 import querystring from 'querystring';
 import React from 'react';
 import {Link} from 'react-router';
+
+import Preferences from 'eon.extension.framework/preferences';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 
 export default class App extends React.Component {

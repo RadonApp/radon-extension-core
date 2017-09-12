@@ -1,4 +1,4 @@
-import Preferences from 'eon.extension.browser/preferences';
+import Preferences from 'eon.extension.framework/preferences';
 import {isString} from 'eon.extension.framework/core/helpers';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 

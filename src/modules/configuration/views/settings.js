@@ -1,10 +1,9 @@
-import Preferences from 'eon.extension.browser/preferences';
-import {isDefined} from 'eon.extension.framework/core/helpers';
-
 import React from 'react';
 
-import Log from '../../../core/logger';
+import Preferences from 'eon.extension.framework/preferences';
+import Log from 'eon.extension.core/core/logger';
 import Group from '../components/settings/group';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 import './settings.scss';
 
 

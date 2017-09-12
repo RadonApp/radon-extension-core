@@ -1,5 +1,4 @@
-import Preferences from 'eon.extension.browser/preferences';
-
+import Preferences from 'eon.extension.framework/preferences';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
 
 import React from 'react';
