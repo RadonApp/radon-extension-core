@@ -1,5 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Registry from 'eon.extension.framework/core/registry';
+import Item from 'eon.extension.framework/models/item';
 import Session from 'eon.extension.framework/models/session';
 import {Track} from 'eon.extension.framework/models/item/music';
 import {MediaTypes} from 'eon.extension.framework/core/enums';
@@ -59,15 +60,25 @@ export class ScrobbleService extends BaseService {
             Log.debug('Updating %d active session(s) for client "%s"', result.docs.length, client.id);
 
             // Fire "stopped" event for sessions that are still active
-            result.docs.forEach((session) => {
-                this.onSessionUpdated('stopped', session);
+            result.docs.forEach((data) => {
+                // Parse session
+                let session = Session.fromDocument(data);
+
+                if(!isDefined(session) || !isDefined(session.item)) {
+                    Log.warn('Unable to parse session: %o', data);
+                    return;
+                }
+
+                // Update session state
+                session.state = 'ended';
+
+                // Emit session "stopped" event
+                this.process('stopped', session, client);
             });
         });
     }
 
     onSessionUpdated(event, payload, sender) {
-        this.onClientConnected(sender);
-
         // Parse session
         let session = Session.fromPlainObject(payload);
 
@@ -76,6 +87,78 @@ export class ScrobbleService extends BaseService {
             return;
         }
 
+        // Process session event
+        this.process(event, session, sender);
+    }
+
+    process(event, session, sender) {
+        // Track client (subscribe to "disconnect" event)
+        this.onClientConnected(sender);
+
+        // Fetch item metadata (if not available)
+        this.fetch(session.item).then((item) => {
+            // Update session
+            session.item = item;
+
+            // Process session update
+            this.update(event, session, sender);
+        });
+    }
+
+    fetch(item) {
+        if(!isDefined(item)) {
+            return Promise.resolve(item);
+        }
+
+        if(!isDefined(item.id) || item.complete) {
+            return this.fetchChildren(item);
+        }
+
+        // Fetch item
+        return Promise.resolve().then(() => {
+            Log.trace('Retrieving metadata from database for item "%s"', item.id, item);
+
+            return ItemDatabase.get(item.id).then((doc) =>
+                Item.fromDocument(doc)
+            );
+        }).then((item) =>
+            this.fetchChildren(item)
+        );
+    }
+
+    fetchChildren(item) {
+        let fetch = this.fetch.bind(this);
+
+        // Track
+        if(item.type === 'music/track') {
+            return Promise.all([
+                fetch(item.artist).then(function(artist) {
+                    item.artist = artist;
+                }),
+                fetch(item.album).then(function(album) {
+                    item.album = album;
+                })
+            ]).then(function() {
+                return item;
+            });
+        }
+
+        // Album
+        if(item.type === 'music/album') {
+            return Promise.all([
+                fetch(item.artist).then(function(artist) {
+                    item.artist = artist;
+                })
+            ]).then(function() {
+                return item;
+            });
+        }
+
+        // Unknown item
+        return Promise.resolve(item);
+    }
+
+    update(event, session, sender) {
         // Store session in database
         this.upsertItems(session.item)
             .then((updated) => this.upsertSession(session).then((result) => ({
