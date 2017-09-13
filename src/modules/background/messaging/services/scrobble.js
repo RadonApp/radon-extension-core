@@ -94,7 +94,10 @@ export class ScrobbleService extends BaseService {
                 }
 
                 if(isDefined(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
-                    Log.info('[%s] Ignoring duplicate %o event', session.id, event);
+                    Log.info(
+                        '[%s] Ignoring duplicate %o event (previous: %o, current: %o)',
+                        session.id, event, previous, session.state
+                    );
                     return;
                 }
 
@@ -354,7 +357,7 @@ export class ScrobbleService extends BaseService {
         // Write logger message
         if(item.type === MediaTypes.Movie) {
             Log.debug(
-                '[%s] %o (%o) : [event: %o, state: %o, progress: %o]',
+                '[%s] %s (%s) : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
                 // Name
@@ -368,7 +371,7 @@ export class ScrobbleService extends BaseService {
             );
         } else if(item.type === MediaTypes.Television.Episode) {
             Log.debug(
-                '[%s] %o - Season %d (%o) - Episode %d : [event: %o, state: %o, progress: %o]',
+                '[%s] %s - Season %2d (%s) - Episode %2d : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
                 // Name
@@ -384,7 +387,7 @@ export class ScrobbleService extends BaseService {
             );
         } else if(item.type === MediaTypes.Music.Track) {
             Log.debug(
-                '[%s] %o - %o : [event: %o, state: %o, progress: %o]',
+                '[%s] %s - %s : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
                 // Name
