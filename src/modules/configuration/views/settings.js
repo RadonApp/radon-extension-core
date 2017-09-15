@@ -68,7 +68,7 @@ export default class Options extends React.Component {
 
     render() {
         return (
-            <div data-view="eon.extension.core:settings" className="options row">
+            <div data-view="eon.extension.core:settings" className="options">
                 <Group
                     type="flat"
                     title={this.state.page.title}

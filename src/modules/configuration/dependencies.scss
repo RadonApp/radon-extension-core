@@ -1,0 +1,26 @@
+@import 'foundation';
+
+@include foundation-global-styles;
+@include foundation-xy-grid-classes;
+@include foundation-grid;
+@include foundation-flex-classes;
+@include foundation-typography;
+@include foundation-forms;
+@include foundation-button;
+@include foundation-button-group;
+@include foundation-card;
+@include foundation-close-button;
+@include foundation-menu;
+@include foundation-menu-icon;
+@include foundation-drilldown-menu;
+@include foundation-dropdown;
+@include foundation-dropdown-menu;
+@include foundation-responsive-embed;
+@include foundation-off-canvas;
+@include foundation-progress-bar;
+@include foundation-slider;
+@include foundation-reveal;
+@include foundation-switch;
+@include foundation-top-bar;
+@include foundation-visibility-classes;
+@include foundation-float-classes;

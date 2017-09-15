@@ -1,10 +1,13 @@
-import Platform, {Platforms} from 'eon.extension.browser/platform';
-
+import $ from 'jquery';
 import classNames from 'classnames';
 import merge from 'lodash-es/merge';
 import querystring from 'querystring';
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {Link} from 'react-router';
+import {Foundation} from 'foundation/foundation.core';
+import {OffCanvas} from 'foundation/foundation.offcanvas';
+
+import Platform, {Platforms} from 'eon.extension.browser/platform';
 
 import Preferences from 'eon.extension.framework/preferences';
 import {isDefined} from 'eon.extension.framework/core/helpers';
@@ -46,6 +49,9 @@ export default class App extends React.Component {
             }
         }
 
+        // Listen for route changes
+        this.context.router.listen(this.onRouteChange.bind(this));
+
         // Update state
         this.setState({
             embedded: embedded,
@@ -58,6 +64,20 @@ export default class App extends React.Component {
         });
     }
 
+    componentDidMount() {
+        // Register foundation plugins
+        Foundation.plugin(OffCanvas, 'OffCanvas');
+
+        // Initialize foundation
+        $(document).foundation();
+    }
+
+    onRouteChange(location, action) {
+        try {
+            $('#navigation').foundation('close');
+        } catch(e) { }
+    }
+
     render() {
         return (
             <app data-view="eon.extension.core:app" data-platform={Platform.name} className={classNames({
@@ -65,6 +85,9 @@ export default class App extends React.Component {
             })}>
                 <div id="header" className="top-bar">
                     <div className="top-bar-left">
+                        <button className="menu-toggle hide-for-large" data-toggle="navigation">
+                            <i className="menu-icon"></i>
+                        </button>
                         <ul className="menu">
                             <li className="menu-text">Eon</li>
                         </ul>
@@ -72,8 +95,7 @@ export default class App extends React.Component {
                 </div>
 
                 <div id="container" className="expanded row">
-                    <div id="navigation"
-                         className="small-1 medium-3 large-2 small-pull-11 medium-pull-9 large-pull-10 columns">
+                    <div id="navigation" className="off-canvas position-left reveal-for-large" data-off-canvas>
                         <ul className="vertical menu">
                             {Object.keys(this.state.pages['eon']).map((id) => {
                                 let page = this.state.pages['eon'][id];
@@ -109,8 +131,7 @@ export default class App extends React.Component {
                         </ul>
                     </div>
 
-                    <div id="content"
-                         className="small-11 medium-9 large-10 small-push-1 medium-push-3 large-push-2 columns">
+                    <div id="content" className="off-canvas-content" data-off-canvas-content>
                         {this.props.children}
                     </div>
                 </div>
@@ -118,3 +139,7 @@ export default class App extends React.Component {
         );
     }
 }
+
+App.contextTypes = {
+    router: PropTypes.object.isRequired
+};

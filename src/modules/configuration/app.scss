@@ -1,6 +1,6 @@
-@import 'foundation-sites/dist/foundation';
-
 html, body {
+  height: 100%;
+
   font-family: 'Open Sans', sans-serif;
   font-size: 100%;
 }
@@ -27,6 +27,16 @@ app {
     margin: 0;
   }
 
+  .menu-toggle {
+    float: left;
+
+    margin: 8px 0 0 9px;
+  }
+
+  .menu-toggle:hover {
+    cursor: pointer;
+  }
+
   ul.menu {
     background-color: #3e454c;
     color: white;
@@ -41,13 +51,18 @@ app {
   height: 100%;
 
   padding: 3.375em 0 0;
+
+  .js-off-canvas-overlay {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  .js-off-canvas-overlay.is-closable {
+    cursor: unset;
+  }
 }
 
 #navigation {
-  position: fixed;
   top: 3.375em;
-  bottom: 0;
-  left: 0;
 
   padding: 1rem 0;
   overflow-y: auto;
@@ -103,7 +118,6 @@ app {
 }
 
 #content {
-  float: left;
   height: 100%;
 
   padding: 0;

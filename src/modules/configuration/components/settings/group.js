@@ -130,7 +130,8 @@ export default class Group extends React.Component {
         let type = this.props.type;
 
         return (
-            <div data-component="eon.extension.core:settings.group" className={classNames('group', 'row', {
+            <div data-component="eon.extension.core:settings.group" className={classNames('group', {
+                'row': type !== 'flat',
                 'box': type !== 'flat',
                 'group-box': type !== 'flat',
                 'group-flat': type === 'flat',
