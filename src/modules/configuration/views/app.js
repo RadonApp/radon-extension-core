@@ -12,6 +12,8 @@ import Platform, {Platforms} from 'eon.extension.browser/platform';
 import Preferences from 'eon.extension.framework/preferences';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
+import Plugin from 'eon.extension.core/core/plugin';
+
 
 export default class App extends React.Component {
     constructor() {
@@ -65,6 +67,9 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
+        // Update page title
+        document.title = `Options - ${Plugin.title}`;
+
         // Register foundation plugins
         Foundation.plugin(OffCanvas, 'OffCanvas');
 
@@ -89,7 +94,7 @@ export default class App extends React.Component {
                             <i className="menu-icon"></i>
                         </button>
                         <ul className="menu">
-                            <li className="menu-text">Eon</li>
+                            <li className="menu-text">{Plugin.title}</li>
                         </ul>
                     </div>
                 </div>
