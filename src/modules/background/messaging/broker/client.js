@@ -61,10 +61,10 @@ export default class MessageBrokerClient extends EventEmitter {
         // Update state
         this.connected = false;
 
-        // Remove event listeners
-        this.removeAllListeners();
-
         // Emit event
         this.emit('disconnect');
+
+        // Remove event listeners
+        this.removeAllListeners();
     }
 }
