@@ -1,4 +1,5 @@
 import Messaging from 'eon.extension.browser/messaging';
+import Tabs from 'eon.extension.browser/tabs';
 
 import EventEmitter from 'eventemitter3';
 import IsString from 'lodash-es/isString';
@@ -79,6 +80,11 @@ export class MessageBroker extends EventEmitter {
         // Bind to events
         port.on('message', (message) => client.emit('message', message));
         port.on('disconnect', () => client.onDisconnected());
+
+        // Bind to tab events
+        if(isDefined(port.sender.tab) && isDefined(port.sender.tab.id)) {
+            Tabs.once('removed#' + port.sender.tab.id, () => client.onDisconnected());
+        }
 
         // Fire event
         this.emit('connect', client);
