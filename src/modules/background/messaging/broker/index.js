@@ -72,12 +72,13 @@ export class MessageBroker extends EventEmitter {
 
     _onPortConnected(port) {
         let client = new MessageBrokerClient(port.name, {
+            disconnect: () => port.disconnect(),
             post: (message) => port.postMessage(message)
         });
 
         // Bind to events
         port.on('message', (message) => client.emit('message', message));
-        port.on('disconnect', () => client.emit('disconnect'));
+        port.on('disconnect', () => client.onDisconnected());
 
         // Fire event
         this.emit('connect', client);

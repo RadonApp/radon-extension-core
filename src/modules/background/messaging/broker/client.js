@@ -10,10 +10,31 @@ export default class MessageBrokerClient extends EventEmitter {
 
         this.id = id;
 
+        this.connected = true;
+
         // Parse options
         options = options || {};
 
+        this._disconnect = options.disconnect;
         this._post = options.post;
+    }
+
+    disconnect() {
+        if(!isDefined(this._disconnect)) {
+            Log.warn('No "disconnect" function available on client: %o', this);
+            return false;
+        }
+
+        // Disconnect from client
+        try {
+            this._disconnect();
+        } catch(e) {
+            return false;
+        }
+
+        // Handle disconnection
+        this.onDisconnected();
+        return true;
     }
 
     post(message) {
@@ -30,5 +51,20 @@ export default class MessageBrokerClient extends EventEmitter {
         }
 
         return Promise.resolve();
+    }
+
+    onDisconnected() {
+        if(!this.connected) {
+            return;
+        }
+
+        // Update state
+        this.connected = false;
+
+        // Remove event listeners
+        this.removeAllListeners();
+
+        // Emit event
+        this.emit('disconnect');
     }
 }
