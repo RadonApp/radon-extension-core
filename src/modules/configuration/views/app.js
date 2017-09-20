@@ -1,18 +1,16 @@
-import $ from 'jquery';
-import classNames from 'classnames';
-import merge from 'lodash-es/merge';
-import querystring from 'querystring';
+import $ from 'jquery/src/jquery';
+import ClassNames from 'classnames';
+import Merge from 'lodash-es/merge';
+import QueryString from 'querystring';
 import React, {PropTypes} from 'react';
+import {Foundation} from 'foundation-sites/js/foundation.core';
 import {Link} from 'react-router';
-import {Foundation} from 'foundation/foundation.core';
-import {OffCanvas} from 'foundation/foundation.offcanvas';
+import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 
 import Platform, {Platforms} from 'eon.extension.browser/platform';
-
+import Plugin from 'eon.extension.core/core/plugin';
 import Preferences from 'eon.extension.framework/preferences';
 import {isDefined} from 'eon.extension.framework/core/helpers';
-
-import Plugin from 'eon.extension.core/core/plugin';
 
 
 export default class App extends React.Component {
@@ -35,7 +33,7 @@ export default class App extends React.Component {
         let query = {};
 
         if(window.location.search.length > 1) {
-            query = querystring.decode(window.location.search.substring(1));
+            query = QueryString.decode(window.location.search.substring(1));
         }
 
         // Detect embedded configuration frame
@@ -58,7 +56,7 @@ export default class App extends React.Component {
         this.setState({
             embedded: embedded,
 
-            pages: merge({
+            pages: Merge({
                 core: [],
                 destination: [],
                 source: []
@@ -85,7 +83,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <app data-view="eon.extension.core:app" data-platform={Platform.name} className={classNames({
+            <app data-view="eon.extension.core:app" data-platform={Platform.name} className={ClassNames({
                 'embedded': this.state.embedded
             })}>
                 <div id="header" className="top-bar">

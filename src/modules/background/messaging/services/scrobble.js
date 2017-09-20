@@ -1,17 +1,17 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import Registry from 'eon.extension.framework/core/registry';
-import Item from 'eon.extension.framework/models/item';
-import Session from 'eon.extension.framework/models/session';
-import {Track} from 'eon.extension.framework/models/item/music';
-import {MediaTypes} from 'eon.extension.framework/core/enums';
-import {isDefined} from 'eon.extension.framework/core/helpers';
-
 import IsPlainObject from 'lodash-es/isPlainObject';
 
+import Item from 'eon.extension.framework/models/item';
 import ItemDatabase from 'eon.extension.core/database/item';
-import SessionDatabase from 'eon.extension.core/database/session';
 import Log from 'eon.extension.core/core/logger';
 import Plugin from 'eon.extension.core/core/plugin';
+import Registry from 'eon.extension.framework/core/registry';
+import Session from 'eon.extension.framework/models/session';
+import SessionDatabase from 'eon.extension.core/database/session';
+import {MediaTypes} from 'eon.extension.framework/core/enums';
+import {Track} from 'eon.extension.framework/models/item/music';
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
 import BaseService from './core/base';
 
 

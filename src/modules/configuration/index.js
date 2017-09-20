@@ -1,9 +1,9 @@
-import $ from 'jquery';
+import $ from 'jquery/src/jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Foundation} from 'foundation/foundation.core';
+import {Foundation} from 'foundation-sites/js/foundation.core';
 import {Router, hashHistory} from 'react-router';
-import 'foundation/foundation.util.mediaQuery';
+import 'foundation-sites/js/foundation.util.mediaQuery';
 
 import {routes} from './routes';
 

@@ -1,9 +1,10 @@
 import React from 'react';
 
-import Preferences from 'eon.extension.framework/preferences';
 import Log from 'eon.extension.core/core/logger';
-import Group from '../components/settings/group';
+import Preferences from 'eon.extension.framework/preferences';
 import {isDefined} from 'eon.extension.framework/core/helpers';
+
+import Group from '../components/settings/group';
 import './settings.scss';
 
 

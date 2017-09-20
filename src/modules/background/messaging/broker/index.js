@@ -1,11 +1,10 @@
-import Messaging from 'eon.extension.browser/messaging';
-import Tabs from 'eon.extension.browser/tabs';
-
 import EventEmitter from 'eventemitter3';
 import IsString from 'lodash-es/isString';
 
 import Log from 'eon.extension.core/core/logger';
 import MessageClient from 'eon.extension.framework/messaging/client';
+import Messaging from 'eon.extension.browser/messaging';
+import Tabs from 'eon.extension.browser/tabs';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {parseMessageName} from 'eon.extension.framework/messaging/core/helpers';
 

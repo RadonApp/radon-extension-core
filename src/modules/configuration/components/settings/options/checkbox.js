@@ -1,7 +1,7 @@
+import React from 'react';
+
 import Preferences from 'eon.extension.framework/preferences';
 import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
-
-import React from 'react';
 
 
 export default class CheckboxComponent extends OptionComponent {

@@ -1,10 +1,9 @@
-import Preferences from 'eon.extension.framework/preferences';
-import {isString} from 'eon.extension.framework/core/helpers';
-import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
-
 import React from 'react';
 
 import Log from 'eon.extension.core/core/logger';
+import Preferences from 'eon.extension.framework/preferences';
+import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
+import {isString} from 'eon.extension.framework/core/helpers';
 
 
 export default class EnableComponent extends OptionComponent {

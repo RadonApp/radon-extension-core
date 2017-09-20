@@ -1,10 +1,9 @@
-import Extension from 'eon.extension.browser/extension';
-import Tabs from 'eon.extension.browser/tabs';
-import WebRequest from 'eon.extension.browser/web/request';
-
 import URI from 'urijs';
 
+import Extension from 'eon.extension.browser/extension';
 import Log from 'eon.extension.framework/core/logger';
+import Tabs from 'eon.extension.browser/tabs';
+import WebRequest from 'eon.extension.browser/web/request';
 
 
 /*

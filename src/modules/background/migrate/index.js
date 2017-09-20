@@ -1,5 +1,5 @@
-import Messaging from 'eon.extension.browser/messaging';
 import Log from 'eon.extension.framework/core/logger';
+import Messaging from 'eon.extension.browser/messaging';
 import Registry from 'eon.extension.framework/core/registry';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 

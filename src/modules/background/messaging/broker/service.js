@@ -1,8 +1,9 @@
 import EventEmitter from 'eventemitter3';
 import Merge from 'lodash-es/merge';
 
-import BrokerEmitter from './emitter';
 import {isDefined} from 'eon.extension.framework/core/helpers';
+
+import BrokerEmitter from './emitter';
 
 
 export default class MessageBrokerService extends EventEmitter {

@@ -1,6 +1,7 @@
 import Log from 'eon.extension.core/core/logger';
-import MessageBroker from '../broker';
 import {isDefined} from 'eon.extension.framework/core/helpers';
+
+import MessageBroker from '../broker';
 
 
 export class ServiceHandler {
