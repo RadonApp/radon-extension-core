@@ -3,7 +3,7 @@
   "plugins": [
     "add-module-exports",
     "transform-object-rest-spread",
-    ["module-resolver", {
+    ["@fuzeman/module-resolver", {
       "root": [
         "../eon.extension.browser.base/node_modules"
       ],
