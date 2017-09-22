@@ -5,7 +5,8 @@
     "transform-object-rest-spread",
     ["@fuzeman/module-resolver", {
       "root": [
-        "../eon.extension.browser.base/node_modules"
+        "../eon.extension.browser.base/node_modules",
+        "../../eon.extension.core/node_modules"
       ],
       "alias": {
         "eon.extension.browser": "./src",
