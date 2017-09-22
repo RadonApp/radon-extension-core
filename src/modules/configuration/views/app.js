@@ -2,10 +2,11 @@ import $ from 'jquery/src/jquery';
 import ClassNames from 'classnames';
 import Merge from 'lodash-es/merge';
 import QueryString from 'querystring';
-import React, {PropTypes} from 'react';
+import React from 'react';
 import {Foundation} from 'foundation-sites/js/foundation.core';
 import {Link} from 'react-router';
 import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
+import {PropTypes} from 'prop-types';
 
 import Platform, {Platforms} from 'eon.extension.browser/platform';
 import Plugin from 'eon.extension.core/core/plugin';
