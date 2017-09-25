@@ -1,9 +1,9 @@
 import URI from 'urijs';
 
-import Extension from 'eon.extension.browser/extension';
-import Log from 'eon.extension.framework/core/logger';
-import Tabs from 'eon.extension.browser/tabs';
-import WebRequest from 'eon.extension.browser/web/request';
+import Extension from 'neon-extension-browser/extension';
+import Log from 'neon-extension-framework/core/logger';
+import Tabs from 'neon-extension-browser/tabs';
+import WebRequest from 'neon-extension-browser/web/request';
 
 
 /*

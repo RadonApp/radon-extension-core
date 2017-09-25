@@ -1,4 +1,4 @@
-import Plugin from 'eon.extension.framework/core/plugin';
+import Plugin from 'neon-extension-framework/core/plugin';
 
 
 export default Plugin;

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import Preferences from 'eon.extension.framework/preferences';
-import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
+import Preferences from 'neon-extension-framework/preferences';
+import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
 
 export default class SelectComponent extends OptionComponent {
@@ -57,7 +57,7 @@ export default class SelectComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component="eon.extension.core:settings.options.select" className="option option-select">
+            <div data-component="neon-extension-core:settings.options.select" className="option option-select">
                 <label htmlFor={this.props.id} style={{fontSize: 14}}>{this.props.label}</label>
 
                 <select id={this.props.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>

@@ -1,4 +1,4 @@
-import Logger from 'eon.extension.framework/core/logger';
+import Logger from 'neon-extension-framework/core/logger';
 
 
 export default Logger;

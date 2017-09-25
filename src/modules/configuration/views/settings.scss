@@ -1,4 +1,4 @@
-[data-view="eon.extension.core:settings"] {
+[data-view="neon-extension-core:settings"] {
   height: 100%;
 
   .children > .box {
@@ -18,7 +18,7 @@
   }
 }
 
-[data-component="eon.extension.core:settings.options.select"] {
+[data-component="neon-extension-core:settings.options.select"] {
   select {
     font-size: 0.9rem;
   }

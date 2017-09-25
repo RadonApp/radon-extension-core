@@ -1,7 +1,7 @@
-import Extension from 'eon.extension.browser/extension';
-import Log from 'eon.extension.framework/core/logger';
-import Registry from 'eon.extension.framework/core/registry';
-import {isString} from 'eon.extension.framework/core/helpers';
+import Extension from 'neon-extension-browser/extension';
+import Log from 'neon-extension-framework/core/logger';
+import Registry from 'neon-extension-framework/core/registry';
+import {isString} from 'neon-extension-framework/core/helpers';
 
 
 export class Main {

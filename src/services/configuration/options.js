@@ -2,7 +2,7 @@ import {
     Group,
     Page,
     SelectOption
-} from 'eon.extension.framework/services/configuration/models';
+} from 'neon-extension-framework/services/configuration/models';
 
 import Plugin from '../../core/plugin';
 

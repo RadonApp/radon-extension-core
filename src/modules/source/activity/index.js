@@ -1,4 +1,4 @@
-import Registry from 'eon.extension.framework/core/registry';
+import Registry from 'neon-extension-framework/core/registry';
 
 import Log from '../../../core/logger';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import Preferences from 'eon.extension.framework/preferences';
-import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
+import Preferences from 'neon-extension-framework/preferences';
+import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
 
 export default class CheckboxComponent extends OptionComponent {
@@ -57,7 +57,7 @@ export default class CheckboxComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component="eon.extension.core:settings.options.checkbox" className="option option-checkbox">
+            <div data-component="neon-extension-core:settings.options.checkbox" className="option option-checkbox">
                 <input
                     id={this.props.id}
                     type="checkbox"

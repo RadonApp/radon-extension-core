@@ -1,6 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import Plugin from 'eon.extension.core/core/plugin';
-import Storage from 'eon.extension.browser/storage';
+import Plugin from 'neon-extension-core/core/plugin';
+import Storage from 'neon-extension-browser/storage';
 
 import BaseService from './core/base';
 

@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import Merge from 'lodash-es/merge';
 
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import BrokerEmitter from './emitter';
 

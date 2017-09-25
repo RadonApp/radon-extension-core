@@ -1,5 +1,5 @@
-import Log from 'eon.extension.core/core/logger';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-core/core/logger';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import MessageBroker from '../broker';
 

@@ -1,9 +1,9 @@
 import React from 'react';
 
-import Log from 'eon.extension.core/core/logger';
-import Preferences from 'eon.extension.framework/preferences';
-import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
-import {isString} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-core/core/logger';
+import Preferences from 'neon-extension-framework/preferences';
+import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
+import {isString} from 'neon-extension-framework/core/helpers';
 
 
 export default class EnableComponent extends OptionComponent {
@@ -178,7 +178,7 @@ export default class EnableComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component="eon.extension.core:settings.options.enable" className="switch tiny">
+            <div data-component="neon-extension-core:settings.options.enable" className="switch tiny">
                 <input
                     className="switch-input"
                     id={this.props.id}

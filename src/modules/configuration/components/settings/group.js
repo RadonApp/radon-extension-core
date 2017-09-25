@@ -1,11 +1,11 @@
 import ClassNames from 'classnames';
 import React from 'react';
 
-import Log from 'eon.extension.core/core/logger';
-import Registry from 'eon.extension.framework/core/registry';
-import {Model, EnableOption, PluginOption} from 'eon.extension.framework/services/configuration/models';
-import {OptionComponent} from 'eon.extension.framework/services/configuration/components';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-core/core/logger';
+import Registry from 'neon-extension-framework/core/registry';
+import {Model, EnableOption, PluginOption} from 'neon-extension-framework/services/configuration/models';
+import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Options from './options';
 import './group.scss';
@@ -130,7 +130,7 @@ export default class Group extends React.Component {
         let type = this.props.type;
 
         return (
-            <div data-component="eon.extension.core:settings.group" className={ClassNames('group', {
+            <div data-component="neon-extension-core:settings.group" className={ClassNames('group', {
                 'row': type !== 'flat',
                 'box': type !== 'flat',
                 'group-box': type !== 'flat',

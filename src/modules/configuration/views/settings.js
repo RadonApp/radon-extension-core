@@ -1,8 +1,8 @@
 import React from 'react';
 
-import Log from 'eon.extension.core/core/logger';
-import Preferences from 'eon.extension.framework/preferences';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-core/core/logger';
+import Preferences from 'neon-extension-framework/preferences';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Group from '../components/settings/group';
 import './settings.scss';
@@ -38,8 +38,8 @@ export default class Options extends React.Component {
     }
 
     refresh(props) {
-        let type = props.params.type || 'eon';
-        let pluginId = props.params.pluginId || 'eon.extension';
+        let type = props.params.type || 'neon';
+        let pluginId = props.params.pluginId || 'neon-extension';
         let key = props.params.key || null;
 
         // Build page identifier
@@ -69,7 +69,7 @@ export default class Options extends React.Component {
 
     render() {
         return (
-            <div data-view="eon.extension.core:settings" className="options">
+            <div data-view="neon-extension-core:settings" className="options">
                 <Group
                     type="flat"
                     title={this.state.page.title}

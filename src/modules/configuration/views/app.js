@@ -8,10 +8,10 @@ import {Link} from 'react-router';
 import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 import {PropTypes} from 'prop-types';
 
-import Platform, {Platforms} from 'eon.extension.browser/platform';
-import Plugin from 'eon.extension.core/core/plugin';
-import Preferences from 'eon.extension.framework/preferences';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Platform, {Platforms} from 'neon-extension-browser/platform';
+import Plugin from 'neon-extension-core/core/plugin';
+import Preferences from 'neon-extension-framework/preferences';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class App extends React.Component {
@@ -84,7 +84,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <app data-view="eon.extension.core:app" data-platform={Platform.name} className={ClassNames({
+            <app data-view="neon-extension-core:app" data-platform={Platform.name} className={ClassNames({
                 'embedded': this.state.embedded
             })}>
                 <div id="header" className="top-bar">
@@ -101,8 +101,8 @@ export default class App extends React.Component {
                 <div id="container" className="expanded row">
                     <div id="navigation" className="off-canvas position-left reveal-for-large" data-off-canvas>
                         <ul className="vertical menu">
-                            {Object.keys(this.state.pages['eon']).map((id) => {
-                                let page = this.state.pages['eon'][id];
+                            {Object.keys(this.state.pages['neon']).map((id) => {
+                                let page = this.state.pages['neon'][id];
 
                                 return (
                                     <li key={page.id}><Link to={'/' + page.key}>
