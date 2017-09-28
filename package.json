@@ -16,8 +16,8 @@
     "eslint-plugin-react": "^6.3.0"
   },
   "dependencies": {
-    "pouchdb": "^6.0.7",
-    "pouchdb-find": "^0.10.3"
+    "pouchdb": "6.3.4",
+    "pouchdb-find": "6.3.4"
   },
   "peerDependencies": {
     "classnames": "^2.2.5",
