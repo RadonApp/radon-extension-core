@@ -1,0 +1,19 @@
+{
+  "icons": {
+    "24": "resources/images/icon24.png",
+    "48": "resources/images/icon.png",
+    "64": "resources/images/icon64.png"
+  },
+  "origins": [
+    "*://neon.self.skipthe.net/*"
+  ],
+  "permissions": [
+    "tabs"
+  ],
+  "services": [
+    "configuration"
+  ],
+  "web_accessible_resources": [
+    "configuration/configuration.html"
+  ]
+}
