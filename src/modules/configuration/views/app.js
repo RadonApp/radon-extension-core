@@ -101,8 +101,8 @@ export default class App extends React.Component {
                 <div id="container" className="expanded row">
                     <div id="navigation" className="off-canvas position-left reveal-for-large" data-off-canvas>
                         <ul className="vertical menu">
-                            {Object.keys(this.state.pages['neon']).map((id) => {
-                                let page = this.state.pages['neon'][id];
+                            {Object.keys(this.state.pages['core']).map((id) => {
+                                let page = this.state.pages['core'][id];
 
                                 return (
                                     <li key={page.id}><Link to={'/' + page.key}>

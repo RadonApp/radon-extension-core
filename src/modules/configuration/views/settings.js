@@ -38,7 +38,7 @@ export default class Options extends React.Component {
     }
 
     refresh(props) {
-        let type = props.params.type || 'neon';
+        let type = props.params.type || 'core';
         let pluginId = props.params.pluginId || 'neon-extension';
         let key = props.params.key || null;
 
