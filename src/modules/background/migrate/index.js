@@ -14,7 +14,7 @@ export class Migrate {
         this.migrateKeys();
 
         // Request legacy preferences
-        Messaging.sendMessage({type: 'migrate/preferences'}, (preferences) => this.onPreferences(preferences));
+        Messaging.sendMessage({type: 'migrate/preferences'}, (preferences) => this.onLegacyPreferences(preferences));
     }
 
     migrateKeys() {
@@ -96,14 +96,14 @@ export class Migrate {
         return parts.join('-');
     }
 
-    onPreferences(preferences) {
+    onLegacyPreferences(preferences) {
         if(!isDefined(preferences)) {
             return;
         }
 
         Plugin.storage.getBoolean('migrate:preferences').then((migrated) => {
             if(migrated) {
-                Log.debug('Preferences have already been migrated');
+                Log.trace('Preferences have already been migrated');
                 return;
             }
 
@@ -114,7 +114,7 @@ export class Migrate {
                 // Trigger migration services
                 .then(Registry.listServices('migrate', { disabled: true }).then((services) => {
                     for(let i = 0; i < services.length; ++i) {
-                        services[i].onPreferences(preferences);
+                        services[i].onLegacyPreferences(preferences);
                     }
                 }));
         });
