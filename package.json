@@ -1,6 +1,6 @@
 {
   "name": "neon-extension-core",
-  "version": "1.4.0-beta.0",
+  "version": "1.4.0-beta.1",
   "main": "./src",
   "devDependencies": {
     "babel-core": "^7.0.0-beta.1",
@@ -43,7 +43,7 @@
     "foundation-sites": "^6.4.3",
     "jquery": "^3.2.1",
     "lodash-es": "^4.16.1",
-    "neon-extension-framework": "^1.4.0-beta.0",
+    "neon-extension-framework": "^1.4.0-beta.1",
     "process": "^0.11.10",
     "prop-types": "^15.5.10",
     "querystring-es3": "^0.2.1",
