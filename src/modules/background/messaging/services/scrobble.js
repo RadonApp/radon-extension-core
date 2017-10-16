@@ -1,15 +1,12 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import IsPlainObject from 'lodash-es/isPlainObject';
-
-import Item from 'neon-extension-framework/models/item';
-import ItemDatabase from 'neon-extension-core/database/item';
+import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Registry from 'neon-extension-framework/core/registry';
 import Session from 'neon-extension-framework/models/session';
-import SessionDatabase from 'neon-extension-core/database/session';
+import Sessions from 'neon-extension-core/database/session';
+import {ItemParser} from 'neon-extension-framework/models/item';
 import {MediaTypes} from 'neon-extension-framework/core/enums';
-import {Track} from 'neon-extension-framework/models/item/music';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import BaseService from './core/base';
@@ -24,7 +21,7 @@ export class ScrobbleService extends BaseService {
         // Retrieve scrobble services, group by supported media
         this.services = this._getServices();
 
-        // Activity events
+        // Activity Events
         this.on('activity.created',  this.onSessionUpdated.bind(this, 'created'));
         this.on('activity.started',  this.onSessionUpdated.bind(this, 'started'));
         this.on('activity.seeked',   this.onSessionUpdated.bind(this, 'seeked'));
@@ -51,7 +48,7 @@ export class ScrobbleService extends BaseService {
         Log.debug('Client "%s" disconnected, searching for active sessions...', client.id);
 
         // Find active sessions created by this channel
-        SessionDatabase.find({
+        Sessions.find({
             selector: {
                 clientId: client.id,
                 state: 'playing'
@@ -118,8 +115,8 @@ export class ScrobbleService extends BaseService {
         return Promise.resolve().then(() => {
             Log.trace('Retrieving metadata from database for item "%s"', item.id, item);
 
-            return ItemDatabase.get(item.id).then((doc) =>
-                Item.fromDocument(doc)
+            return Items.get(item.id).then((doc) =>
+                ItemParser.fromDocument(doc)
             );
         }).then((item) =>
             this.fetchChildren(item)
@@ -160,7 +157,7 @@ export class ScrobbleService extends BaseService {
 
     update(event, session, sender) {
         // Store session in database
-        this.upsertItems(session.item)
+        Items.upsertTree(session.item)
             .then((updated) => this.upsertSession(session).then((result) => ({
                 ...result,
                 updated
@@ -216,138 +213,6 @@ export class ScrobbleService extends BaseService {
             });
     }
 
-    upsertItems(item) {
-        let updated = false;
-
-        function resolve(result) {
-            if(result) {
-                updated = true;
-            }
-        }
-
-        if(item instanceof Track) {
-            return Promise.resolve()
-                .then(() => this.upsertItem(item.artist).then(resolve))
-                .then(() => this.upsertItem(item.album.artist, { force: updated }).then(resolve))
-                .then(() => this.upsertItem(item.album, { force: updated }).then(resolve))
-                .then(() => this.upsertItem(item, { force: updated }).then(resolve))
-                .then(() => updated);
-        }
-
-        return Promise.reject();
-    }
-
-    upsertItem(item, options) {
-        options = options || {};
-        options.force = options.force || false;
-
-        if(!isDefined(item)) {
-            return Promise.resolve(false);
-        }
-
-        // Ignore items that have already been matched
-        if(isDefined(item.id) && !item.changed && !options.force) {
-            return Promise.resolve(false);
-        }
-
-        Log.trace('Upserting item: %o', item);
-
-        // Build query
-        let query = {
-            fields: ['_id'],
-            selector: {$or: []}
-        };
-
-        function buildQuery(prefix, ids) {
-            for(let key in ids) {
-                if(!ids.hasOwnProperty(key)) {
-                    continue;
-                }
-
-                if(IsPlainObject(ids[key])) {
-                    buildQuery(prefix + '.' + key, ids[key]);
-                    continue;
-                }
-
-                // Create selector
-                let selector = {};
-
-                selector[prefix + '.' + key] = {$eq: ids[key]};
-
-                // Add selector to OR clause
-                query.selector['$or'].push(selector);
-            }
-        }
-
-        buildQuery('ids', item.ids);
-
-        // Find items
-        Log.trace('Finding items matching: %o', query);
-
-        return ItemDatabase.find(query).then((result) => {
-            if(result.docs.length > 0) {
-                // Update item
-                item.id = result.docs[0]['_id'];
-
-                // Update item in database
-                return this.updateItem(item);
-            }
-
-            return this.createItem(item);
-        }, (err) => {
-            // Unknown error
-            Log.warn('Unable to upsert item: %s', err.message, err);
-            return Promise.reject(err);
-        });
-    }
-
-    createItem(item) {
-        Log.trace('Creating item: %o', item);
-
-        let document = {
-            createdAt: Date.now(),
-            ...item.toDocument(),
-
-            seenAt: Date.now()
-        };
-
-        // Create item in database
-        return ItemDatabase.post(document).then((result) => {
-            item.id = result.id;
-            item.createdAt = document.createdAt;
-            item.updatedAt = document.updatedAt;
-            item.seenAt = document.seenAt;
-
-            item.changed = false;
-            return true;
-        });
-    }
-
-    updateItem(item) {
-        Log.trace('Updating item: %o', item);
-
-        // Update item in database
-        return ItemDatabase.get(item.id).then((doc) => {
-            let document = {
-                createdAt: Date.now(),
-                ...doc,
-                ...item.toDocument(),
-
-                updatedAt: Date.now(),
-                seenAt: Date.now()
-            };
-
-            return ItemDatabase.put(document).then(() => {
-                item.createdAt = document.createdAt;
-                item.updatedAt = document.updatedAt;
-                item.seenAt = document.seenAt;
-
-                item.changed = false;
-                return true;
-            });
-        });
-    }
-
     upsertSession(session) {
         Log.trace('Upserting session: %o', session);
 
@@ -377,7 +242,7 @@ export class ScrobbleService extends BaseService {
         Log.trace('Creating session: %o', session);
 
         // Create session in database
-        return SessionDatabase.put({
+        return Sessions.put({
             createdAt: Date.now(),
             ...session.toDocument(),
 
@@ -391,8 +256,8 @@ export class ScrobbleService extends BaseService {
         Log.trace('Updating session: %o', session);
 
         // Update session in database
-        return SessionDatabase.get(session.id).then((doc) => {
-            return SessionDatabase.put({
+        return Sessions.get(session.id).then((doc) => {
+            return Sessions.put({
                 createdAt: Date.now(),
                 ...doc,
                 ...session.toDocument(),

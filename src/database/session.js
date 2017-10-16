@@ -1,42 +1,19 @@
-import PouchDB from 'pouchdb';
-import PouchFind from 'pouchdb-find';
+import Database from './base';
 
 
-// Construct database
-let Database = new (PouchDB.plugin(PouchFind))('sessions', {
-    'auto_compaction': true,
-    'revs_limit': 1
-});
-
-// Delete indexes
-let deleteIndexes = [
-    'channel'
-];
-
-Database.getIndexes().then((result) => {
-    for(let i = 0; i < result.indexes.length; i++) {
-        let index = result.indexes[i];
-
-        if(deleteIndexes.indexOf(index.name) >= 0) {
-            Database.deleteIndex(index);
-        }
+const Indexes = {
+    'client': {
+        fields: ['clientId']
+    },
+    'state': {
+        fields: ['state']
     }
-});
+};
 
-// Ensure indexes have been created
-Database.createIndex({
-    index: {
-        fields: ['clientId'],
-        name: 'client'
+export class Sessions extends Database {
+    constructor() {
+        super('sessions', Indexes);
     }
-});
+}
 
-Database.createIndex({
-    index: {
-        fields: ['state'],
-        name: 'state'
-    }
-});
-
-// Export database
-export default Database;
+export default new Sessions();
