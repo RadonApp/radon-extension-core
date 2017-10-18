@@ -1,11 +1,11 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import ItemBuilder from 'neon-extension-framework/models/item';
 import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Registry from 'neon-extension-framework/core/registry';
 import Session from 'neon-extension-framework/models/session';
 import Sessions from 'neon-extension-core/database/session';
-import {ItemParser} from 'neon-extension-framework/models/item';
 import {MediaTypes} from 'neon-extension-framework/core/enums';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
@@ -97,71 +97,15 @@ export class ScrobbleService extends BaseService {
             // Update session
             session.item = item;
 
-            // Process session update
-            this.update(event, session, sender);
+            // Process event
+            return this.processEvent(event, session, sender);
         });
     }
 
-    fetch(item) {
-        if(!isDefined(item)) {
-            return Promise.resolve(item);
-        }
-
-        if(!isDefined(item.id) || item.complete) {
-            return this.fetchChildren(item);
-        }
-
-        // Fetch item
-        return Promise.resolve().then(() => {
-            Log.trace('Retrieving metadata from database for item "%s"', item.id, item);
-
-            return Items.get(item.id).then((doc) =>
-                ItemParser.fromDocument(doc)
-            );
-        }).then((item) =>
-            this.fetchChildren(item)
-        );
-    }
-
-    fetchChildren(item) {
-        let fetch = this.fetch.bind(this);
-
-        // Track
-        if(item.type === 'music/track') {
-            return Promise.all([
-                fetch(item.artist).then(function(artist) {
-                    item.artist = artist;
-                }),
-                fetch(item.album).then(function(album) {
-                    item.album = album;
-                })
-            ]).then(function() {
-                return item;
-            });
-        }
-
-        // Album
-        if(item.type === 'music/album') {
-            return Promise.all([
-                fetch(item.artist).then(function(artist) {
-                    item.artist = artist;
-                })
-            ]).then(function() {
-                return item;
-            });
-        }
-
-        // Unknown item
-        return Promise.resolve(item);
-    }
-
-    update(event, session, sender) {
-        // Store session in database
-        Items.upsertTree(session.item)
-            .then((updated) => this.upsertSession(session).then((result) => ({
-                ...result,
-                updated
-            })))
+    processEvent(event, session, sender) {
+        // Update session
+        return this.update(event, session)
+            // Process event
             .then(({session, created, updated, previous}) => {
                 if(created) {
                     this.emitTo(sender.id, 'session.created', session.toPlainObject());
@@ -207,10 +151,93 @@ export class ScrobbleService extends BaseService {
                         });
                     }));
                 });
-            })
-            .catch((err) => {
+            }, (err) => {
                 Log.error('Unable to update session: %s', err.message, err);
             });
+    }
+
+    fetch(item) {
+        if(!isDefined(item) || item.complete) {
+            return Promise.resolve(item);
+        }
+
+        if(!isDefined(item.id)) {
+            return this.fetchChildren(item);
+        }
+
+        Log.trace('Retrieving item "%s" from database', item.id);
+
+        // Retrieve item from database
+        return Items.get(item.id)
+            // Decode document, and merge with `item`
+            .then((doc) => {
+                let result = ItemBuilder.decode(doc).merge(item);
+
+                if(result.type !== item.type) {
+                    return Promise.reject(new Error(
+                        'Expected item with type "' + item.type + '", found "' + result.type + '"'
+                    ));
+                }
+
+                return result;
+            })
+            // Fetch item children
+            .then((item) => this.fetchChildren(item));
+    }
+
+    fetchChildren(item) {
+        let fetch = this.fetch.bind(this);
+
+        // Track
+        if(item.type === 'music/track') {
+            return Promise.all([
+                fetch(item.artist).then(function(artist) {
+                    item.artist = artist;
+                }),
+                fetch(item.album).then(function(album) {
+                    item.album = album;
+                })
+            ]).then(function() {
+                return item;
+            });
+        }
+
+        // Album
+        if(item.type === 'music/album') {
+            return Promise.all([
+                fetch(item.artist).then(function(artist) {
+                    item.artist = artist;
+                })
+            ]).then(function() {
+                return item;
+            });
+        }
+
+        // Unknown item
+        return Promise.resolve(item);
+    }
+
+    update(event, session) {
+        let promise;
+
+        // Update item
+        if(event === 'created') {
+            promise = Items.upsert(session.item);
+        } else {
+            promise = Items.upsertTree(session.item);
+        }
+
+        // Update session
+        return promise.then(({item, updated}) => {
+            session.item = item;
+
+            // Store session in database
+            return this.upsertSession(session).then((result) => ({
+                ...result,
+
+                updated
+            }));
+        });
     }
 
     upsertSession(session) {
@@ -219,6 +246,7 @@ export class ScrobbleService extends BaseService {
         // Try update session
         return this.updateSession(session).then((result) => ({
             ...result,
+
             created: false
         }), (err) => {
             // Create new session
@@ -227,6 +255,7 @@ export class ScrobbleService extends BaseService {
 
                 return this.createSession(session).then((result) => ({
                     ...result,
+
                     created: true,
                     previous: null
                 }));
