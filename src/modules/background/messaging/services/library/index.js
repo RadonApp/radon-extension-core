@@ -1,7 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
-import {ItemParser} from 'neon-extension-framework/models/item';
 
 import BaseService from '../core/base';
 import LibraryTransaction from './transaction';
@@ -22,7 +21,9 @@ export class LibraryService extends BaseService {
             'music/artist',
             'music/album',
             'music/track'
-        ], options);
+        ], {
+            source
+        });
 
         // Execute transaction
         return Promise.resolve()
@@ -30,7 +31,7 @@ export class LibraryService extends BaseService {
             .then(() => transaction.fetch())
 
             // Add items to transaction in chunks
-            .then(() => transaction.addMany(ItemParser.fromPlainObject, items))
+            .then(() => transaction.addMany(items))
 
             // Execute transaction
             .then(() => transaction.execute())

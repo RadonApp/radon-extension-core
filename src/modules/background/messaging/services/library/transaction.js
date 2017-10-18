@@ -10,10 +10,10 @@ import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
 
+import ItemBuilder from 'neon-extension-framework/models/item';
 import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
-import {ItemParser} from 'neon-extension-framework/models/item';
 import {cleanTitle, encodeTitle, isDefined} from 'neon-extension-framework/core/helpers';
 import {createTasks} from 'neon-extension-framework/core/helpers/execution';
 import {runSequential} from 'neon-extension-framework/core/helpers/promise';
@@ -69,7 +69,7 @@ export default class LibraryTransaction {
             selector: {
                 'type': { $in: this.types }
             }
-        }).then(({ docs }) => this.seedMany(ItemParser.fromDocument, docs), (err) => {
+        }).then(({ docs }) => this.seedMany(docs), (err) => {
             Log.error('Unable to fetch existing items: %s', err && err.message, err);
             return Promise.reject(err);
         });
@@ -86,24 +86,21 @@ export default class LibraryTransaction {
 
     // region add
 
-    addMany(parse, items, options) {
-        parse = parse || ((item) => item);
-
-        // Parse options
+    addMany(items, options) {
         options = Merge({}, this.options.add, options || {});
 
         Log.trace('Adding %d item(s) to transaction [chunk: %o]', items.length, options.chunk);
 
         // Add items sequentially (if chunks are disabled, or not required)
         if(!isDefined(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.add(parse(item)).catch((err) => {
+            return runSequential(items, (item) => this.add(ItemBuilder.decode(item)).catch((err) => {
                 Log.warn('Unable to add item: %s', err && err.message, err);
             }));
         }
 
         // Add items in task chunks
         return createTasks(items, options.chunk, (chunk) =>
-            this.addMany(parse, chunk, { chunk: null })
+            this.addMany(chunk, { chunk: null })
         );
     }
 
@@ -130,7 +127,7 @@ export default class LibraryTransaction {
     }
 
     addTrack(track) {
-        if(!isDefined(track)) {
+        if(!isDefined(track) || !isDefined(track.title)) {
             return null;
         }
 
@@ -174,12 +171,20 @@ export default class LibraryTransaction {
     }
 
     addAlbum(album, artist) {
-        if(!isDefined(album)) {
+        if(!isDefined(album) || !isDefined(album.title)) {
+            return null;
+        }
+
+        if(isDefined(album.artist) && isDefined(album.artist.title)) {
+            artist = album.artist;
+        }
+
+        if(!isDefined(artist) || !isDefined(artist.title)) {
             return null;
         }
 
         // Seed children
-        album.artist = this.addArtist(album.artist) || artist || null;
+        album.artist = this.addArtist(artist) || null;
 
         // Generate album identifier
         let pk = this._createTitleId(
@@ -257,23 +262,21 @@ export default class LibraryTransaction {
 
     // region seed
 
-    seedMany(parse, items, options) {
-        parse = parse || ((item) => item);
-
+    seedMany(items, options) {
         options = Merge({}, this.options.seed, options || {});
 
         Log.trace('Seeding transaction with %d item(s) [chunk: %o]', items.length, options.chunk);
 
         // Seed items sequentially (if chunks are disabled, or not required)
         if(!isDefined(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.seed(parse(item)).catch((err) => {
+            return runSequential(items, (item) => this.seed(ItemBuilder.decode(item)).catch((err) => {
                 Log.warn('Unable to seed transaction with item: %s', err && err.message, err);
             }));
         }
 
         // Seed items in task chunks
         return createTasks(items, options.chunk, (chunk) =>
-            this.seedMany(parse, chunk, { chunk: null })
+            this.seedMany(chunk, { chunk: null })
         );
     }
 
@@ -300,13 +303,23 @@ export default class LibraryTransaction {
     }
 
     seedTrack(track) {
-        if(!isDefined(track)) {
+        if(!isDefined(track) || !isDefined(track.title)) {
             return null;
         }
 
         // Seed children
         track.artist = this.seedArtist(track.artist);
         track.album = this.seedAlbum(track.album, track.artist);
+
+        // Validate artist
+        if(!isDefined(track.artist) || !isDefined(track.artist.title)) {
+            return null;
+        }
+
+        // Validate album
+        if(!isDefined(track.album) || !isDefined(track.album.title)) {
+            return null;
+        }
 
         // Generate track identifier
         let pk = this._createTitleId(
@@ -325,7 +338,7 @@ export default class LibraryTransaction {
             current = track;
             current['#id'] = Uuid.v4();
         } else {
-            current.update(track.values);
+            current.merge(track);
         }
 
         // Index track by identifiers
@@ -336,16 +349,25 @@ export default class LibraryTransaction {
     }
 
     seedAlbum(album, artist) {
-        if(!isDefined(album)) {
+        if(!isDefined(album) || !isDefined(album.title)) {
             return null;
         }
 
+        if(isDefined(album.artist) && isDefined(album.artist.title)) {
+            artist = album.artist;
+        }
+
         // Seed children
-        album.artist = this.seedArtist(album.artist) || artist || null;
+        album.artist = this.seedArtist(artist) || null;
+
+        // Validate album
+        if(!isDefined(album.artist) || !isDefined(album.artist.title)) {
+            return null;
+        }
 
         // Generate album identifier
         let pk = this._createTitleId(
-            album.artist.title,
+            artist.title,
             album.title
         );
 
@@ -359,7 +381,7 @@ export default class LibraryTransaction {
             current = album;
             current['#id'] = Uuid.v4();
         } else {
-            current.update(album.values);
+            current.merge(album);
         }
 
         // Index album by identifiers
@@ -389,7 +411,7 @@ export default class LibraryTransaction {
             current = artist;
             current['#id'] = Uuid.v4();
         } else {
-            current.update(artist.values);
+            current.merge(artist);
         }
 
         // Index artist by identifiers
@@ -494,9 +516,9 @@ export default class LibraryTransaction {
     }
 
     processItemChildren(type, item) {
-        return runSequential(item.children, (key) =>
-            this.processItem(type, item[key], item).then((result) => {
-                item[key] = result;
+        return runSequential(Object.keys(item.children), (key) =>
+            this.processItem(type, item.children[key], item).then((result) => {
+                item.children[key] = result;
             }, (err) => {
                 Log.error('Unable to execute item: %s', err && err.message, err);
             })
@@ -678,14 +700,14 @@ export default class LibraryTransaction {
             }
 
             // Update child
-            if(current.children.indexOf(key) >= 0 || item.children.indexOf(key) >= 0) {
-                changed = changed || this._update(current[key], item[key], {
+            if(Object.keys(current.options.children).indexOf(key) >= 0) {
+                changed = this._update(current[key], item[key], {
                     ...options,
 
                     currentData: currentData[key],
                     itemData: itemData[key],
                     prefix: (options.prefix || '') + key + '.'
-                });
+                }) || changed;
 
                 continue;
             }
