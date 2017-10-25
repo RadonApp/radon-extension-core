@@ -171,7 +171,7 @@ export default class LibraryTransaction {
     }
 
     addAlbum(album, artist) {
-        if(!isDefined(album) || !isDefined(album.title)) {
+        if(!isDefined(album)) {
             return null;
         }
 
@@ -317,7 +317,7 @@ export default class LibraryTransaction {
         }
 
         // Validate album
-        if(!isDefined(track.album) || !isDefined(track.album.title)) {
+        if(!isDefined(track.album)) {
             return null;
         }
 
@@ -349,7 +349,7 @@ export default class LibraryTransaction {
     }
 
     seedAlbum(album, artist) {
-        if(!isDefined(album) || !isDefined(album.title)) {
+        if(!isDefined(album)) {
             return null;
         }
 
@@ -635,9 +635,13 @@ export default class LibraryTransaction {
     // endregion
 
     _createTitleId(...components) {
-        return Map(components, (component) =>
-            encodeTitle(cleanTitle(component))
-        ).join('/');
+        return Map(components, (component) => {
+            if(!isDefined(component)) {
+                return '%00';
+            }
+
+            return encodeTitle(cleanTitle(component));
+        }).join('/');
     }
 
     _findItem(collection, type, ids) {
