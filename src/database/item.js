@@ -360,16 +360,16 @@ export class Items extends Database {
         let valid;
 
         if(item instanceof Track) {
+            this._createItemSelector(selector, key, 'album', item.album);
+
             valid = (
                 this._createItemSelector(selector, key, item) &&
-                this._createItemSelector(selector, key, 'album', item.album) &&
                 this._createItemSelector(selector, key, 'artist', item.artist)
             );
         } else if(item instanceof Album) {
-            valid = (
-                this._createItemSelector(selector, key, item) &&
-                this._createItemSelector(selector, key, 'artist', item.artist)
-            );
+            this._createItemSelector(selector, key, item);
+
+            valid = this._createItemSelector(selector, key, 'artist', item.artist);
         } else if(item instanceof Artist) {
             valid = (
                 this._createItemSelector(selector, key, item)
