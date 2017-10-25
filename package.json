@@ -53,5 +53,8 @@
     "urijs": "^1.18.2",
     "uuid": "^2.0.3",
     "webpack": "^2.6.0"
+  },
+  "scripts": {
+    "test": "echo No tests available yet."
   }
 }
