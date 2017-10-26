@@ -1,19 +1,21 @@
 {
   "name": "neon-extension-core",
   "version": "1.5.1-beta.1",
+  "description": "Neon Extension: Core",
+  "keywords": ["neon", "neon-extension"],
+  "homepage": "https://github.com/NeApp/neon-extension",
+  "author": "Dean Gardiner <me@dgardiner.net>",
+  "license": "GPL-3.0",
   "main": "./src",
-  "devDependencies": {
-    "babel-core": "^7.0.0-beta.1",
-    "babel-eslint": "^8.0.0",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-object-rest-spread": "^7.0.0-beta.1",
-    "babel-preset-es2015": "^7.0.0-beta.1",
-    "babel-preset-react": "^7.0.0-beta.1",
-    "eslint": "^3.7.0",
-    "eslint-loader": "^1.5.0",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-react": "^6.3.0"
+  "bugs": {
+    "url": "https://github.com/NeApp/neon-extension/issues"
+  },
+  "repostitory": {
+    "type": "git",
+    "url": "https://github.com/NeApp/neon-extension-core"
+  },
+  "scripts": {
+    "test": "echo No tests available yet."
   },
   "dependencies": {
     "argsarray": "0.0.1",
@@ -35,6 +37,19 @@
     "spark-md5": "2.0.2",
     "vuvuzela": "1.0.3"
   },
+  "devDependencies": {
+    "babel-core": "^7.0.0-beta.1",
+    "babel-eslint": "^8.0.0",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-object-rest-spread": "^7.0.0-beta.1",
+    "babel-preset-es2015": "^7.0.0-beta.1",
+    "babel-preset-react": "^7.0.0-beta.1",
+    "eslint": "^3.7.0",
+    "eslint-loader": "^1.5.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-react": "^6.3.0"
+  },
   "peerDependencies": {
     "classnames": "^2.2.5",
     "debug": "^2.6.8",
@@ -53,8 +68,5 @@
     "urijs": "^1.18.2",
     "uuid": "^2.0.3",
     "webpack": "^2.6.0"
-  },
-  "scripts": {
-    "test": "echo No tests available yet."
   }
 }
