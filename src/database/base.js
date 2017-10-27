@@ -3,6 +3,7 @@ import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
 import Log from 'neon-extension-core/core/logger';
+import Platform, {Platforms} from 'neon-extension-browser/platform';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 
@@ -12,13 +13,25 @@ export default class Database {
         this.name = name;
         this.indexes = indexes;
 
-        // Construct database
-        this._database = new (PouchDB.plugin(PouchFind))(name, {
+        // Create database options
+        let databaseOptions = {
             'auto_compaction': true,
             'revs_limit': 1,
 
+            // Persistent Storage (Firefox 56+)
+            // Note: Data stored in earlier versions of Firefox will be lost
+            ...(Platform.name === Platforms.Firefox && Platform.version.major >= 56 ? {
+                'storage': 'persistent'
+            } : {}),
+
+            // Override with provided options
             ...(options || {})
-        });
+        };
+
+        Log.trace('Opening database "%s" [options: %o]', name, databaseOptions);
+
+        // Construct database
+        this._database = new (PouchDB.plugin(PouchFind))(name, databaseOptions);
 
         // Update database indexes
         this._updateIndexes();
