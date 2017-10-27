@@ -14,14 +14,32 @@ export class LibraryService extends BaseService {
         this.on('library.update', this.onLibraryUpdate.bind(this));
     }
 
-    onLibraryUpdate({source, items, ...options}) {
-        Log.debug('Importing library from "%s" [%d item(s)]', source, items.length);
+    onLibraryUpdate({source, items, ...options}, sender) {
+        Log.debug('Importing library from "%s" [%d item(s)]', source, items.length, sender);
 
-        let transaction = new LibraryTransaction([
+        // Emit events
+        this.emit('library.update.started', { clientId: sender.id, source });
+
+        // Update database with provided `items`
+        return Promise.resolve(this._update(source, items, [
             'music/artist',
             'music/album',
             'music/track'
-        ], {
+        ])).then(() => {
+            Log.debug('Library from "%s" has been imported [%d item(s)]', source, items.length);
+
+            // Emit events
+            this.emit('library.update.finished', { clientId: sender.id, source });
+        }, (err) => {
+            Log.error('Library from "%s" couldn\'t be imported: %s', source, err && err.message, err);
+
+            // Emit events
+            this.emit('library.update.finished', { clientId: sender.id, source });
+        });
+    }
+
+    _update(source, items, types) {
+        let transaction = new LibraryTransaction(types, {
             source
         });
 
@@ -34,10 +52,7 @@ export class LibraryService extends BaseService {
             .then(() => transaction.addMany(items))
 
             // Execute transaction
-            .then(() => transaction.execute())
-
-            // Complete
-            .then(() => Log.debug('Library from "%s" has been imported [%d item(s)]', source, items.length));
+            .then(() => transaction.execute());
     }
 }
 
