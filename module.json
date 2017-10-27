@@ -5,7 +5,8 @@
     "64": "resources/images/icon64.png"
   },
   "origins": [
-    "*://neon.self.skipthe.net/*"
+    "*://neon.skipthe.net/*",
+    "*://*.neon.skipthe.net/*"
   ],
   "permissions": [
     "tabs"
