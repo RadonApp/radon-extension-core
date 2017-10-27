@@ -1,6 +1,6 @@
 {
   "name": "neon-extension-core",
-  "version": "1.5.1-beta.2",
+  "version": "1.5.1-beta.4",
   "description": "Neon Extension: Core",
   "keywords": ["neon", "neon-extension"],
   "homepage": "https://github.com/NeApp/neon-extension",
@@ -58,7 +58,7 @@
     "foundation-sites": "^6.4.3",
     "jquery": "^3.2.1",
     "lodash-es": "^4.16.1",
-    "neon-extension-framework": "^1.5.1-beta.1",
+    "neon-extension-framework": "^1.5.1-beta.4",
     "process": "^0.11.10",
     "prop-types": "^15.5.10",
     "querystring-es3": "^0.2.1",
