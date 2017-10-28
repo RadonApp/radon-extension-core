@@ -1,4 +1,4 @@
-import $ from 'jquery/src/jquery';
+import $ from 'jquery';
 import ClassNames from 'classnames';
 import Merge from 'lodash-es/merge';
 import QueryString from 'querystring';

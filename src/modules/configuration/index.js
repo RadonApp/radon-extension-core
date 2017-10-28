@@ -1,4 +1,4 @@
-import $ from 'jquery/src/jquery';
+import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Foundation} from 'foundation-sites/js/foundation.core';
