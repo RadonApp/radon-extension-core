@@ -1,7 +1,9 @@
+import IsString from 'lodash-es/isString';
+
 import Extension from 'neon-extension-browser/extension';
 import Log from 'neon-extension-framework/core/logger';
 import Registry from 'neon-extension-framework/core/registry';
-import {isString} from 'neon-extension-framework/core/helpers';
+import Tabs from 'neon-extension-browser/tabs';
 
 
 export class Main {
@@ -13,11 +15,29 @@ export class Main {
         this._updatePlugins();
     }
 
-    _onInstalled(details) {
-        Log.info('Extension installed, details: %o', details);
+    _onInstalled({reason, previousVersion}) {
+        Log.info('Extension installed (reason: %o, previousVersion: %o)', reason, previousVersion);
+
+        // Display configuration page on installation
+        if(this._shouldDisplayConfigurationPage(reason, previousVersion)) {
+            Tabs.create({ url: Extension.getUrl('configuration/configuration.html') });
+        }
 
         // Update plugin registration
         this._updatePlugins();
+    }
+
+    _shouldDisplayConfigurationPage(reason, previousVersion) {
+        if(reason === 'install') {
+            return true;
+        }
+
+        // Update from legacy extension
+        if(reason === 'update' && IsString(previousVersion) && previousVersion.indexOf('0.') === 0) {
+            return true;
+        }
+
+        return false;
     }
 
     _updatePlugins() {
@@ -26,7 +46,7 @@ export class Main {
 
             return Promise.all(plugins.map((plugin) =>
                 this._updatePlugin(plugin).catch((err) => {
-                    if(isString(err)) {
+                    if(IsString(err)) {
                         Log.info(err);
                     } else {
                         Log.warn('Unable to update plugin %o:', plugin.id, err.stack);
