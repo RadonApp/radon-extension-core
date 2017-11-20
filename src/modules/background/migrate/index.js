@@ -1,11 +1,7 @@
 import ForEach from 'lodash-es/forEach';
 
 import Log from 'neon-extension-framework/core/logger';
-import Messaging from 'neon-extension-browser/messaging';
-import Registry from 'neon-extension-framework/core/registry';
 import {isDefined} from 'neon-extension-framework/core/helpers';
-
-import Plugin from '../../../core/plugin';
 
 
 export class Migrate {
