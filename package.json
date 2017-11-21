@@ -1,8 +1,11 @@
 {
   "name": "neon-extension-core",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Neon Extension: Core",
-  "keywords": ["neon", "neon-extension"],
+  "keywords": [
+    "neon",
+    "neon-extension"
+  ],
   "homepage": "https://github.com/NeApp/neon-extension",
   "author": "Dean Gardiner <me@dgardiner.net>",
   "license": "GPL-3.0",
@@ -38,13 +41,13 @@
     "vuvuzela": "1.0.3"
   },
   "devDependencies": {
-    "babel-core": "^7.0.0-beta.1",
+    "babel-core": "7.0.0-beta.3",
     "babel-eslint": "^8.0.0",
     "babel-loader": "^7.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-object-rest-spread": "^7.0.0-beta.1",
-    "babel-preset-es2015": "^7.0.0-beta.1",
-    "babel-preset-react": "^7.0.0-beta.1",
+    "babel-plugin-transform-object-rest-spread": "7.0.0-beta.3",
+    "babel-preset-es2015": "7.0.0-beta.3",
+    "babel-preset-react": "7.0.0-beta.3",
     "eslint": "^3.7.0",
     "eslint-loader": "^1.5.0",
     "eslint-plugin-import": "^2.7.0",
