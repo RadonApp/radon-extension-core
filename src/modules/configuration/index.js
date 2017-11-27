@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Foundation} from 'foundation-sites/js/foundation.core';
@@ -16,7 +17,8 @@ import './app.firefox.scss';
 Foundation.addToJquery($);
 
 // Initialize React
-ReactDOM.render(
-    <Router history={hashHistory}>{routes}</Router>,
-    document.getElementById('app')
-);
+let $app = document.getElementById('app');
+
+if(!IsNil($app)) {
+    ReactDOM.render(<Router history={hashHistory}>{routes}</Router>, $app);
+}

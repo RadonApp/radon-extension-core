@@ -34,6 +34,10 @@ export class MessageBroker extends EventEmitter {
         MessageClient.bind(this);
 
         // Bind to messaging events
+        if(!Messaging.supported) {
+            return;
+        }
+
         Messaging.on('connect', this._onPortConnected.bind(this));
         Messaging.on('message', this._onMessage.bind(this));
     }

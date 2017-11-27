@@ -12,6 +12,10 @@ import WebRequest from 'neon-extension-browser/web/request';
  */
 export class Callback {
     constructor() {
+        if(!WebRequest.supported) {
+            return;
+        }
+
         let callbackPattern = Extension.getCallbackPattern();
 
         // Bind to callback requests
