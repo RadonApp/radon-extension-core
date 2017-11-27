@@ -10,8 +10,8 @@ import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
 
+import ItemDatabase from 'neon-extension-core/database/item';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
-import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
 import {cleanTitle, encodeTitle, isDefined} from 'neon-extension-framework/core/helpers';
@@ -65,7 +65,7 @@ export default class LibraryTransaction {
     }
 
     fetch() {
-        return Items.find({
+        return ItemDatabase.find({
             selector: {
                 'type': { $in: this.types }
             }
@@ -449,12 +449,12 @@ export default class LibraryTransaction {
             .then(() => this.processMany(type, this.transactionItems['music/artist']).then(onProcessComplete))
 
             // Create items
-            .then(() => Items.createMany(Object.values(this.created[type] || {})).then((results) => {
+            .then(() => ItemDatabase.createMany(Object.values(this.created[type] || {})).then((results) => {
                 result.errors.create += Filter(results, (result) => !result.ok);
             }))
 
             // Update items
-            .then(() => Items.updateMany(Object.values(this.updated[type] || {})).then((results) => {
+            .then(() => ItemDatabase.updateMany(Object.values(this.updated[type] || {})).then((results) => {
                 result.errors.update += Filter(results, (result) => !result.ok);
             }))
 

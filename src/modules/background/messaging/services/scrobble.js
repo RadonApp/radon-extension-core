@@ -1,11 +1,11 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import ItemDatabase from 'neon-extension-core/database/item';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
-import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Registry from 'neon-extension-framework/core/registry';
 import Session from 'neon-extension-framework/models/session';
-import Sessions from 'neon-extension-core/database/session';
+import SessionDatabase from 'neon-extension-core/database/session';
 import {MediaTypes} from 'neon-extension-framework/core/enums';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
@@ -48,7 +48,7 @@ export class ScrobbleService extends BaseService {
         Log.debug('Client "%s" disconnected, searching for active sessions...', client.id);
 
         // Find active sessions created by this channel
-        Sessions.find({
+        SessionDatabase.find({
             selector: {
                 clientId: client.id,
                 state: 'playing'
@@ -168,7 +168,7 @@ export class ScrobbleService extends BaseService {
         Log.trace('Retrieving item "%s" from database', item.id);
 
         // Retrieve item from database
-        return Items.get(item.id)
+        return ItemDatabase.get(item.id)
             // Decode document, and merge with `item`
             .then((doc) => {
                 let result = ItemParser.decode(doc).merge(item);
@@ -222,9 +222,9 @@ export class ScrobbleService extends BaseService {
 
         // Update item
         if(event === 'created') {
-            promise = Items.upsert(session.item);
+            promise = ItemDatabase.upsert(session.item);
         } else {
-            promise = Items.upsertTree(session.item);
+            promise = ItemDatabase.upsertTree(session.item);
         }
 
         // Update session
@@ -271,7 +271,7 @@ export class ScrobbleService extends BaseService {
         Log.trace('Creating session: %o', session);
 
         // Create session in database
-        return Sessions.put({
+        return SessionDatabase.put({
             createdAt: Date.now(),
             ...session.toDocument(),
 
@@ -285,8 +285,8 @@ export class ScrobbleService extends BaseService {
         Log.trace('Updating session: %o', session);
 
         // Update session in database
-        return Sessions.get(session.id).then((doc) => {
-            return Sessions.put({
+        return SessionDatabase.get(session.id).then((doc) => {
+            return SessionDatabase.put({
                 createdAt: Date.now(),
                 ...doc,
                 ...session.toDocument(),
