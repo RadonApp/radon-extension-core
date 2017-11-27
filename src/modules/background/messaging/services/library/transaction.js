@@ -10,7 +10,7 @@ import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
 
-import ItemBuilder from 'neon-extension-framework/models/item';
+import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
@@ -93,7 +93,7 @@ export default class LibraryTransaction {
 
         // Add items sequentially (if chunks are disabled, or not required)
         if(!isDefined(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.add(ItemBuilder.decode(item)).catch((err) => {
+            return runSequential(items, (item) => this.add(ItemParser.decode(item)).catch((err) => {
                 Log.warn('Unable to add item: %s', err && err.message, err);
             }));
         }
@@ -269,7 +269,7 @@ export default class LibraryTransaction {
 
         // Seed items sequentially (if chunks are disabled, or not required)
         if(!isDefined(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.seed(ItemBuilder.decode(item)).catch((err) => {
+            return runSequential(items, (item) => this.seed(ItemParser.decode(item)).catch((err) => {
                 Log.warn('Unable to seed transaction with item: %s', err && err.message, err);
             }));
         }

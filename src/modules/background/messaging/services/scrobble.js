@@ -1,5 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import ItemBuilder from 'neon-extension-framework/models/item';
+import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Items from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
@@ -171,7 +171,7 @@ export class ScrobbleService extends BaseService {
         return Items.get(item.id)
             // Decode document, and merge with `item`
             .then((doc) => {
-                let result = ItemBuilder.decode(doc).merge(item);
+                let result = ItemParser.decode(doc).merge(item);
 
                 if(result.type !== item.type) {
                     return Promise.reject(new Error(
