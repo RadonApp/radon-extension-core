@@ -1,40 +1,298 @@
+import Filter from 'lodash-es/filter';
+import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
 import Map from 'lodash-es/map';
 
-import ItemBuilder from 'neon-extension-framework/models/item';
+import Item from 'neon-extension-framework/models/item/core/base';
+import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Log from 'neon-extension-core/core/logger';
 import {Album, Artist, Track} from 'neon-extension-framework/models/item/music';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Database from './base';
 
 
 const Indexes = {
-    'ids.neon-extension-source-googlemusic.id': {
-        fields: ['ids.neon-extension-source-googlemusic.id']
+    'keys.neon-extension-source-googlemusic.id': {
+        fields: ['keys.neon-extension-source-googlemusic.id']
     },
-    'ids.neon-extension-source-googlemusic.key': {
-        fields: ['ids.neon-extension-source-googlemusic.key']
+    'keys.neon-extension-source-googlemusic.key': {
+        fields: ['keys.neon-extension-source-googlemusic.key']
     },
-    'ids.neon-extension-source-googlemusic.title': {
-        fields: ['ids.neon-extension-source-googlemusic.title']
+    'keys.neon-extension-source-googlemusic.title': {
+        fields: ['keys.neon-extension-source-googlemusic.title']
     },
     'type': {
         fields: ['type']
     }
 };
 
-export class Items extends Database {
-    constructor() {
-        super('items', Indexes);
+export default class ItemDatabase extends Database {
+    constructor(name, options) {
+        super(name || 'items', Indexes, options);
+    }
+
+    create(item) {
+        if(IsNil(item)) {
+            return Promise.reject(new Error('Invalid value provided for the "item" parameter'));
+        }
+
+        if(!IsNil(item.id)) {
+            return Promise.reject(new Error('Item has already been created'));
+        }
+
+        Log.debug('Creating item: %o', item);
+
+        let now = Date.now();
+
+        // Build document
+        let doc = {
+            createdAt: now,
+            updatedAt: now,
+
+            ...item.toDocument()
+        };
+
+        // Create item in database
+        return this.post(doc).then((result) => {
+            item.id = result.id;
+            item.revision = result.rev;
+
+            item.createdAt = doc.createdAt;
+            item.updatedAt = doc.updatedAt;
+
+            return item;
+        });
+    }
+
+    createMany(items) {
+        if(IsNil(items) || !Array.isArray(items)) {
+            return Promise.reject(new Error('Invalid value provided for the "items" parameter (expected array)'));
+        }
+
+        if(items.length < 1) {
+            return Promise.resolve();
+        }
+
+        Log.debug('Creating %d item(s)', items.length);
+
+        let now = Date.now();
+
+        let errors = {
+            exists: 0,
+            failed: 0,
+            invalid: 0
+        };
+
+        // Build documents
+        let docs = Filter(Map(items, (item) => {
+            if(!(item instanceof Item)) {
+                Log.warn('Item is invalid: %o', item);
+                errors.invalid++;
+                return null;
+            }
+
+            if(!IsNil(item.id)) {
+                Log.warn('Item has already been created: %o', item);
+                errors.exists++;
+                return null;
+            }
+
+            return {
+                createdAt: now,
+                updatedAt: now,
+
+                ...item.toDocument()
+            };
+        }), (doc) => !IsNil(doc));
+
+        // Create items in database
+        return this.bulkDocs(docs).then((results) => {
+            Log.debug('Created %d item(s)', items.length);
+
+            // Update items
+            for(let i = 0; i < results.length; i++) {
+                let result = results[i];
+
+                if(!result.ok) {
+                    Log.warn('Unable to create item [%d]:', i, result);
+                    errors.failed++;
+                    continue;
+                }
+
+                // Update item
+                let doc = docs[i];
+                let item = items[i];
+
+                item.id = result.id;
+                item.revision = result.rev;
+
+                item.createdAt = doc.createdAt;
+                item.updatedAt = doc.updatedAt;
+            }
+
+            // Return result
+            return {
+                created: items.length - errors.exists - errors.failed - errors.invalid,
+                errors,
+                items
+            };
+        });
+    }
+
+    decode(item) {
+        return ItemParser.decodeItem(item);
+    }
+
+    update(item) {
+        if(IsNil(item)) {
+            return Promise.reject(new Error('Invalid value provided for the "item" parameter'));
+        }
+
+        if(IsNil(item.id)) {
+            return Promise.reject(new Error('Item hasn\'t been created yet'));
+        }
+
+        let now = Date.now();
+
+        // Retrieve current item from database
+        return this.get(item.id).then((doc) => {
+            if(!item.merge(this.decode(doc))) {
+                return item;
+            }
+
+            // Update revision
+            item.revision = doc['_rev'];
+
+            // Encode item
+            let update = {
+                // Ensure the `createdAt` timestamp has been set
+                createdAt: now,
+
+                // Encode item
+                ...item.toDocument(),
+
+                // Update the `updatedAt` timestamp
+                updatedAt: now
+            };
+
+            // Store item in database
+            Log.debug('Updating item: %o', item);
+
+            return this.put(update).then((result) => {
+                if(!result.ok) {
+                    return Promise.reject(new Error('' + 'Put failed'));
+                }
+
+                // Update revision
+                item.revision = result.rev;
+
+                // Update timestamps
+                item.createdAt = update.createdAt;
+                item.updatedAt = update.updatedAt;
+
+                return item;
+            });
+        });
+    }
+
+    updateMany(items) {
+        if(IsNil(items) || items.length < 1) {
+            return Promise.resolve();
+        }
+
+        Log.debug('Updating %d item(s)', items.length);
+
+        let now = Date.now();
+
+        let errors = {
+            failed: 0,
+            invalid: 0,
+            notCreated: 0
+        };
+
+        // Find items that can be updated
+        let createdItems = Filter(items, (item) => {
+            if(!(item instanceof Item)) {
+                Log.warn('Item is invalid: %o', item);
+                errors.invalid++;
+                return false;
+            }
+
+            if(IsNil(item.id)) {
+                Log.warn('Item hasn\'t been created: %o', item);
+                errors.notCreated++;
+                return false;
+            }
+
+            return true;
+        });
+
+        // Retrieve current documents from database
+        return this.getMany(Map(createdItems, (item) => item.id)).then(({rows}) => {
+            // Merge items with the current documents
+            let changedItems = Filter(Map(rows, (row, i) => {
+                if(!createdItems[i].merge(this.decode(row.doc))) {
+                    return null;
+                }
+
+                return createdItems[i];
+            }), (item) => !IsNil(item));
+
+            // Encode items
+            let docs = Map(changedItems, (item) => ({
+                // Ensure the `createdAt` timestamp has been set
+                createdAt: now,
+
+                // Encode item
+                ...item.toDocument(),
+
+                // Update the `updatedAt` timestamp
+                updatedAt: now
+            }));
+
+            if(docs.length < 1) {
+                return {
+                    updated: 0,
+                    errors,
+                    items
+                };
+            }
+
+            // Update items
+            Log.debug('Updating %d item(s): %o', docs.length, docs);
+
+            return this.bulkDocs(docs).then((results) => {
+                for(let i = 0; i < results.length; i++) {
+                    let result = results[i];
+
+                    if(!result.ok) {
+                        Log.warn('Unable to update item [%d]:', i, result);
+                        errors.failed++;
+                    }
+
+                    // Update revision
+                    changedItems[i].revision = result.rev;
+
+                    // Update timestamps
+                    changedItems[i].createdAt = docs[i].createdAt;
+                    changedItems[i].updatedAt = docs[i].updatedAt;
+                }
+
+                return {
+                    updated: items.length - errors.failed - errors.invalid - errors.notCreated,
+                    errors,
+                    items
+                };
+            });
+        });
     }
 
     upsert(item, options) {
         options = options || {};
         options.force = options.force || false;
 
-        if(!isDefined(item) || !isDefined(item.title)) {
+        if(IsNil(item) || IsNil(item.title)) {
             return Promise.resolve({
                 created: false,
                 updated: false,
@@ -43,22 +301,12 @@ export class Items extends Database {
             });
         }
 
-        // Ignore items that have already been matched
-        if(isDefined(item.id) && !item.changed && !options.force) {
-            return Promise.resolve({
-                created: false,
-                updated: false,
-
-                item
-            });
-        }
-
-        Log.trace('Upserting item: %o', item);
+        Log.debug('Upserting item: %o', item);
 
         // Build query
         let query = this._createUpsertQuery(item);
 
-        if(!isDefined(query)) {
+        if(IsNil(query)) {
             Log.error('Unable to create query for item: %o', item);
 
             return Promise.reject(new Error(
@@ -67,11 +315,10 @@ export class Items extends Database {
         }
 
         // Find items
-        Log.trace('Finding items matching: %o', query);
+        Log.debug('Finding items matching: %o', query);
 
         return this.find(query).then((result) => {
             if(result.docs.length > 0) {
-                // Update item
                 item.id = result.docs[0]['_id'];
 
                 // Update item in database
@@ -142,149 +389,6 @@ export class Items extends Database {
         ));
     }
 
-    create(item) {
-        Log.debug('Creating item: %o', item);
-
-        // Set timestamp
-        item.createdAt = Date.now();
-
-        // Create item in database
-        return this.post(item.toDocument()).then((result) => {
-            item.id = result.id;
-            item.revision = result.rev;
-
-            return item;
-        });
-    }
-
-    createMany(items) {
-        if(!isDefined(items) || items.length < 1) {
-            return Promise.resolve();
-        }
-
-        Log.trace('Creating %d item(s)', items.length);
-
-        // Build documents
-        let docs = Map(items, (item) => {
-            let data = IsPlainObject(item) ? item : item.toDocument();
-
-            return {
-                createdAt: Date.now(),
-
-                ...data
-            };
-        });
-
-        // Create items in database
-        return this.bulkDocs(docs).then((results) => {
-            Log.debug('Created %d item(s)', items.length);
-
-            for(let i = 0; i < results.length; i++) {
-                let result = results[i];
-
-                if(!result.ok) {
-                    Log.debug('Unable to create item [%d]:', i, result);
-                    continue;
-                }
-
-                // Update item
-                let doc = docs[i];
-                let item = items[i];
-
-                item.id = result.id;
-                item.createdAt = doc.createdAt;
-                item.updatedAt = doc.updatedAt;
-
-                item.changed = false;
-            }
-
-            return results;
-        });
-    }
-
-    update(item) {
-        Log.trace('Comparing item: %o', item);
-
-        // Retrieve current item from database
-        return this.get(item.id).then((doc) => {
-            let current = ItemBuilder.decode(doc).merge(item);
-
-            if(!current.changed) {
-                return Promise.resolve(current);
-            }
-
-            // Update timestamps
-            if(!isDefined(current.createdAt)) {
-                current.createdAt = Date.now();
-            }
-
-            current.updatedAt = Date.now();
-
-            // Store item in database
-            Log.debug('Updating item: %o', current);
-
-            return this.put(current.toDocument()).then((result) => {
-                if(!result.ok) {
-                    return Promise.reject(new Error('' + 'Put failed'));
-                }
-
-                // Update values
-                current.revision = result.rev;
-
-                return current;
-            });
-        });
-    }
-
-    updateMany(items) {
-        if(!isDefined(items) || items.length < 1) {
-            return Promise.resolve();
-        }
-
-        Log.trace('Updating %d item(s)', items.length);
-
-        // Build documents
-        let docs = Map(items, (item) => {
-            let data = IsPlainObject(item) ? item : item.toDocument();
-
-            return {
-                // Defaults
-                createdAt: Date.now(),
-
-                // Include data
-                ...data,
-
-                // Update timestamps
-                updatedAt: Date.now()
-            };
-        });
-
-        // Create items in database
-        return this.bulkDocs(docs).then((results) => {
-            Log.debug('Updated %d item(s)', items.length);
-
-            for(let i = 0; i < results.length; i++) {
-                let result = results[i];
-
-                if(!result.ok) {
-                    Log.debug('Unable to update item [%d]:', i, result);
-                    continue;
-                }
-
-                // Update item
-                let doc = docs[i];
-                let item = items[i];
-
-                item.createdAt = doc.createdAt;
-                item.updatedAt = doc.updatedAt;
-
-                item.changed = false;
-            }
-
-            return results;
-        });
-    }
-
     _createUpsertQuery(item, fields) {
         let selectors = this._createUpsertSelectors(item);
 
@@ -307,7 +411,7 @@ export class Items extends Database {
     }
 
     _createUpsertSelectors(item) {
-        if(isDefined(item.id)) {
+        if(!IsNil(item.id)) {
             return [{
                 '_id': item.id
             }];
@@ -322,14 +426,14 @@ export class Items extends Database {
     _createIdentifierSelectors(item) {
         let selectors = [];
 
-        function createSelectors(prefix, ids) {
-            for(let key in ids) {
-                if(!ids.hasOwnProperty(key)) {
+        function createSelectors(prefix, keys) {
+            for(let source in keys) {
+                if(!keys.hasOwnProperty(source)) {
                     continue;
                 }
 
-                if(IsPlainObject(ids[key])) {
-                    createSelectors(prefix + '.' + key, ids[key]);
+                if(IsPlainObject(keys[source])) {
+                    createSelectors(prefix + '.' + source, keys[source]);
                     continue;
                 }
 
@@ -338,7 +442,7 @@ export class Items extends Database {
                     type: item.type
                 };
 
-                selector[prefix + '.' + key] = ids[key];
+                selector[prefix + '.' + source] = keys[source];
 
                 // Add selector to OR clause
                 selectors.push(selector);
@@ -346,7 +450,7 @@ export class Items extends Database {
         }
 
         // Create identifier selectors
-        createSelectors('ids', item.ids);
+        createSelectors('keys', item.keys);
 
         return selectors;
     }
@@ -392,12 +496,12 @@ export class Items extends Database {
     }
 
     _createItemSelector(selector, key, prefix, item) {
-        if(!IsString(prefix) && !isDefined(item)) {
+        if(!IsString(prefix) && IsNil(item)) {
             item = prefix;
             prefix = undefined;
         }
 
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return false;
         }
 
@@ -409,14 +513,14 @@ export class Items extends Database {
         }
 
         // Parse prefix
-        if(!isDefined(prefix)) {
+        if(IsNil(prefix)) {
             prefix = '';
         } else {
             prefix = prefix + '.';
         }
 
         // Ensure property exists
-        if(!isDefined(item[key])) {
+        if(IsNil(item[key])) {
             return false;
         }
 
@@ -425,5 +529,3 @@ export class Items extends Database {
         return true;
     }
 }
-
-export default new Items();

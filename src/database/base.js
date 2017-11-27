@@ -1,10 +1,10 @@
+import IsNil from 'lodash-es/isNil';
 import Map from 'lodash-es/map';
 import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
 import Log from 'neon-extension-core/core/logger';
 import Platform, {Platforms} from 'neon-extension-browser/platform';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 
@@ -32,32 +32,62 @@ export default class Database {
 
         // Construct database
         this._database = new (PouchDB.plugin(PouchFind))(name, databaseOptions);
+        this._destroyed = false;
 
         // Update database indexes
-        this._updateIndexes();
+        this.ready = this._initializeDatabase();
+    }
+
+    allDocs(options) {
+        return this.ready.then(() => this._database.allDocs(options));
     }
 
     bulkDocs(docs) {
-        return this._database.bulkDocs(docs);
+        return this.ready.then(() => this._database.bulkDocs(docs));
+    }
+
+    destroy() {
+        // Update state
+        this._destroyed = true;
+
+        // Destroy database
+        return this._database.destroy().then(() => {
+            // Update state
+            this._database = null;
+        });
     }
 
     find(query) {
-        return this._database.find(query);
+        return this.ready.then(() => this._database.find(query));
     }
 
     get(key) {
-        return this._database.get(key);
+        return this.ready.then(() => this._database.get(key));
+    }
+
+    getMany(keys) {
+        return this.allDocs({
+            'include_docs': true,
+
+            keys
+        });
     }
 
     post(doc) {
-        return this._database.post(doc);
+        return this.ready.then(() => this._database.post(doc));
     }
 
     put(doc) {
-        return this._database.put(doc);
+        return this.ready.then(() => this._database.put(doc));
     }
 
     // region Private methods
+
+    _initializeDatabase() {
+        return Promise.resolve()
+            .then(() => this._createIndexes())
+            .then(() => this._deleteIndexes());
+    }
 
     _createIndexes() {
         return runSequential(
@@ -65,25 +95,39 @@ export default class Database {
                 name,
                 ...index
             })),
-            (index) => this._database.createIndex({
-                ddoc: index.name,
-                ...index
-            }).then(({ name, result }) => {
-                if(result === 'created') {
-                    Log.info('Index "%s" has been created', name);
-                } else {
-                    Log.trace('Index "%s" already exists', name);
+            (index) => {
+                if(this._destroyed || IsNil(this._database)) {
+                    return Promise.resolve();
                 }
-            }, (err) => {
-                Log.error('Unable to create index: %s', err && err.message, err);
-            })
+
+                return this._database.createIndex({
+                    ddoc: index.name,
+                    ...index
+                }).then(({ name, result }) => {
+                    if(result === 'created') {
+                        Log.info('Index "%s" has been created', name);
+                    } else {
+                        Log.trace('Index "%s" already exists', name);
+                    }
+                }, (err) => {
+                    if(this._destroyed || IsNil(this._database)) {
+                        return;
+                    }
+
+                    Log.error('Unable to create index: %s', err && err.message, err);
+                });
+            }
         );
     }
 
     _deleteIndexes() {
         return this._database.getIndexes().then(({indexes}) =>
             runSequential(indexes, (index) => {
-                if(index.type !== 'json' || isDefined(this.indexes[index.name])) {
+                if(index.type !== 'json' || !IsNil(this.indexes[index.name])) {
+                    return Promise.resolve();
+                }
+
+                if(this._destroyed || IsNil(this._database)) {
                     return Promise.resolve();
                 }
 
@@ -91,16 +135,14 @@ export default class Database {
                 return this._database.deleteIndex(index).then(() => {
                     Log.info('Index "%s" has been deleted', index.name);
                 }, (err) => {
+                    if(this._destroyed || IsNil(this._database)) {
+                        return;
+                    }
+
                     Log.error('Unable to delete index: %s', err && err.message, err);
                 });
             })
         );
-    }
-
-    _updateIndexes() {
-        return Promise.resolve()
-            .then(() => this._createIndexes())
-            .then(() => this._deleteIndexes());
     }
 
     // endregion
