@@ -24,7 +24,7 @@ describe('ItemDatabase', function() {
                         id: 1
                     },
 
-                    title: 'gorillaz',
+                    title: 'Gorillaz',
 
                     created: true,
                     updated: false
@@ -34,7 +34,7 @@ describe('ItemDatabase', function() {
                         id: 2
                     },
 
-                    title: 'post malone',
+                    title: 'Post Malone',
 
                     created: true,
                     updated: false
@@ -62,7 +62,7 @@ describe('ItemDatabase', function() {
                             id: 1
                         },
 
-                        title: 'Gorillaz',
+                        title: 'gorillaz',
 
                         updated: true
                     }),
@@ -73,7 +73,7 @@ describe('ItemDatabase', function() {
                             id: 2
                         },
 
-                        title: 'Post Malone',
+                        title: 'post malone',
 
                         updated: true
                     })
@@ -93,7 +93,7 @@ describe('ItemDatabase', function() {
                     expect(currentItems[0].createdAt).toBe(items[0].createdAt);
                     expect(currentItems[0].updatedAt).toBeGreaterThan(items[0].updatedAt);
 
-                    expect(currentItems[0].get('test').title).toBe('Gorillaz');
+                    expect(currentItems[0].get('test').title).toBe('gorillaz');
                     expect(currentItems[0].get('test').created).toBe(true);
                     expect(currentItems[0].get('test').updated).toBe(true);
 
@@ -105,7 +105,7 @@ describe('ItemDatabase', function() {
                     expect(currentItems[1].createdAt).toBe(items[1].createdAt);
                     expect(currentItems[1].updatedAt).toBeGreaterThan(items[1].updatedAt);
 
-                    expect(currentItems[1].get('test').title).toBe('Post Malone');
+                    expect(currentItems[1].get('test').title).toBe('post malone');
                     expect(currentItems[1].get('test').created).toBe(true);
                     expect(currentItems[1].get('test').updated).toBe(true);
                 });

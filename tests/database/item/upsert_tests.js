@@ -23,7 +23,7 @@ describe('ItemDatabase', function() {
                     id: 1
                 },
 
-                title: 'gorillaz',
+                title: 'Gorillaz',
 
                 created: true,
                 updated: false
@@ -40,7 +40,7 @@ describe('ItemDatabase', function() {
                         id: 1
                     },
 
-                    title: 'Gorillaz',
+                    title: 'gorillaz',
 
                     updated: true
                 })).then(({created, updated, item: current}) => {
@@ -54,7 +54,7 @@ describe('ItemDatabase', function() {
                     expect(current.createdAt).toBe(item.createdAt);
                     expect(current.updatedAt).toBeGreaterThan(item.updatedAt);
 
-                    expect(current.get('neon-extension-source-googlemusic').title).toBe('Gorillaz');
+                    expect(current.get('neon-extension-source-googlemusic').title).toBe('gorillaz');
                     expect(current.get('neon-extension-source-googlemusic').created).toBe(true);
                     expect(current.get('neon-extension-source-googlemusic').updated).toBe(true);
 
@@ -67,7 +67,7 @@ describe('ItemDatabase', function() {
         it('matches items by slug', function() {
             let item = Artist.create('neon-extension-source-googlemusic', {
                 keys: {
-                    id: 1
+                    id: 2
                 },
 
                 title: 'Röyksopp'
@@ -81,13 +81,13 @@ describe('ItemDatabase', function() {
                 expect(item.keys['item'].slug).toBe('royksopp');
                 expect(item.title).toBe('Röyksopp');
 
-                expect(item.get('neon-extension-source-googlemusic').keys.id).toBe(1);
+                expect(item.get('neon-extension-source-googlemusic').keys.id).toBe(2);
                 expect(item.get('neon-extension-source-googlemusic').title).toBe('Röyksopp');
 
                 // Update item
                 return db.upsert(Artist.create('neon-extension-destination-lastfm', {
                     keys: {
-                        id: 1
+                        id: 2
                     },
 
                     title: 'Royksopp'
@@ -101,10 +101,10 @@ describe('ItemDatabase', function() {
                     expect(current.keys['item'].slug).toBe('royksopp');
                     expect(current.title).toBe('Röyksopp');
 
-                    expect(current.get('neon-extension-source-googlemusic').keys.id).toBe(1);
+                    expect(current.get('neon-extension-source-googlemusic').keys.id).toBe(2);
                     expect(current.get('neon-extension-source-googlemusic').title).toBe('Röyksopp');
 
-                    expect(current.get('neon-extension-destination-lastfm').keys.id).toBe(1);
+                    expect(current.get('neon-extension-destination-lastfm').keys.id).toBe(2);
                     expect(current.get('neon-extension-destination-lastfm').title).toBe('Royksopp');
                 });
             });

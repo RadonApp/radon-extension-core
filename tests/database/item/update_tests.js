@@ -23,7 +23,7 @@ describe('ItemDatabase', function() {
                     id: 1
                 },
 
-                title: 'gorillaz',
+                title: 'Gorillaz',
 
                 created: true,
                 updated: false
@@ -39,7 +39,7 @@ describe('ItemDatabase', function() {
                         id: 1
                     },
 
-                    title: 'Gorillaz',
+                    title: 'gorillaz',
 
                     updated: true
                 })).then((current) => {
@@ -50,7 +50,7 @@ describe('ItemDatabase', function() {
                     expect(current.createdAt).toBe(item.createdAt);
                     expect(current.updatedAt).toBeGreaterThan(item.updatedAt);
 
-                    expect(current.get('test').title).toBe('Gorillaz');
+                    expect(current.get('test').title).toBe('gorillaz');
                     expect(current.get('test').created).toBe(true);
                     expect(current.get('test').updated).toBe(true);
 
