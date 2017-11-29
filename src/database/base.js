@@ -5,7 +5,7 @@ import PouchFind from 'pouchdb-find';
 
 import Log from 'neon-extension-core/core/logger';
 import Platform, {Platforms} from 'neon-extension-browser/platform';
-import {runSequential} from 'neon-extension-framework/core/helpers/promise';
+import {resolveOne, runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 
 export default class Database {
@@ -59,6 +59,31 @@ export default class Database {
 
     find(query) {
         return this.ready.then(() => this._database.find(query));
+    }
+
+    match(selectors, fields) {
+        if(IsNil(selectors) || !Array.isArray(selectors) || selectors.length < 1) {
+            return Promise.reject(new Error('One selector is required'));
+        }
+
+        if(IsNil(fields)) {
+            fields = ['_id'];
+        }
+
+        // Execute selectors sequentially, and return the first document matched
+        return resolveOne(selectors, (selector) => {
+            return this.find({ fields, selector }).then((result) => {
+                if(!IsNil(result.warning)) {
+                    Log.warn('find() %o: %s', selector, result.warning);
+                }
+
+                if(result.docs.length < 1) {
+                    return Promise.reject();
+                }
+
+                return result.docs[0];
+            });
+        });
     }
 
     get(key) {
