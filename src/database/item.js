@@ -303,23 +303,20 @@ export default class ItemDatabase extends Database {
 
         Log.debug('Upserting item: %o', item);
 
-        // Build query
-        let query = this._createUpsertQuery(item);
+        // Build selectors
+        let selectors = this._createUpsertSelectors(item);
 
-        if(IsNil(query)) {
-            Log.error('Unable to create query for item: %o', item);
-
-            return Promise.reject(new Error(
-                'Unable to create query'
-            ));
+        // Ensure selectors exist
+        if(selectors.length < 1) {
+            return Promise.reject(new Error('Unable to create selectors'));
         }
 
         // Find items
-        Log.debug('Finding items matching: %o', query);
+        Log.debug('Finding items matching: %o', selectors);
 
-        return this.find(query).then((result) => {
-            if(result.docs.length > 0) {
-                item.id = result.docs[0]['_id'];
+        return this.match(selectors).then((result) => {
+            if(!IsNil(result)) {
+                item.id = result['_id'];
 
                 // Update item in database
                 return this.update(item).then((item) => ({
@@ -389,27 +386,6 @@ export default class ItemDatabase extends Database {
         ));
     }
 
-    _createUpsertQuery(item, fields) {
-        let selectors = this._createUpsertSelectors(item);
-
-        // Ensure selectors exist
-        if(selectors.length < 1) {
-            return null;
-        }
-
-        // Build query
-        return {
-            fields: [
-                '_id',
-
-                ...(fields || [])
-            ],
-            selector: {
-                $or: selectors
-            }
-        };
-    }
-
     _createUpsertSelectors(item) {
         if(!IsNil(item.id)) {
             return [{
@@ -418,12 +394,12 @@ export default class ItemDatabase extends Database {
         }
 
         return [
-            ...this._createIdentifierSelectors(item),
+            ...this._createKeySelectors(item),
             ...this._createTreeSelector(item, 'title')
         ];
     }
 
-    _createIdentifierSelectors(item) {
+    _createKeySelectors(item) {
         let selectors = [];
 
         function createSelectors(prefix, keys) {
