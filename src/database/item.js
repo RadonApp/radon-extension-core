@@ -13,17 +13,23 @@ import Database from './base';
 
 
 const Indexes = {
-    'keys.neon-extension-source-googlemusic.id': {
-        fields: ['keys.neon-extension-source-googlemusic.id']
-    },
-    'keys.neon-extension-source-googlemusic.key': {
-        fields: ['keys.neon-extension-source-googlemusic.key']
-    },
-    'keys.neon-extension-source-googlemusic.title': {
-        fields: ['keys.neon-extension-source-googlemusic.title']
-    },
     'type': {
         fields: ['type']
+    },
+    'type+title': {
+        fields: ['type', 'title']
+    },
+    'type+keys.item.slug': {
+        fields: ['type', 'keys.item.slug']
+    },
+    'type+keys.neon-extension-destination-lastfm.id': {
+        fields: ['type', 'keys.neon-extension-destination-lastfm.id']
+    },
+    'type+keys.neon-extension-source-googlemusic.id': {
+        fields: ['type', 'keys.neon-extension-source-googlemusic.id']
+    },
+    'type+keys.neon-extension-source-googlemusic.title': {
+        fields: ['type', 'keys.neon-extension-source-googlemusic.title']
     }
 };
 
