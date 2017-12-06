@@ -309,12 +309,17 @@ export default class ItemDatabase extends Database {
 
         Log.debug('Upserting item: %o', item);
 
-        // Build selectors
-        let selectors = this._createUpsertSelectors(item);
+        // Create selectors
+        let selectors;
 
-        // Ensure selectors exist
+        try {
+            selectors = item.createSelectors();
+        } catch(e) {
+            return Promise.reject(e || new Error('Unable to create selectors'));
+        }
+
         if(selectors.length < 1) {
-            return Promise.reject(new Error('Unable to create selectors'));
+            return Promise.reject(new Error('No selectors available'));
         }
 
         // Find items
@@ -390,124 +395,5 @@ export default class ItemDatabase extends Database {
         return Promise.reject(new Error(
             'Unknown item type'
         ));
-    }
-
-    _createUpsertSelectors(item) {
-        if(!IsNil(item.id)) {
-            return [{
-                '_id': item.id
-            }];
-        }
-
-        return [
-            ...this._createKeySelectors(item),
-            ...this._createTreeSelector(item, 'title')
-        ];
-    }
-
-    _createKeySelectors(item) {
-        let selectors = [];
-
-        function createSelectors(prefix, keys) {
-            for(let source in keys) {
-                if(!keys.hasOwnProperty(source)) {
-                    continue;
-                }
-
-                if(IsPlainObject(keys[source])) {
-                    createSelectors(prefix + '.' + source, keys[source]);
-                    continue;
-                }
-
-                // Create selector
-                let selector = {
-                    type: item.type
-                };
-
-                selector[prefix + '.' + source] = keys[source];
-
-                // Add selector to OR clause
-                selectors.push(selector);
-            }
-        }
-
-        // Create identifier selectors
-        createSelectors('keys', item.keys);
-
-        return selectors;
-    }
-
-    _createTreeSelector(item, key) {
-        let selector = {
-            'type': item.type
-        };
-
-        // Create item selectors
-        let valid;
-
-        if(item instanceof Track) {
-            this._createItemSelector(selector, key, 'album', item.album);
-
-            valid = (
-                this._createItemSelector(selector, key, item) &&
-                this._createItemSelector(selector, key, 'artist', item.artist)
-            );
-        } else if(item instanceof Album) {
-            this._createItemSelector(selector, key, item);
-
-            valid = this._createItemSelector(selector, key, 'artist', item.artist);
-        } else if(item instanceof Artist) {
-            valid = (
-                this._createItemSelector(selector, key, item)
-            );
-        } else {
-            return [];
-        }
-
-        // Ensure selector is valid
-        if(!valid) {
-            return [];
-        }
-
-        // Ensure selector has properties
-        if(Object.keys(selector).length < 1) {
-            return [];
-        }
-
-        return [selector];
-    }
-
-    _createItemSelector(selector, key, prefix, item) {
-        if(!IsString(prefix) && IsNil(item)) {
-            item = prefix;
-            prefix = undefined;
-        }
-
-        if(IsNil(item)) {
-            return false;
-        }
-
-        // Parse key
-        let name = key;
-
-        if(name === 'id') {
-            name = '_id';
-        }
-
-        // Parse prefix
-        if(IsNil(prefix)) {
-            prefix = '';
-        } else {
-            prefix = prefix + '.';
-        }
-
-        // Ensure property exists
-        if(IsNil(item[key])) {
-            return false;
-        }
-
-        // Create selector
-        selector[prefix + name] = item[key];
-        return true;
     }
 }
