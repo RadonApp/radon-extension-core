@@ -1,5 +1,5 @@
 import ItemDatabase from 'neon-extension-core/database/item';
-import {Artist} from 'neon-extension-framework/models/item/music';
+import {Artist, Album} from 'neon-extension-framework/models/item/music';
 
 import Uuid from 'uuid';
 
@@ -108,6 +108,52 @@ describe('ItemDatabase', function() {
                     expect(current.get('neon-extension-destination-lastfm').title).toBe('Royksopp');
                 });
             });
+        });
+
+        it('rejects on invalid items', function(done) {
+            db.upsert().then(
+                () => done.fail(),
+                (err) => {
+                    console.log('Error returned:', err.message);
+                    done(err);
+                }
+            );
+        });
+
+        it('rejects on items without a "title" defined', function(done) {
+            db.upsert(Artist.create('neon-extension-source-googlemusic')).then(
+                () => done.fail(),
+                (err) => {
+                    console.log('Error returned:', err.message);
+                    done(err);
+                }
+            );
+        });
+
+        it('rejects on items with missing child', function(done) {
+            db.upsert(Album.create('neon-extension-source-googlemusic', {
+                title: 'Humanz'
+            })).then(
+                () => done.fail(),
+                (err) => {
+                    console.log('Error returned:', err.message);
+                    done(err);
+                }
+            );
+        });
+
+        it('rejects on items with missing child identifier', function(done) {
+            db.upsert(Album.create('neon-extension-source-googlemusic', {
+                title: 'Humanz'
+            }, {
+                artist: Artist.create('neon-extension-source-googlemusic')
+            })).then(
+                () => done.fail(),
+                (err) => {
+                    console.log('Error returned:', err.message);
+                    done(err);
+                }
+            );
         });
     });
 

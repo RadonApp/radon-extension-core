@@ -42,7 +42,9 @@ describe('ItemDatabase', function() {
                     title: 'gorillaz',
 
                     updated: true
-                })).then((current) => {
+                })).then(({updated, item: current}) => {
+                    expect(updated).toBe(true);
+
                     expect(current.id).toBe(item.id);
                     expect(current.revision).not.toBe(item.revision);
 
@@ -58,6 +60,28 @@ describe('ItemDatabase', function() {
                     expect(current.get('test').keys.id).toBe(1);
                 });
             });
+        });
+
+        it('rejects on invalid items', function(done) {
+            db.update().then(
+                () => done.fail(),
+                (err) => done(err)
+            );
+        });
+
+        it('rejects on items which haven\'t been created', function(done) {
+            let item = Artist.create('test', {
+                keys: {
+                    id: 1
+                },
+
+                title: 'Gorillaz'
+            });
+
+            db.update(item).then(
+                () => done.fail(),
+                (err) => done(err)
+            );
         });
     });
 

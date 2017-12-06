@@ -111,6 +111,17 @@ describe('ItemDatabase', function() {
                 });
             });
         });
+
+        it('ignores zero-length arrays', function() {
+            return db.updateMany([]);
+        });
+
+        it('rejects on invalid item arrays', function(done) {
+            db.updateMany().then(
+                () => done.fail(),
+                (err) => done(err)
+            );
+        });
     });
 
     afterAll(function() {

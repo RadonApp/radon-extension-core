@@ -18,18 +18,18 @@ describe('ItemDatabase', function() {
     });
 
     describe('upsertTree', function() {
-        let artist = Artist.create('test', {
-            title: 'Gorillaz'
-        });
+        it('creates items', function() {
+            let artist = Artist.create('test', {
+                title: 'Gorillaz'
+            });
 
-        let album = Album.create('test', {
-            title: 'Humanz'
-        }, {
-            artist
-        });
+            let album = Album.create('test', {
+                title: 'Humanz'
+            }, {
+                artist
+            });
 
-        it('upserts tree of items', function() {
-            return db.upsertTree(new Track({
+            let item = Track.create('test', {
                 title: 'Andromeda (feat. D.R.A.M.)',
 
                 number: 10,
@@ -37,8 +37,20 @@ describe('ItemDatabase', function() {
             }, {
                 artist,
                 album
-            })).then(({updated, item}) => {
-                expect(updated).toBe(true);
+            });
+
+            return db.upsertTree(item).then(({created, updated, children, item}) => {
+                let id = item.id;
+                let revision = item.revision;
+
+                expect(created).toBe(true);
+                expect(updated).toBe(false);
+
+                expect(children.created['artist']).toBe(true);
+                expect(children.created['album']).toBe(true);
+
+                expect(children.updated['artist']).toBe(false);
+                expect(children.updated['album']).toBe(false);
 
                 // Track
                 expect(item.id).toBeDefined();
@@ -63,6 +75,95 @@ describe('ItemDatabase', function() {
                 expect(item.artist.revision).toBe(item.album.artist.revision);
 
                 expect(item.artist.title).toBe('Gorillaz');
+
+                // Ensure unchanged items are detected
+                return db.upsertTree(item).then(({created, updated, children}) => {
+                    expect(created).toBe(false);
+                    expect(updated).toBe(false);
+
+                    expect(children.created['artist']).toBe(false);
+                    expect(children.created['album']).toBe(false);
+
+                    expect(children.updated['artist']).toBe(false);
+                    expect(children.updated['album']).toBe(false);
+
+                    expect(item.id).toBe(id);
+                    expect(item.revision).toBe(revision);
+                });
+            }, (err) => {
+                console.log('Error returned:', err.message);
+            });
+        });
+
+        it('updates items', function() {
+            let artist = Artist.create('test', {
+                title: 'LCD Soundsystem'
+            });
+
+            let album = Album.create('test', {
+                title: 'Sound Of Silver'
+            }, {
+                artist
+            });
+
+            let item = Track.create('test', {
+                title: 'Time to Get Away',
+
+                number: 2,
+                duration: 251000
+            }, {
+                artist,
+                album
+            });
+
+            return db.upsertTree(item).then(({created, updated, children, item}) => {
+                expect(created).toBe(true);
+                expect(updated).toBe(false);
+
+                expect(children.created['artist']).toBe(true);
+                expect(children.created['album']).toBe(true);
+
+                expect(children.updated['artist']).toBe(false);
+                expect(children.updated['album']).toBe(false);
+
+                // Update artist
+                artist.update('test', {
+                    keys: {
+                        id: 1
+                    }
+                });
+
+                // Update album
+                album.update('test', {
+                    keys: {
+                        id: 2
+                    }
+                });
+
+                // Update track
+                item.update('test', {
+                    keys: {
+                        id: 3
+                    }
+                });
+
+                // Update database
+                return db.upsertTree(item).then(({created, updated, children}) => {
+                    expect(created).toBe(false);
+                    expect(updated).toBe(true);
+
+                    expect(children.created['artist']).toBe(false);
+                    expect(children.created['album']).toBe(false);
+
+                    expect(children.updated['artist']).toBe(true);
+                    expect(children.updated['album']).toBe(true);
+
+                    expect(artist.get('test').keys.id).toBe(1);
+                    expect(album.get('test').keys.id).toBe(2);
+                    expect(item.get('test').keys.id).toBe(3);
+                });
+            }, (err) => {
+                console.log('Error returned:', err.message);
             });
         });
     });
