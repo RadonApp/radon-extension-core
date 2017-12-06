@@ -209,7 +209,11 @@ export default class ItemDatabase extends Database {
     }
 
     updateMany(items) {
-        if(IsNil(items) || items.length < 1) {
+        if(IsNil(items) || !Array.isArray(items)) {
+            return Promise.reject(new Error('Invalid value provided for the "items" parameter (expected array)'));
+        }
+
+        if(items.length < 1) {
             return Promise.resolve();
         }
 
