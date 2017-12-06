@@ -164,7 +164,10 @@ export default class ItemDatabase extends Database {
         // Retrieve current item from database
         return this.get(item.id).then((doc) => {
             if(!item.merge(this.decode(doc))) {
-                return item;
+                return {
+                    updated: false,
+                    item
+                };
             }
 
             // Update revision
@@ -197,7 +200,10 @@ export default class ItemDatabase extends Database {
                 item.createdAt = update.createdAt;
                 item.updatedAt = update.updatedAt;
 
-                return item;
+                return {
+                    updated: true,
+                    item
+                };
             });
         });
     }
