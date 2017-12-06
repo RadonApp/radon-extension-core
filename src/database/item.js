@@ -300,17 +300,9 @@ export default class ItemDatabase extends Database {
         });
     }
 
-    upsert(item, options) {
-        options = options || {};
-        options.force = options.force || false;
-
-        if(IsNil(item) || IsNil(item.title)) {
-            return Promise.resolve({
-                created: false,
-                updated: false,
-
-                item
-            });
+    upsert(item) {
+        if(IsNil(item)) {
+            return Promise.reject(new Error('Invalid value provided for the "item" parameter'));
         }
 
         Log.debug('Upserting item: %o', item);
@@ -336,9 +328,9 @@ export default class ItemDatabase extends Database {
                 item.id = result['_id'];
 
                 // Update item in database
-                return this.update(item).then((item) => ({
+                return this.update(item).then(({ updated, item }) => ({
                     created: false,
-                    updated: true,
+                    updated,
 
                     item
                 }));
@@ -358,44 +350,44 @@ export default class ItemDatabase extends Database {
     }
 
     upsertTree(item) {
-        let updated = false;
+        let children = {
+            created: {},
+            updated: {}
+        };
 
-        function resolve(result) {
-            if(result.updated) {
-                updated = true;
+        function resolve(result, name) {
+            if(IsNil(name)) {
+                return result.item;
             }
+
+            children.created[name] = result.created || children.created[name] || false;
+            children.updated[name] = result.updated || children.updated[name] || false;
 
             return result.item;
         }
 
         if(item instanceof Track) {
             return Promise.resolve()
-                // Track (retrieve references)
-                .then(() => this.upsert(item, { force: updated }).then((result) => {
-                    item = result.item;
-                }))
                 // Artist
-                .then(() => this.upsert(item.artist, { force: updated }).then((result) => {
-                    item.artist = resolve(result);
+                .then(() => this.upsert(item.artist).then((result) => {
+                    item.artist = resolve(result, 'artist');
                 }))
                 // Album Artist
-                .then(() => this.upsert(item.album.artist, { force: updated }).then((result) => {
-                    item.album.artist = resolve(result);
+                .then(() => this.upsert(item.album.artist).then((result) => {
+                    item.album.artist = resolve(result, 'artist');
                 }))
                 // Album
-                .then(() => this.upsert(item.album, { force: updated }).then((result) => {
-                    item.album = resolve(result);
+                .then(() => this.upsert(item.album).then((result) => {
+                    item.album = resolve(result, 'album');
                 }))
-                // Track (set references)
-                .then(() => this.upsert(item, { force: updated }).then((result) => {
-                    item = resolve(result);
-                }))
-                // Result
-                .then(() => ({
-                    updated: updated,
+                // Track
+                .then(() => this.upsert(item).then(({created, updated, item}) => ({
+                    created,
+                    updated,
 
+                    children,
                     item
-                }));
+                })));
         }
 
         return Promise.reject(new Error(
