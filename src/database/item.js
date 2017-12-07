@@ -360,10 +360,6 @@ export default class ItemDatabase extends Database {
         };
 
         function resolve(result, name) {
-            if(IsNil(name)) {
-                return result.item;
-            }
-
             children.created[name] = result.created || children.created[name] || false;
             children.updated[name] = result.updated || children.updated[name] || false;
 
