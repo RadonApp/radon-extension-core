@@ -1,13 +1,11 @@
 import Filter from 'lodash-es/filter';
 import IsNil from 'lodash-es/isNil';
-import IsPlainObject from 'lodash-es/isPlainObject';
-import IsString from 'lodash-es/isString';
 import Map from 'lodash-es/map';
 
 import Item from 'neon-extension-framework/models/item/core/base';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Log from 'neon-extension-core/core/logger';
-import {Album, Artist, Track} from 'neon-extension-framework/models/item/music';
+import {Track} from 'neon-extension-framework/models/item/music';
 
 import Database from './base';
 
