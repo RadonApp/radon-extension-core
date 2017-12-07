@@ -80,7 +80,6 @@
     "react": "15.3.0",
     "react-dom": "15.3.0",
     "react-router": "2.6.1",
-    "slugify": "1.2.6",
     "urijs": "1.18.2",
     "uuid": "^2.0.3",
     "webpack": "^3.8.1"
