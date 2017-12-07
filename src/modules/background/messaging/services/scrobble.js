@@ -169,21 +169,13 @@ export class ScrobbleService extends BaseService {
         Log.trace('Retrieving item "%s" from database', item.id);
 
         // Retrieve item from database
-        return ItemDatabase.get(item.id)
-            // Decode document, and merge with `item`
-            .then((doc) => {
-                let result = ItemParser.decode(doc).merge(item);
+        return ItemDatabase.get(item.id).then((doc) => {
+            // Merge `item` with current document
+            item.merge(ItemParser.decode(doc));
 
-                if(result.type !== item.type) {
-                    return Promise.reject(new Error(
-                        'Expected item with type "' + item.type + '", found "' + result.type + '"'
-                    ));
-                }
-
-                return result;
-            })
-            // Fetch item children
-            .then((item) => this.fetchChildren(item));
+            // Fetch children
+            return this.fetchChildren(item);
+        });
     }
 
     fetchChildren(item) {
