@@ -1,4 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import IsNil from 'lodash-es/isNil';
+
 import ItemDatabase from 'neon-extension-core/database/item';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Log from 'neon-extension-core/core/logger';
@@ -7,7 +9,6 @@ import Registry from 'neon-extension-framework/core/registry';
 import Session from 'neon-extension-framework/models/session';
 import SessionDatabase from 'neon-extension-core/database/session';
 import {MediaTypes} from 'neon-extension-framework/core/enums';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import BaseService from './core/base';
 
@@ -31,7 +32,7 @@ export class ScrobbleService extends BaseService {
     }
 
     onClientConnected(client) {
-        if(isDefined(this._activeClients[client.id])) {
+        if(!IsNil(this._activeClients[client.id])) {
             return;
         }
 
@@ -61,7 +62,7 @@ export class ScrobbleService extends BaseService {
                 // Parse session
                 let session = Session.fromDocument(data);
 
-                if(!isDefined(session) || !isDefined(session.item)) {
+                if(IsNil(session) || IsNil(session.item)) {
                     Log.warn('Unable to parse session: %o', data);
                     return;
                 }
@@ -79,7 +80,7 @@ export class ScrobbleService extends BaseService {
         // Parse session
         let session = Session.fromPlainObject(payload);
 
-        if(!isDefined(session) || !isDefined(session.item)) {
+        if(IsNil(session) || IsNil(session.item)) {
             Log.warn('Unable to parse session: %o', payload);
             return;
         }
@@ -113,11 +114,11 @@ export class ScrobbleService extends BaseService {
                     this.emitTo(sender.id, 'session.updated', session.toPlainObject());
                 }
 
-                if(isDefined(previous) && session.state !== previous.state) {
+                if(!IsNil(previous) && session.state !== previous.state) {
                     Log.debug('[%s] State changed from %o to %o', session.id, previous.state, session.state);
                 }
 
-                if(isDefined(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
+                if(!IsNil(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
                     Log.info(
                         '[%s] Ignoring duplicate %o event (previous: %o, current: %o)',
                         session.id, event, previous, session.state
@@ -157,11 +158,11 @@ export class ScrobbleService extends BaseService {
     }
 
     fetch(item) {
-        if(!isDefined(item) || item.complete) {
+        if(IsNil(item) || item.complete) {
             return Promise.resolve(item);
         }
 
-        if(!isDefined(item.id)) {
+        if(IsNil(item.id)) {
             return this.fetchChildren(item);
         }
 

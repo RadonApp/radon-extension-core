@@ -1,11 +1,11 @@
 import ClassNames from 'classnames';
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
 import Log from 'neon-extension-core/core/logger';
 import Registry from 'neon-extension-framework/core/registry';
 import {Model, EnableOption, PluginOption} from 'neon-extension-framework/services/configuration/models';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Options from './options';
 import './group.scss';
@@ -74,7 +74,7 @@ export default class Group extends React.Component {
     refreshHeaderOption(id, props) {
         let option = this._getHeaderOption(props.children);
 
-        if(!isDefined(option)) {
+        if(IsNil(option)) {
             this.setState({
                 enabled: true,
 
@@ -198,7 +198,7 @@ export default class Group extends React.Component {
         // Try retrieve option component
         let Component;
 
-        if(item instanceof PluginOption && isDefined(item.options.componentId)) {
+        if(item instanceof PluginOption && !IsNil(item.options.componentId)) {
             Component = Registry.components[item.options.componentId];
         } else {
             Component = Options[item.type];

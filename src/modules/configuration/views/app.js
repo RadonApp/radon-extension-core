@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import ClassNames from 'classnames';
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import QueryString from 'querystring';
 import React from 'react';
@@ -11,7 +12,6 @@ import {PropTypes} from 'prop-types';
 import Platform, {Platforms} from 'neon-extension-browser/platform';
 import Plugin from 'neon-extension-core/core/plugin';
 import Preferences from 'neon-extension-framework/preferences';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class App extends React.Component {
@@ -38,7 +38,7 @@ export default class App extends React.Component {
         }
 
         // Detect embedded configuration frame
-        let embedded = isDefined(query.embedded);
+        let embedded = !IsNil(query.embedded);
 
         if(Platform.name === Platforms.Chrome) {
             if(window.innerHeight > 550) {

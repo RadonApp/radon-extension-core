@@ -1,5 +1,6 @@
+import IsNil from 'lodash-es/isNil';
+
 import Log from 'neon-extension-core/core/logger';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import MessageBroker from '../broker';
 
@@ -12,7 +13,7 @@ export class ServiceHandler {
     }
 
     subscribe(params, resolve, reject, request, sender) {
-        if(!isDefined(params) || !isDefined(params.channel) || !isDefined(params.service)) {
+        if(IsNil(params) || IsNil(params.channel) || IsNil(params.service)) {
             reject(new Error('Invalid request parameters'));
             return;
         }
@@ -38,7 +39,7 @@ export class ServiceHandler {
     }
 
     unsubscribe(params, resolve, reject, request, sender) {
-        if(!isDefined(params) || !isDefined(params.channel) || !isDefined(params.service)) {
+        if(IsNil(params) || IsNil(params.channel) || IsNil(params.service)) {
             reject(new Error('Invalid request parameters'));
             return;
         }

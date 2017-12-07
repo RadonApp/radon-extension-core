@@ -1,11 +1,11 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
 
 import Log from 'neon-extension-core/core/logger';
 import MessageClient from 'neon-extension-framework/messaging/client';
 import Messaging from 'neon-extension-browser/messaging';
 import Tabs from 'neon-extension-browser/tabs';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 import {parseMessageName} from 'neon-extension-framework/messaging/core/helpers';
 
 import MessageBrokerChannel from './channel';
@@ -48,7 +48,7 @@ export class MessageBroker extends EventEmitter {
         }
 
         // Create channel (if one doesn't exist)
-        if(!isDefined(this.channels[name])) {
+        if(IsNil(this.channels[name])) {
             this.channels[name] = new MessageBrokerChannel(this, name);
         }
 
@@ -85,7 +85,7 @@ export class MessageBroker extends EventEmitter {
         port.on('disconnect', () => client.onDisconnected());
 
         // Bind to tab events
-        if(isDefined(port.sender.tab) && isDefined(port.sender.tab.id)) {
+        if(!IsNil(port.sender.tab) && !IsNil(port.sender.tab.id)) {
             Tabs.once('removed#' + port.sender.tab.id, () => client.onDisconnected());
         }
 
@@ -126,7 +126,7 @@ export class MessageBroker extends EventEmitter {
         // Parse name
         let event = parseMessageName(message.name);
 
-        if(!isDefined(event)) {
+        if(IsNil(event)) {
             Log.warn('Unable to parse event name: %s', message.name);
             return;
         }
@@ -134,9 +134,9 @@ export class MessageBroker extends EventEmitter {
         // Retrieve event target
         let target;
 
-        if(isDefined(event.channel) && isDefined(event.service)) {
+        if(!IsNil(event.channel) && !IsNil(event.service)) {
             target = this.service(event.channel, event.service);
-        } else if(isDefined(event.channel)) {
+        } else if(!IsNil(event.channel)) {
             target = this.channel(event.channel);
         } else {
             Log.warn('Unsupported event: %s', message.name);
@@ -167,7 +167,7 @@ export class MessageBroker extends EventEmitter {
         // Post message function
         function post(response) {
             // Cancel timeout callback
-            if(isDefined(timeoutId)) {
+            if(!IsNil(timeoutId)) {
                 clearTimeout(timeoutId);
             }
 

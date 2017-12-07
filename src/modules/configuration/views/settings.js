@@ -1,8 +1,8 @@
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
 import Log from 'neon-extension-core/core/logger';
 import Preferences from 'neon-extension-framework/preferences';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Group from '../components/settings/group';
 import './settings.scss';
@@ -45,7 +45,7 @@ export default class Options extends React.Component {
         // Build page identifier
         let pageId;
 
-        if(isDefined(key)) {
+        if(!IsNil(key)) {
             pageId = pluginId + ':' + key;
         } else {
             pageId = pluginId;
@@ -54,7 +54,7 @@ export default class Options extends React.Component {
         // Try find matching preference page
         let page = Preferences.pages[type][pageId];
 
-        if(!isDefined(page)) {
+        if(IsNil(page)) {
             Log.warn('Unable to find %o preference page: %o', type, pageId);
             return;
         }

@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 
 import Log from 'neon-extension-core/core/logger';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class MessageBrokerClient extends EventEmitter {
@@ -20,7 +20,7 @@ export default class MessageBrokerClient extends EventEmitter {
     }
 
     disconnect() {
-        if(!isDefined(this._disconnect)) {
+        if(IsNil(this._disconnect)) {
             Log.warn('No "disconnect" function available on client: %o', this);
             return false;
         }
@@ -38,7 +38,7 @@ export default class MessageBrokerClient extends EventEmitter {
     }
 
     post(message) {
-        if(!isDefined(this._post)) {
+        if(IsNil(this._post)) {
             Log.warn('No "post" function available on client: %o', this);
             return Promise.reject();
         }

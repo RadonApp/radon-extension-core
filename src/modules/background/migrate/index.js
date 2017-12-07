@@ -1,7 +1,7 @@
 import ForEach from 'lodash-es/forEach';
+import IsNil from 'lodash-es/isNil';
 
 import Log from 'neon-extension-framework/core/logger';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export class Migrate {
@@ -37,7 +37,7 @@ export class Migrate {
         let targetKey = this.transformKey(key, 1);
 
         // Ensure target key hasn't already been defined
-        if(isDefined(localStorage[targetKey])) {
+        if(!IsNil(localStorage[targetKey])) {
             Log.debug('Preference "%s" has already been defined', targetKey);
             return;
         }
@@ -50,7 +50,7 @@ export class Migrate {
         let targetKey = this.transformKey(key, 0);
 
         // Ensure target key hasn't already been defined
-        if(isDefined(localStorage[targetKey])) {
+        if(!IsNil(localStorage[targetKey])) {
             Log.debug('Value "%s" has already been defined', targetKey);
             return;
         }

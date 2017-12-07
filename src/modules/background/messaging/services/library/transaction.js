@@ -2,6 +2,7 @@ import Assign from 'lodash-es/assign';
 import Filter from 'lodash-es/filter';
 import ForEach from 'lodash-es/forEach';
 import Get from 'lodash-es/get';
+import IsNil from 'lodash-es/isNil';
 import Has from 'lodash-es/has';
 import Map from 'lodash-es/map';
 import Merge from 'lodash-es/merge';
@@ -14,7 +15,7 @@ import ItemDatabase from 'neon-extension-core/database/item';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Log from 'neon-extension-core/core/logger';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
-import {cleanTitle, encodeTitle, isDefined} from 'neon-extension-framework/core/helpers';
+import {cleanTitle, encodeTitle} from 'neon-extension-framework/core/helpers';
 import {createTasks} from 'neon-extension-framework/core/helpers/execution';
 import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 
@@ -55,7 +56,7 @@ export default class LibraryTransaction {
         this.matched = {};
 
         // Validate parameters
-        if(!isDefined(this.source)) {
+        if(IsNil(this.source)) {
             throw new Error('Missing required option: source');
         }
     }
@@ -92,7 +93,7 @@ export default class LibraryTransaction {
         Log.trace('Adding %d item(s) to transaction [chunk: %o]', items.length, options.chunk);
 
         // Add items sequentially (if chunks are disabled, or not required)
-        if(!isDefined(options.chunk) || items.length <= options.chunk) {
+        if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.add(ItemParser.decode(item)).catch((err) => {
                 Log.warn('Unable to add item: %s', err && err.message, err);
             }));
@@ -105,7 +106,7 @@ export default class LibraryTransaction {
     }
 
     add(item) {
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return Promise.reject(new Error('Invalid item'));
         }
 
@@ -127,7 +128,7 @@ export default class LibraryTransaction {
     }
 
     addTrack(track) {
-        if(!isDefined(track) || !isDefined(track.title)) {
+        if(IsNil(track) || IsNil(track.title)) {
             return null;
         }
 
@@ -148,12 +149,12 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) track
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = track;
             current['#id'] = Uuid.v4();
 
             // Ensure `items` collection exist
-            if(!isDefined(this.transactionItems[track.type])) {
+            if(IsNil(this.transactionItems[track.type])) {
                 this.transactionItems[track.type] = [];
             }
 
@@ -171,15 +172,15 @@ export default class LibraryTransaction {
     }
 
     addAlbum(album, artist) {
-        if(!isDefined(album)) {
+        if(IsNil(album)) {
             return null;
         }
 
-        if(isDefined(album.artist) && isDefined(album.artist.title)) {
+        if(!IsNil(album.artist) && !IsNil(album.artist.title)) {
             artist = album.artist;
         }
 
-        if(!isDefined(artist) || !isDefined(artist.title)) {
+        if(IsNil(artist) || IsNil(artist.title)) {
             return null;
         }
 
@@ -198,12 +199,12 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) album
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = album;
             current['#id'] = Uuid.v4();
 
             // Ensure `items` collection exist
-            if(!isDefined(this.transactionItems[album.type])) {
+            if(IsNil(this.transactionItems[album.type])) {
                 this.transactionItems[album.type] = [];
             }
 
@@ -221,7 +222,7 @@ export default class LibraryTransaction {
     }
 
     addArtist(artist) {
-        if(!isDefined(artist) || !isDefined(artist.title)) {
+        if(IsNil(artist) || IsNil(artist.title)) {
             return null;
         }
 
@@ -236,12 +237,12 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) artist
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = artist;
             current['#id'] = Uuid.v4();
 
             // Ensure `items` collection exist
-            if(!isDefined(this.transactionItems[artist.type])) {
+            if(IsNil(this.transactionItems[artist.type])) {
                 this.transactionItems[artist.type] = [];
             }
 
@@ -268,7 +269,7 @@ export default class LibraryTransaction {
         Log.trace('Seeding transaction with %d item(s) [chunk: %o]', items.length, options.chunk);
 
         // Seed items sequentially (if chunks are disabled, or not required)
-        if(!isDefined(options.chunk) || items.length <= options.chunk) {
+        if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.seed(ItemParser.decode(item)).catch((err) => {
                 Log.warn('Unable to seed transaction with item: %s', err && err.message, err);
             }));
@@ -281,7 +282,7 @@ export default class LibraryTransaction {
     }
 
     seed(item) {
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return Promise.reject(new Error('Invalid item'));
         }
 
@@ -303,7 +304,7 @@ export default class LibraryTransaction {
     }
 
     seedTrack(track) {
-        if(!isDefined(track) || !isDefined(track.title)) {
+        if(IsNil(track) || IsNil(track.title)) {
             return null;
         }
 
@@ -312,12 +313,12 @@ export default class LibraryTransaction {
         track.album = this.seedAlbum(track.album, track.artist);
 
         // Validate artist
-        if(!isDefined(track.artist) || !isDefined(track.artist.title)) {
+        if(IsNil(track.artist) || IsNil(track.artist.title)) {
             return null;
         }
 
         // Validate album
-        if(!isDefined(track.album)) {
+        if(IsNil(track.album)) {
             return null;
         }
 
@@ -334,7 +335,7 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) track
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = track;
             current['#id'] = Uuid.v4();
         } else {
@@ -349,11 +350,11 @@ export default class LibraryTransaction {
     }
 
     seedAlbum(album, artist) {
-        if(!isDefined(album)) {
+        if(IsNil(album)) {
             return null;
         }
 
-        if(isDefined(album.artist) && isDefined(album.artist.title)) {
+        if(!IsNil(album.artist) && !IsNil(album.artist.title)) {
             artist = album.artist;
         }
 
@@ -361,7 +362,7 @@ export default class LibraryTransaction {
         album.artist = this.seedArtist(artist) || null;
 
         // Validate album
-        if(!isDefined(album.artist) || !isDefined(album.artist.title)) {
+        if(IsNil(album.artist) || IsNil(album.artist.title)) {
             return null;
         }
 
@@ -377,7 +378,7 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) album
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = album;
             current['#id'] = Uuid.v4();
         } else {
@@ -392,7 +393,7 @@ export default class LibraryTransaction {
     }
 
     seedArtist(artist) {
-        if(!isDefined(artist) || !isDefined(artist.title)) {
+        if(IsNil(artist) || IsNil(artist.title)) {
             return null;
         }
 
@@ -407,7 +408,7 @@ export default class LibraryTransaction {
         });
 
         // Create (or update existing) artist
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = artist;
             current['#id'] = Uuid.v4();
         } else {
@@ -474,7 +475,7 @@ export default class LibraryTransaction {
         Log.trace('Processing %d item(s) [chunk: %o]', items.length, options.chunk);
 
         // Process items sequentially (if chunks are disabled, or not required)
-        if(!isDefined(options.chunk) || items.length <= options.chunk) {
+        if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.processItem(type, item).catch((err) => {
                 Log.warn('Unable to process item: %s', err && err.message, err);
             }));
@@ -487,7 +488,7 @@ export default class LibraryTransaction {
     }
 
     processItem(type, item, parent) {
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return Promise.reject(new Error('Invalid item'));
         }
 
@@ -526,7 +527,7 @@ export default class LibraryTransaction {
     }
 
     processTrack(track) {
-        if(!isDefined(track)) {
+        if(IsNil(track)) {
             throw new Error('Invalid track');
         }
 
@@ -543,7 +544,7 @@ export default class LibraryTransaction {
         });
 
         // Process track
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = track;
 
             this._storeItem('created', [track.type, current['#id']], current);
@@ -561,12 +562,12 @@ export default class LibraryTransaction {
     }
 
     processAlbum(album, parent) {
-        if(!isDefined(album)) {
+        if(IsNil(album)) {
             throw new Error('Invalid album');
         }
 
         // Use parent artist
-        if(!isDefined(album.artist) && isDefined(parent) && parent.type === 'music/track') {
+        if(IsNil(album.artist) && !IsNil(parent) && parent.type === 'music/track') {
             album.artist = parent.artist || null;
         }
 
@@ -582,7 +583,7 @@ export default class LibraryTransaction {
         });
 
         // Process album
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = album;
 
             this._storeItem('created', [album.type, current['#id']], current);
@@ -600,7 +601,7 @@ export default class LibraryTransaction {
     }
 
     processArtist(artist) {
-        if(!isDefined(artist)) {
+        if(IsNil(artist)) {
             throw new Error('Invalid artist');
         }
 
@@ -615,7 +616,7 @@ export default class LibraryTransaction {
         });
 
         // Process artist
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             current = artist;
 
             this._storeItem('created', [artist.type, current['#id']], current);
@@ -636,7 +637,7 @@ export default class LibraryTransaction {
 
     _createTitleId(...components) {
         return Map(components, (component) => {
-            if(!isDefined(component)) {
+            if(IsNil(component)) {
                 return '%00';
             }
 
@@ -653,7 +654,7 @@ export default class LibraryTransaction {
             // Try retrieve item with identifier
             let result = Get(collection, [type, name, ids[name]]);
 
-            if(isDefined(result)) {
+            if(!IsNil(result)) {
                 return result;
             }
         }
@@ -662,7 +663,7 @@ export default class LibraryTransaction {
     }
 
     _indexItem(collection, pk, item) {
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return;
         }
 
@@ -676,15 +677,15 @@ export default class LibraryTransaction {
     }
 
     _update(current, item, options) {
-        if(!isDefined(current) || !isDefined(item)) {
+        if(IsNil(current) || IsNil(item)) {
             return false;
         }
 
         options = options || {};
 
         // Encode items
-        let currentData = isDefined(options.currentData) ? options.currentData : current.toDocument();
-        let itemData = isDefined(options.itemData) ? options.itemData : item.toDocument();
+        let currentData = !IsNil(options.currentData) ? options.currentData : current.toDocument();
+        let itemData = !IsNil(options.itemData) ? options.itemData : item.toDocument();
 
         // Compare properties
         let changed = false;
@@ -699,7 +700,7 @@ export default class LibraryTransaction {
             }
 
             // Ignore changes to undefined values
-            if(!isDefined(item.values[key])) {
+            if(IsNil(item.values[key])) {
                 continue;
             }
 
@@ -726,7 +727,7 @@ export default class LibraryTransaction {
     }
 
     _updateProperty(current, item, key) {
-        if(!isDefined(current[key]) && isDefined(item[key])) {
+        if(IsNil(current[key]) && !IsNil(item[key])) {
             current[key] = item[key];
             return true;
         }
@@ -748,7 +749,7 @@ export default class LibraryTransaction {
             }
 
             // Update identifiers
-            if(!isDefined(current[key][this.source])) {
+            if(IsNil(current[key][this.source])) {
                 current[key][this.source] = added;
             } else {
                 Assign(current[key][this.source], added);

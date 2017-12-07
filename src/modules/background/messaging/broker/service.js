@@ -1,7 +1,6 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
-
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import BrokerEmitter from './emitter';
 
@@ -73,7 +72,7 @@ export default class MessageBrokerService extends EventEmitter {
         }
 
         // Ensure client exists
-        if(!isDefined(this.subscribed[clientId])) {
+        if(IsNil(this.subscribed[clientId])) {
             return false;
         }
 
@@ -88,7 +87,7 @@ export default class MessageBrokerService extends EventEmitter {
     }
 
     subscribe(client) {
-        if(isDefined(this.subscribed[client.id])) {
+        if(!IsNil(this.subscribed[client.id])) {
             return false;
         }
 
@@ -97,7 +96,7 @@ export default class MessageBrokerService extends EventEmitter {
     }
 
     unsubscribe(client) {
-        if(!isDefined(this.subscribed[client.id])) {
+        if(IsNil(this.subscribed[client.id])) {
             return false;
         }
 
