@@ -1,7 +1,6 @@
 import ItemDatabase from 'neon-extension-core/database/item';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
 
-import ForEach from 'lodash-es/forEach';
 import Uuid from 'uuid';
 
 
@@ -165,6 +164,13 @@ describe('ItemDatabase', function() {
             }, (err) => {
                 console.log('Error returned:', err.message);
             });
+        });
+
+        it('rejects on unknown items', function(done) {
+            return db.upsertTree({}).then(
+                () => done.fail(),
+                (err) => done(err)
+            );
         });
     });
 
