@@ -112,6 +112,52 @@ describe('ItemDatabase', function() {
             });
         });
 
+        it('ignores items that haven\'t changed', function() {
+            let items = [
+                Artist.create('test', {
+                    keys: {
+                        id: 7
+                    },
+
+                    title: 'LCD Soundsystem',
+
+                    created: true
+                })
+            ];
+
+            // Create items
+            return db.createMany(items).then(() => {
+                // Update items
+                return db.updateMany([
+                    Artist.create('test', {
+                        id: items[0].id,
+                        revision: items[0].revision,
+
+                        keys: {
+                            id: 7
+                        },
+
+                        title: 'LCD Soundsystem'
+                    })
+                ]).then(({updated, errors, items}) => {
+                    expect(updated).toBe(0);
+
+                    expect(errors.failed).toBe(0);
+                    expect(errors.invalid).toBe(0);
+                    expect(errors.notCreated).toBe(0);
+
+                    expect(items.length).toBe(1);
+
+                    expect(items[0].id).toBeDefined();
+                    expect(items[0].createdAt).toBeDefined();
+                    expect(items[0].title).toBe('LCD Soundsystem');
+
+                    expect(items[0].get('test').created).toBe(true);
+                    expect(items[0].get('test').updated).toBeUndefined();
+                });
+            });
+        });
+
         it('ignores zero-length arrays', function() {
             return db.updateMany([]);
         });
@@ -121,6 +167,132 @@ describe('ItemDatabase', function() {
                 () => done.fail(),
                 (err) => done(err)
             );
+        });
+
+        it('marks invalid items', function() {
+            let items = [
+                Artist.create('test', {
+                    keys: {
+                        id: 4
+                    },
+
+                    title: 'Midnight Oil',
+
+                    created: true,
+                    updated: false
+                })
+            ];
+
+            // Create items
+            return db.createMany(items).then(() => {
+                // Update items
+                return db.updateMany([
+                    Artist.create('test', {
+                        id: items[0].id,
+                        revision: items[0].revision,
+
+                        keys: {
+                            id: 4
+                        },
+
+                        title: 'Midnight Oil',
+
+                        updated: true
+                    }),
+                    {},
+                    5,
+                    false
+                ]).then(({updated, errors, items}) => {
+                    expect(updated).toBe(1);
+
+                    expect(errors.failed).toBe(0);
+                    expect(errors.invalid).toBe(3);
+                    expect(errors.notCreated).toBe(0);
+
+                    expect(items.length).toBe(4);
+
+                    expect(items[0].id).toBeDefined();
+                    expect(items[0].createdAt).toBeDefined();
+                    expect(items[0].title).toBe('Midnight Oil');
+
+                    expect(items[0].get('test').created).toBe(true);
+                    expect(items[0].get('test').updated).toBe(true);
+
+                    expect(Object.keys(items[1]).length).toBe(0);
+                    expect(items[2]).toBe(5);
+                    expect(items[3]).toBe(false);
+                });
+            });
+        });
+
+        it('marks items that haven\'t been created', function() {
+            let items = [
+                Artist.create('test', {
+                    keys: {
+                        id: 5
+                    },
+
+                    title: 'Miike Snow',
+
+                    created: true,
+                    updated: false
+                })
+            ];
+
+            // Create items
+            return db.createMany(items).then(() => {
+                // Update items
+                return db.updateMany([
+                    Artist.create('test', {
+                        id: items[0].id,
+                        revision: items[0].revision,
+
+                        keys: {
+                            id: 5
+                        },
+
+                        title: 'Miike Snow',
+
+                        updated: true
+                    }),
+                    Artist.create('test', {
+                        keys: {
+                            id: 6
+                        },
+
+                        title: 'Talking Heads',
+
+                        updated: true
+                    }),
+                    5,
+                    false
+                ]).then(({updated, errors, items}) => {
+                    expect(updated).toBe(1);
+
+                    expect(errors.failed).toBe(0);
+                    expect(errors.invalid).toBe(2);
+                    expect(errors.notCreated).toBe(1);
+
+                    expect(items.length).toBe(4);
+
+                    expect(items[0].id).toBeDefined();
+                    expect(items[0].createdAt).toBeDefined();
+                    expect(items[0].title).toBe('Miike Snow');
+
+                    expect(items[0].get('test').created).toBe(true);
+                    expect(items[0].get('test').updated).toBe(true);
+
+                    expect(items[1].id).toBeNull();
+                    expect(items[1].createdAt).toBeNull();
+                    expect(items[1].title).toBe('Talking Heads');
+
+                    expect(items[1].get('test').created).toBeUndefined();
+                    expect(items[1].get('test').updated).toBe(true);
+
+                    expect(items[2]).toBe(5);
+                    expect(items[3]).toBe(false);
+                });
+            });
         });
     });
 
