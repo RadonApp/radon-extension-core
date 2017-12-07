@@ -31,7 +31,7 @@ const Indexes = {
     }
 };
 
-export default class ItemDatabase extends Database {
+export class ItemDatabase extends Database {
     constructor(name, options) {
         super(name || 'items', Indexes, options);
     }
@@ -393,3 +393,5 @@ export default class ItemDatabase extends Database {
         ));
     }
 }
+
+export default new ItemDatabase();

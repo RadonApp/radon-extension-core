@@ -1,4 +1,4 @@
-import ItemDatabase from 'neon-extension-core/database/item';
+import {ItemDatabase} from 'neon-extension-core/database/item';
 import {Artist, Album} from 'neon-extension-framework/models/item/music';
 
 import Uuid from 'uuid';
