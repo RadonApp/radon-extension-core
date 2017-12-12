@@ -75,7 +75,7 @@ export class ItemDatabase extends Database {
             return Promise.resolve();
         }
 
-        Log.debug('Creating %d item(s)', items.length);
+        Log.trace('Creating %d item(s)', items.length);
 
         let now = Date.now();
 
@@ -214,7 +214,7 @@ export class ItemDatabase extends Database {
             return Promise.resolve();
         }
 
-        Log.debug('Updating %d item(s)', items.length);
+        Log.trace('Updating %d item(s)', items.length);
 
         let now = Date.now();
 
@@ -273,9 +273,9 @@ export class ItemDatabase extends Database {
             }
 
             // Update items
-            Log.debug('Updating %d item(s): %o', docs.length, docs);
-
             return this.bulkDocs(docs).then((results) => {
+                Log.debug('Updated %d item(s)', docs.length);
+
                 for(let i = 0; i < results.length; i++) {
                     let result = results[i];
 
@@ -306,7 +306,7 @@ export class ItemDatabase extends Database {
             return Promise.reject(new Error('Invalid value provided for the "item" parameter'));
         }
 
-        Log.debug('Upserting item: %o', item);
+        Log.trace('Upserting item: %o', item);
 
         // Create selectors
         let selectors;
@@ -322,7 +322,7 @@ export class ItemDatabase extends Database {
         }
 
         // Find items
-        Log.debug('Finding items matching: %o', selectors);
+        Log.trace('Finding items matching: %o', selectors);
 
         return this.match(selectors).then((result) => {
             if(!IsNil(result)) {
