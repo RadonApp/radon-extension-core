@@ -351,6 +351,9 @@ export class ItemDatabase extends Database {
     }
 
     upsertTree(item) {
+        let created = false;
+        let updated = false;
+
         let children = {
             created: {},
             ignored: {},
@@ -358,9 +361,12 @@ export class ItemDatabase extends Database {
         };
 
         function process(name, promise) {
-            return promise.then(({created, updated}) => {
-                children.created[name] = created || children.created[name] || false;
-                children.updated[name] = updated || children.updated[name] || false;
+            return promise.then((result) => {
+                created = result.created || created;
+                updated = result.updated || updated;
+
+                children.created[name] = result.created || children.created[name] || false;
+                children.updated[name] = result.updated || children.updated[name] || false;
             }, (err) => {
                 Log.debug('Unable to upsert %s %o: %s', name, item.artist, err);
                 children.ignored[name] = true;
@@ -373,7 +379,7 @@ export class ItemDatabase extends Database {
                 .then(() => process('artist', this.upsert(item.artist)))
                 .then(() => process('artist', this.upsert(item.album.artist)))
                 .then(() => process('album', this.upsert(item.album)))
-                .then(() => this.upsert(item).then(({created, updated}) => ({
+                .then(() => this.upsert(item).then(() => ({
                     created,
                     updated,
 
