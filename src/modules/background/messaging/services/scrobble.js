@@ -94,71 +94,66 @@ export class ScrobbleService extends BaseService {
         this.onClientConnected(sender);
 
         // Fetch item metadata (if not available)
-        this.fetch(session.item).then((item) => {
-            // Update session
-            session.item = item;
-
+        this.fetch(session.item).then(() => {
             // Process event
             return this.processEvent(event, session, sender);
         });
     }
 
     processEvent(event, session, sender) {
-        // Update session
-        return this.update(event, session)
-            // Process event
-            .then(({session, created, updated, previous}) => {
-                if(created) {
-                    this.emitTo(sender.id, 'session.created', session.toPlainObject());
-                } else if(updated) {
-                    this.emitTo(sender.id, 'session.updated', session.toPlainObject());
+        // Update session (and item metadata)
+        return this.update(event, session).then(({session, created, updated, previous}) => {
+            if(created) {
+                this.emitTo(sender.id, 'session.created', session.toPlainObject());
+            } else if(updated) {
+                this.emitTo(sender.id, 'session.updated', session.toPlainObject());
+            }
+
+            if(!IsNil(previous) && session.state !== previous.state) {
+                Log.debug('[%s] State changed from %o to %o', session.id, previous.state, session.state);
+            }
+
+            if(!IsNil(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
+                Log.info(
+                    '[%s] Ignoring duplicate %o event (previous: %o, current: %o)',
+                    session.id, event, previous, session.state
+                );
+                return;
+            }
+
+            // Log session status
+            this._log(event, session);
+
+            // Emit event to available scrobble services
+            this.services.then((services) => {
+                // Find media services
+                services = services[session.item.type];
+
+                if(typeof services === 'undefined') {
+                    Log.notice('No services available for media: %o', session.item.type);
+                    return false;
                 }
 
-                if(!IsNil(previous) && session.state !== previous.state) {
-                    Log.debug('[%s] State changed from %o to %o', session.id, previous.state, session.state);
-                }
+                // Emit event to matching services
+                return Promise.all(services.map((service) => {
+                    return service.isEnabled().then((enabled) => {
+                        if(!enabled) {
+                            return false;
+                        }
 
-                if(!IsNil(previous) && !this._shouldEmitEvent(event, previous.state, session.state)) {
-                    Log.info(
-                        '[%s] Ignoring duplicate %o event (previous: %o, current: %o)',
-                        session.id, event, previous, session.state
-                    );
-                    return;
-                }
-
-                // Log session status
-                this._log(event, session);
-
-                // Emit event to available scrobble services
-                this.services.then((services) => {
-                    // Find media services
-                    services = services[session.item.type];
-
-                    if(typeof services === 'undefined') {
-                        Log.notice('No services available for media: %o', session.item.type);
-                        return false;
-                    }
-
-                    // Emit event to matching services
-                    return Promise.all(services.map((service) => {
-                        return service.isEnabled().then((enabled) => {
-                            if(!enabled) {
-                                return false;
-                            }
-
-                            // Emit event
-                            service.onSessionUpdated(event, session);
-                            return true;
-                        });
-                    }));
-                });
-            }, (err) => {
-                Log.error('Unable to update session: %s', err.message, err);
+                        // Emit event
+                        service.onSessionUpdated(event, session);
+                        return true;
+                    });
+                }));
             });
+        }, (err) => {
+            Log.error('Unable to update session: %s', err.message, err);
+        });
     }
 
     fetch(item) {
-        if(IsNil(item) || item.complete) {
+        if(IsNil(item) || !IsNil(item.revision)) {
             return Promise.resolve(item);
         }
 
@@ -171,7 +166,7 @@ export class ScrobbleService extends BaseService {
         // Retrieve item from database
         return ItemDatabase.get(item.id).then((doc) => {
             // Merge `item` with current document
-            item.merge(ItemParser.decode(doc));
+            item.merge(ItemParser.decodeItem(doc));
 
             // Fetch children
             return this.fetchChildren(item);
@@ -211,26 +206,23 @@ export class ScrobbleService extends BaseService {
     }
 
     update(event, session) {
-        let promise;
-
-        // Update item
-        if(event === 'created') {
-            promise = ItemDatabase.upsert(session.item);
-        } else {
-            promise = ItemDatabase.upsertTree(session.item);
-        }
-
-        // Update session
-        return promise.then(({item, updated}) => {
-            session.item = item;
-
-            // Store session in database
-            return this.upsertSession(session).then((result) => ({
+        // Update item, and store session in database
+        return this.updateItem(event, session.item).then(({updated}) =>
+            this.upsertSession(session).then((result) => ({
                 ...result,
 
                 updated
-            }));
-        });
+            }))
+        );
+    }
+
+    updateItem(event, item) {
+        if(['created', 'started'].indexOf(event) < 0) {
+            return Promise.resolve({ updated: false });
+        }
+
+        // Store item in database
+        return ItemDatabase.upsertTree(item);
     }
 
     upsertSession(session) {
