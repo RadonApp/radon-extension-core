@@ -25,9 +25,6 @@ const Indexes = {
     },
     'type+keys.neon-extension-source-googlemusic.id': {
         fields: ['type', 'keys.neon-extension-source-googlemusic.id']
-    },
-    'type+keys.neon-extension-source-googlemusic.title': {
-        fields: ['type', 'keys.neon-extension-source-googlemusic.title']
     }
 };
 
@@ -162,6 +159,8 @@ export class ItemDatabase extends Database {
         // Retrieve current item from database
         return this.get(item.id).then((doc) => {
             if(!item.merge(this.decode(doc))) {
+                Log.trace('No changes detected for: %o', item);
+
                 return {
                     updated: false,
                     item
