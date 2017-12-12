@@ -119,42 +119,6 @@ describe('ItemDatabase', function() {
                 }
             );
         });
-
-        it('rejects on items without a "title" defined', function(done) {
-            db.upsert(Artist.create('neon-extension-source-googlemusic')).then(
-                () => done.fail(),
-                (err) => {
-                    console.log('Error returned:', err.message);
-                    done(err);
-                }
-            );
-        });
-
-        it('rejects on items with missing child', function(done) {
-            db.upsert(Album.create('neon-extension-source-googlemusic', {
-                title: 'Humanz'
-            })).then(
-                () => done.fail(),
-                (err) => {
-                    console.log('Error returned:', err.message);
-                    done(err);
-                }
-            );
-        });
-
-        it('rejects on items with missing child identifier', function(done) {
-            db.upsert(Album.create('neon-extension-source-googlemusic', {
-                title: 'Humanz'
-            }, {
-                artist: Artist.create('neon-extension-source-googlemusic')
-            })).then(
-                () => done.fail(),
-                (err) => {
-                    console.log('Error returned:', err.message);
-                    done(err);
-                }
-            );
-        });
     });
 
     afterAll(function() {
