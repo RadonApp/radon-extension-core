@@ -354,32 +354,27 @@ export class ItemDatabase extends Database {
     upsertTree(item) {
         let children = {
             created: {},
+            ignored: {},
             updated: {}
         };
 
-        function resolve(result, name) {
-            children.created[name] = result.created || children.created[name] || false;
-            children.updated[name] = result.updated || children.updated[name] || false;
-
-            return result.item;
+        function process(name, promise) {
+            return promise.then(({created, updated}) => {
+                children.created[name] = created || children.created[name] || false;
+                children.updated[name] = updated || children.updated[name] || false;
+            }, (err) => {
+                Log.debug('Unable to upsert %s %o: %s', name, item.artist, err);
+                children.ignored[name] = true;
+            });
         }
 
         if(item instanceof Track) {
             return Promise.resolve()
-                // Artist
-                .then(() => this.upsert(item.artist).then((result) => {
-                    item.artist = resolve(result, 'artist');
-                }))
-                // Album Artist
-                .then(() => this.upsert(item.album.artist).then((result) => {
-                    item.album.artist = resolve(result, 'artist');
-                }))
-                // Album
-                .then(() => this.upsert(item.album).then((result) => {
-                    item.album = resolve(result, 'album');
-                }))
-                // Track
-                .then(() => this.upsert(item).then(({created, updated, item}) => ({
+                .then(() => process('track', this.upsert(item)))
+                .then(() => process('artist', this.upsert(item.artist)))
+                .then(() => process('artist', this.upsert(item.album.artist)))
+                .then(() => process('album', this.upsert(item.album)))
+                .then(() => this.upsert(item).then(({created, updated}) => ({
                     created,
                     updated,
 
