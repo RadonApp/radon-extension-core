@@ -1,4 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import ItemDatabase from 'neon-extension-core/database/item';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 
@@ -52,7 +53,10 @@ export class LibraryService extends BaseService {
             .then(() => transaction.addMany(items))
 
             // Execute transaction
-            .then(() => transaction.execute());
+            .then(() => transaction.execute())
+
+            // Reindex database
+            .then(() => ItemDatabase.reindex());
     }
 }
 
