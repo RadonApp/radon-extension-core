@@ -61,6 +61,18 @@ export default class Database {
         return this.ready.then(() => this._database.find(query));
     }
 
+    get(key) {
+        return this.ready.then(() => this._database.get(key));
+    }
+
+    getMany(keys) {
+        return this.allDocs({
+            'include_docs': true,
+
+            keys
+        });
+    }
+
     match(selectors, fields) {
         if(IsNil(selectors) || !Array.isArray(selectors) || selectors.length < 1) {
             return Promise.reject(new Error('One selector is required'));
@@ -86,24 +98,16 @@ export default class Database {
         });
     }
 
-    get(key) {
-        return this.ready.then(() => this._database.get(key));
-    }
-
-    getMany(keys) {
-        return this.allDocs({
-            'include_docs': true,
-
-            keys
-        });
-    }
-
     post(doc) {
         return this.ready.then(() => this._database.post(doc));
     }
 
     put(doc) {
         return this.ready.then(() => this._database.put(doc));
+    }
+
+    reindex() {
+        return this._createIndexes();
     }
 
     // region Private methods
@@ -132,7 +136,7 @@ export default class Database {
                     if(result === 'created') {
                         Log.info('Index "%s" has been created', name);
                     } else {
-                        Log.trace('Index "%s" already exists', name);
+                        Log.trace('Index "%s" has been updated', name);
                     }
                 }, (err) => {
                     if(this._destroyed || IsNil(this._database)) {
