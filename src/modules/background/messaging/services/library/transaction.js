@@ -15,7 +15,7 @@ import ItemDatabase from 'neon-extension-core/database/item';
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import Log from 'neon-extension-core/core/logger';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
-import {cleanTitle, encodeTitle} from 'neon-extension-framework/core/helpers';
+import {encodeTitle} from 'neon-extension-framework/core/helpers';
 import {createTasks} from 'neon-extension-framework/core/helpers/execution';
 import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 
@@ -138,9 +138,9 @@ export default class LibraryTransaction {
 
         // Generate track identifier
         let pk = this._createTitleId(
-            track.artist.title,
-            track.album.title,
-            track.title
+            track.artist.slug,
+            track.album.slug,
+            track.slug
         );
 
         // Retrieve existing track
@@ -189,8 +189,8 @@ export default class LibraryTransaction {
 
         // Generate album identifier
         let pk = this._createTitleId(
-            album.artist.title,
-            album.title
+            album.artist.slug,
+            album.slug
         );
 
         // Retrieve existing album
@@ -228,7 +228,7 @@ export default class LibraryTransaction {
 
         // Generate artist identifier
         let pk = this._createTitleId(
-            artist.title
+            artist.slug
         );
 
         // Retrieve existing track
@@ -324,9 +324,9 @@ export default class LibraryTransaction {
 
         // Generate track identifier
         let pk = this._createTitleId(
-            track.artist.title,
-            track.album.title,
-            track.title
+            track.artist.slug,
+            track.album.slug,
+            track.slug
         );
 
         // Retrieve existing track
@@ -368,8 +368,8 @@ export default class LibraryTransaction {
 
         // Generate album identifier
         let pk = this._createTitleId(
-            artist.title,
-            album.title
+            artist.slug,
+            album.slug
         );
 
         // Retrieve existing album
@@ -399,7 +399,7 @@ export default class LibraryTransaction {
 
         // Generate artist identifier
         let pk = this._createTitleId(
-            artist.title
+            artist.slug
         );
 
         // Retrieve existing track
@@ -533,9 +533,9 @@ export default class LibraryTransaction {
 
         // Generate track identifier
         let pk = this._createTitleId(
-            track.artist.title,
-            track.album.title,
-            track.title
+            track.artist.slug,
+            track.album.slug,
+            track.slug
         );
 
         // Retrieve existing track
@@ -573,8 +573,8 @@ export default class LibraryTransaction {
 
         // Generate album identifier
         let pk = this._createTitleId(
-            album.artist.title,
-            album.title
+            album.artist.slug,
+            album.slug
         );
 
         // Retrieve existing album
@@ -607,7 +607,7 @@ export default class LibraryTransaction {
 
         // Generate artist identifier
         let pk = this._createTitleId(
-            artist.title
+            artist.slug
         );
 
         // Retrieve existing artist
@@ -641,7 +641,7 @@ export default class LibraryTransaction {
                 return '%00';
             }
 
-            return encodeTitle(cleanTitle(component));
+            return encodeTitle(component);
         }).join('/');
     }
 
