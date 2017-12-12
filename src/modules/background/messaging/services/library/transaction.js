@@ -94,7 +94,7 @@ export default class LibraryTransaction {
 
         // Add items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.add(ItemParser.decode(item)).catch((err) => {
+            return runSequential(items, (item) => this.add(ItemParser.decodeItem(item)).catch((err) => {
                 Log.warn('Unable to add item: %s', err && err.message, err);
             }));
         }
@@ -270,7 +270,7 @@ export default class LibraryTransaction {
 
         // Seed items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.seed(ItemParser.decode(item)).catch((err) => {
+            return runSequential(items, (item) => this.seed(ItemParser.decodeItem(item)).catch((err) => {
                 Log.warn('Unable to seed transaction with item: %s', err && err.message, err);
             }));
         }
@@ -670,8 +670,8 @@ export default class LibraryTransaction {
         // Create primary key index
         Set(collection, [item.type, '#pk', pk], item);
 
-        // Create indexes from source identifiers
-        ForEach(item.ids[this.source] || {}, (value, name) => {
+        // Create indexes from keys
+        ForEach(item.keys[this.source] || {}, (value, name) => {
             Set(collection, [item.type, name, value], item);
         });
     }
@@ -705,8 +705,8 @@ export default class LibraryTransaction {
             }
 
             // Update child
-            if(Object.keys(current.options.children).indexOf(key) >= 0) {
-                changed = this._update(current[key], item[key], {
+            if(!IsNil(current.children[key])) {
+                changed = this._update(current.children[key], item.children[key], {
                     ...options,
 
                     currentData: currentData[key],
