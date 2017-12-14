@@ -18,7 +18,9 @@ const Indexes = {
 
 export class ItemDatabase extends Database {
     constructor(name, options) {
-        super(name || 'items', Indexes, options);
+        super(name || 'items', {
+            indexes: Indexes
+        }, options);
     }
 
     create(item) {

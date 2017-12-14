@@ -1,41 +1,58 @@
+import IsFunction from 'lodash-es/isFunction';
 import IsNil from 'lodash-es/isNil';
+import IsNumber from 'lodash-es/isNumber';
 import Map from 'lodash-es/map';
 import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
 import Log from 'neon-extension-core/core/logger';
 import Platform, {Platforms} from 'neon-extension-browser/platform';
+import Storage from 'neon-extension-browser/storage';
 import {resolveOne, runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 
+const DatabaseState = Storage.context('database');
+
+const DatabasePersistentStorage = (function() {
+    if(IsNil(navigator) || IsNil(navigator.storage) || !IsFunction(navigator.storage.persist)) {
+        return Promise.resolve(false);
+    }
+
+    return navigator.storage.persist();
+})().then((persistent) => {
+    if(persistent) {
+        Log.info('Persistent storage: enabled');
+    } else {
+        Log.info('Persistent storage: disabled');
+    }
+}, (err) => {
+    Log.warn('Unable to enable persistent storage', err);
+});
+
 export default class Database {
-    constructor(name, indexes, options) {
+    constructor(name, description, options) {
         this.name = name;
-        this.indexes = indexes;
 
-        // Create database options
-        let databaseOptions = {
-            'auto_compaction': true,
-            'revs_limit': 1,
+        // Parse description
+        description = description || {};
 
-            // Persistent Storage (Firefox 56+)
-            // Note: Data stored in earlier versions of Firefox will be lost
-            ...(Platform.name === Platforms.Firefox && Platform.version.major >= 56 ? {
-                'storage': 'persistent'
-            } : {}),
+        this.indexes = description.indexes || {};
+        this.version = description.version || 1;
 
-            // Override with provided options
-            ...(options || {})
-        };
+        // Validate description
+        if(IsNil(this.indexes) || Object.keys(this.indexes).length < 1) {
+            Log.warn('No indexes defined for the "%s" database', name);
+        }
 
-        Log.trace('Opening database "%s" [options: %o]', name, databaseOptions);
+        // Retrieve storage context
+        this._state = DatabaseState.context(this.name);
 
-        // Construct database
-        this._database = new (PouchDB.plugin(PouchFind))(name, databaseOptions);
-        this._destroyed = false;
+        // Initial state
+        this._database = null;
+        this._opened = false;
 
-        // Update database indexes
-        this.ready = this._initializeDatabase();
+        // Open database
+        this.ready = this.open(options);
     }
 
     allDocs(options) {
@@ -47,12 +64,18 @@ export default class Database {
     }
 
     destroy() {
+        Log.trace('Destroying the "%s" database', this.name);
+
         // Update state
-        this._destroyed = true;
+        this._destroying = true;
 
         // Destroy database
-        return this._database.destroy().then(() => {
+        return this._database.destroy().then((result) => {
+            Log.info('Destroyed the "%s" database', this.name, result);
+
             // Update state
+            this._destroying = false;
+            this._opened = false;
             this._database = null;
         });
     }
@@ -98,6 +121,26 @@ export default class Database {
         });
     }
 
+    open() {
+        if(!IsNumber(this.version)) {
+            return Promise.reject(new Error('Invalid database version: ' + this.version));
+        }
+
+        if(this._opened) {
+            return Promise.reject(new Error('Database has already been opened'));
+        }
+
+        // Open database
+        this._database = this._open(this.version);
+
+        // Migrate and initialize database
+        return this._migrate()
+            .then(() => this._initialize())
+            .then(() => {
+                this._opened = true;
+            });
+    }
+
     post(doc) {
         return this.ready.then(() => this._database.post(doc));
     }
@@ -110,12 +153,197 @@ export default class Database {
         return this._createIndexes();
     }
 
+    // region Event Handlers
+
+    onUpgrade(version, database) {
+        Log.info('No upgrade migrations defined for the "%s" database', this.name);
+        return Promise.resolve();
+    }
+
+    onDowngrade(version, database) {
+        Log.info('No downgrade migrations defined for the "%s" database', this.name);
+        return Promise.resolve();
+    }
+
+    // endregion
+
     // region Private methods
 
-    _initializeDatabase() {
+    _initialize() {
         return Promise.resolve()
+            .then(() => DatabasePersistentStorage)
             .then(() => this._createIndexes())
             .then(() => this._deleteIndexes());
+    }
+
+    _open(version) {
+        let options = {
+            'auto_compaction': true,
+            'revs_limit': 1,
+
+            // Persistent Indexed DB Migration (Firefox 56+)
+            ...(Platform.name === Platforms.Firefox && Platform.version.major >= 56 && IsNil(version) ? {
+                'storage': 'persistent'
+            } : {})
+        };
+
+        Log.trace('Opening the "%s" database (version: %o) [options: %o]', this.name, version, options);
+
+        // Build database name
+        let name = this.name;
+
+        if(!IsNil(version)) {
+            name += '_v' + version;
+        }
+
+        // Construct database
+        return new (PouchDB.plugin(PouchFind))(name, options);
+    }
+
+    _migrate() {
+        return this._state.getInteger('version').then((current) => {
+            if(this.version === current) {
+                Log.trace('No migration required for the "%s" database (version: %o)', this.name, current);
+                return Promise.resolve();
+            }
+
+            if(!IsNil(current)) {
+                Log.trace('Migrating the "%s" database from v%s to v%s', this.name, current, this.version);
+            } else {
+                Log.trace('Migrating the "%s" database to v%s', this.name, this.version);
+            }
+
+            // Open current database
+            let database = {
+                current: this._open(current),
+                target: this._database
+            };
+
+            // Execute migration, update version, and destroy the old database
+            return this._migrateExecute({ target: this.version, current }, database)
+                .then(() => this._state.putInteger('version', this.version))
+                .then(() => this._migrateDestroy(database.current, current));
+        });
+    }
+
+    _migrateExecute(version, database) {
+        // Upgrade database
+        if(version.target > version.current) {
+            Log.trace('Upgrading the "%s" database to v%s', this.name, version.target);
+
+            return this.onUpgrade(version, database).then(() => {
+                Log.info('Upgraded the "%s" database to v%s', this.name, version.target);
+            });
+        }
+
+        // Downgrade database
+        Log.trace('Downgrading the "%s" database to v%s', this.name, version.target);
+
+        return this.onDowngrade(version, database).then(() => {
+            Log.info('Downgraded the "%s" database to v%s', this.name, version.target);
+        });
+    }
+
+    _migrateDestroy(database, version) {
+        Log.trace('Destroying the "%s" database (version: %o)', this.name, version);
+
+        let promise;
+
+        if(Platform.name === Platforms.Firefox && Platform.version.major >= 56 && IsNil(version)) {
+            // Persistent databases can't be deleted currently (possible bug?), instead clear out
+            // their object stores and attempt deletion.
+
+            promise = this._migrateDestroyPersistent(database);
+        } else {
+            promise = database.current.destroy();
+        }
+
+        // Log result
+        return promise.then(() => {
+            Log.info('Destroyed the "%s" database (version: %o)', this.name, version);
+        }, (err) => {
+            Log.warn('Unable to destroy the "%s" database:', this.name, err);
+        });
+    }
+
+    _migrateDestroyPersistent(database) {
+        function open(name) {
+            return new Promise((resolve, reject) => {
+                let req = window.indexedDB.open(name, { storage: 'persistent' });
+
+                req.onerror = function() {
+                    reject(new Error('Unable to open database'));
+                };
+
+                req.onsuccess = function() {
+                    resolve(req.result);
+                };
+            });
+        }
+
+        function clearObjectStore(db, name) {
+            return new Promise((resolve, reject) => {
+                let req = db.transaction(name, 'readwrite').objectStore(name).clear();
+
+                req.onerror = function() {
+                    reject(req.error);
+                };
+
+                req.onsuccess = function() {
+                    resolve(req.result);
+                };
+            });
+        }
+
+        function deleteDatabase(name) {
+            return new Promise((resolve, reject) => {
+                let req = indexedDB.deleteDatabase(name);
+
+                req.onerror = function() {
+                    reject();
+                };
+
+                req.onsuccess = function() {
+                    resolve();
+                };
+            });
+        }
+
+        // Retrieve database information
+        return database.info().then((info) => {
+            if(IsNil(info) || IsNil(info['db_name']) || info['db_name'].length < 1) {
+                return Promise.reject(new Error('Unable to retrieve database name'));
+            }
+
+            // Retrieve dependant database names (indexes)
+            return database.get('_local/_pouch_dependentDbs').then(({dependentDbs}) => {
+                let databaseNames = Map(
+                    Object.keys(dependentDbs).concat([info['db_name']]),
+                    (name) => '_pouch_' + name
+                );
+
+                // Destroy databases
+                return runSequential(databaseNames, (databaseName) => open(databaseName).then((db) => {
+                    // Clear object stores
+                    return runSequential(db.objectStoreNames, (objectStoreName) =>
+                        clearObjectStore(db, objectStoreName).catch((err) => {
+                            Log.warn(
+                                'Unable to clear "%s" object store in the "%s" database:',
+                                objectStoreName, databaseName, err
+                            );
+                        })
+                    ).then(() => {
+                        // Close the database
+                        db.close();
+
+                        // Try delete the database
+                        return deleteDatabase(databaseName);
+                    });
+                }, (err) => {
+                    Log.warn('Unable to destroy the "%s" database:', databaseName, err);
+                }));
+            });
+        });
     }
 
     _createIndexes() {
@@ -125,7 +353,7 @@ export default class Database {
                 ...index
             })),
             (index) => {
-                if(this._destroyed || IsNil(this._database)) {
+                if(this._destroying || IsNil(this._database)) {
                     return Promise.resolve();
                 }
 
@@ -139,7 +367,7 @@ export default class Database {
                         Log.trace('Index "%s" has been updated', name);
                     }
                 }, (err) => {
-                    if(this._destroyed || IsNil(this._database)) {
+                    if(this._destroying || IsNil(this._database)) {
                         return;
                     }
 
@@ -156,7 +384,7 @@ export default class Database {
                     return Promise.resolve();
                 }
 
-                if(this._destroyed || IsNil(this._database)) {
+                if(this._destroying || IsNil(this._database)) {
                     return Promise.resolve();
                 }
 
@@ -164,7 +392,7 @@ export default class Database {
                 return this._database.deleteIndex(index).then(() => {
                     Log.info('Index "%s" has been deleted', index.name);
                 }, (err) => {
-                    if(this._destroyed || IsNil(this._database)) {
+                    if(this._destroying || IsNil(this._database)) {
                         return;
                     }
 

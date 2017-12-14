@@ -11,8 +11,10 @@ const Indexes = {
 };
 
 export class Sessions extends Database {
-    constructor() {
-        super('sessions', Indexes);
+    constructor(name, options) {
+        super(name || 'sessions', {
+            indexes: Indexes
+        }, options);
     }
 }
 
