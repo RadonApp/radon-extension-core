@@ -11,7 +11,7 @@ import Storage from 'neon-extension-browser/storage';
 import {resolveOne, runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 
-const DatabaseState = Storage.context('database');
+const DatabaseState = Storage && Storage.context('database');
 
 const DatabasePersistentStorage = (function() {
     if(IsNil(navigator) || IsNil(navigator.storage) || !IsFunction(navigator.storage.persist)) {
@@ -45,7 +45,7 @@ export default class Database {
         }
 
         // Retrieve storage context
-        this._state = DatabaseState.context(this.name);
+        this._state = DatabaseState && DatabaseState.context(this.name);
 
         // Initial state
         this._database = null;
@@ -201,6 +201,11 @@ export default class Database {
     }
 
     _migrate() {
+        if(IsNil(this._state)) {
+            Log.info('Database migration is not available, no state context available');
+            return Promise.resolve();
+        }
+
         return this._state.getInteger('version').then((current) => {
             if(this.version === current) {
                 Log.trace('No migration required for the "%s" database (version: %o)', this.name, current);

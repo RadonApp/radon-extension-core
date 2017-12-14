@@ -384,4 +384,4 @@ export class ItemDatabase extends Database {
     }
 }
 
-export default new ItemDatabase();
+export default process.env['TEST'] !== true && new ItemDatabase();

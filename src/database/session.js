@@ -10,7 +10,7 @@ const Indexes = {
     }
 };
 
-export class Sessions extends Database {
+export class SessionDatabase extends Database {
     constructor(name, options) {
         super(name || 'sessions', {
             indexes: Indexes
@@ -18,4 +18,4 @@ export class Sessions extends Database {
     }
 }
 
-export default new Sessions();
+export default process.env['TEST'] !== true && new SessionDatabase();
