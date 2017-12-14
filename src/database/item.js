@@ -13,18 +13,6 @@ import Database from './base';
 const Indexes = {
     'type': {
         fields: ['type']
-    },
-    'type+title': {
-        fields: ['type', 'title']
-    },
-    'type+keys.item.slug': {
-        fields: ['type', 'keys.item.slug']
-    },
-    'type+keys.neon-extension-destination-lastfm.id': {
-        fields: ['type', 'keys.neon-extension-destination-lastfm.id']
-    },
-    'type+keys.neon-extension-source-googlemusic.id': {
-        fields: ['type', 'keys.neon-extension-source-googlemusic.id']
     }
 };
 
