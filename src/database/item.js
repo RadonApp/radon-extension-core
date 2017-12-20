@@ -3,7 +3,7 @@ import IsNil from 'lodash-es/isNil';
 import Map from 'lodash-es/map';
 
 import Item from 'neon-extension-framework/models/item/core/base';
-import ItemParser from 'neon-extension-framework/models/item/core/parser';
+import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
 import {Track} from 'neon-extension-framework/models/item/music';
 
@@ -132,7 +132,7 @@ export class ItemDatabase extends Database {
     }
 
     decode(item) {
-        return ItemParser.decodeItem(item);
+        return ItemDecoder.decodeItem(item);
     }
 
     update(item) {

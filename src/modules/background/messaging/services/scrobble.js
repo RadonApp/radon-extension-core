@@ -2,7 +2,7 @@
 import IsNil from 'lodash-es/isNil';
 
 import ItemDatabase from 'neon-extension-core/database/item';
-import ItemParser from 'neon-extension-framework/models/item/core/parser';
+import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Registry from 'neon-extension-framework/core/registry';
@@ -166,7 +166,7 @@ export class ScrobbleService extends BaseService {
         // Retrieve item from database
         return ItemDatabase.get(item.id).then((doc) => {
             // Merge `item` with current document
-            item.merge(ItemParser.decodeItem(doc));
+            item.merge(ItemDecoder.decodeItem(doc));
 
             // Fetch children
             return this.fetchChildren(item);
