@@ -52,12 +52,12 @@ describe('ItemDatabase', function() {
                     expect(current.createdAt).toBe(item.createdAt);
                     expect(current.updatedAt).toBeGreaterThan(item.updatedAt);
 
-                    expect(current.get('test').title).toBe('gorillaz');
-                    expect(current.get('test').created).toBe(true);
-                    expect(current.get('test').updated).toBe(true);
+                    expect(current.resolve('test').title).toBe('Gorillaz');
+                    expect(current.resolve('test').get('created')).toBe(true);
+                    expect(current.resolve('test').get('updated')).toBe(true);
 
-                    expect(current.get('test').keys).toBeDefined();
-                    expect(current.get('test').keys.id).toBe(1);
+                    expect(current.resolve('test').keys).toBeDefined();
+                    expect(current.resolve('test').keys.id).toBe(1);
                 });
             });
         });

@@ -54,12 +54,12 @@ describe('ItemDatabase', function() {
                     expect(current.createdAt).toBe(item.createdAt);
                     expect(current.updatedAt).toBeGreaterThan(item.updatedAt);
 
-                    expect(current.get('neon-extension-source-googlemusic').title).toBe('gorillaz');
-                    expect(current.get('neon-extension-source-googlemusic').created).toBe(true);
-                    expect(current.get('neon-extension-source-googlemusic').updated).toBe(true);
+                    expect(current.resolve('neon-extension-source-googlemusic').title).toBe('gorillaz');
+                    expect(current.resolve('neon-extension-source-googlemusic').get('created')).toBe(true);
+                    expect(current.resolve('neon-extension-source-googlemusic').get('updated')).toBe(true);
 
-                    expect(current.get('neon-extension-source-googlemusic').keys).toBeDefined();
-                    expect(current.get('neon-extension-source-googlemusic').keys.id).toBe(1);
+                    expect(current.resolve('neon-extension-source-googlemusic').keys).toBeDefined();
+                    expect(current.resolve('neon-extension-source-googlemusic').keys.id).toBe(1);
                 });
             });
         });
@@ -81,8 +81,8 @@ describe('ItemDatabase', function() {
                 expect(item.keys['item'].slug).toBe('royksopp');
                 expect(item.title).toBe('Röyksopp');
 
-                expect(item.get('neon-extension-source-googlemusic').keys.id).toBe(2);
-                expect(item.get('neon-extension-source-googlemusic').title).toBe('Röyksopp');
+                expect(item.resolve('neon-extension-source-googlemusic').keys.id).toBe(2);
+                expect(item.resolve('neon-extension-source-googlemusic').title).toBe('Röyksopp');
 
                 // Update item
                 return db.upsert(Artist.create('neon-extension-destination-lastfm', {
@@ -101,11 +101,11 @@ describe('ItemDatabase', function() {
                     expect(current.keys['item'].slug).toBe('royksopp');
                     expect(current.title).toBe('Röyksopp');
 
-                    expect(current.get('neon-extension-source-googlemusic').keys.id).toBe(2);
-                    expect(current.get('neon-extension-source-googlemusic').title).toBe('Röyksopp');
+                    expect(current.resolve('neon-extension-source-googlemusic').keys.id).toBe(2);
+                    expect(current.resolve('neon-extension-source-googlemusic').title).toBe('Röyksopp');
 
-                    expect(current.get('neon-extension-destination-lastfm').keys.id).toBe(2);
-                    expect(current.get('neon-extension-destination-lastfm').title).toBe('Royksopp');
+                    expect(current.resolve('neon-extension-destination-lastfm').keys.id).toBe(2);
+                    expect(current.resolve('neon-extension-destination-lastfm').title).toBe('Royksopp');
                 });
             });
         });

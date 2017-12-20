@@ -157,9 +157,9 @@ describe('ItemDatabase', function() {
                     expect(children.updated['artist']).toBe(true);
                     expect(children.updated['album']).toBe(true);
 
-                    expect(artist.get('test').keys.id).toBe(1);
-                    expect(album.get('test').keys.id).toBe(2);
-                    expect(item.get('test').keys.id).toBe(3);
+                    expect(artist.resolve('test').keys.id).toBe(1);
+                    expect(album.resolve('test').keys.id).toBe(2);
+                    expect(item.resolve('test').keys.id).toBe(3);
                 });
             }, (err) => {
                 console.log('Error returned:', err.message);

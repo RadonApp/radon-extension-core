@@ -93,9 +93,9 @@ describe('ItemDatabase', function() {
                     expect(currentItems[0].createdAt).toBe(items[0].createdAt);
                     expect(currentItems[0].updatedAt).toBeGreaterThan(items[0].updatedAt);
 
-                    expect(currentItems[0].get('test').title).toBe('gorillaz');
-                    expect(currentItems[0].get('test').created).toBe(true);
-                    expect(currentItems[0].get('test').updated).toBe(true);
+                    expect(currentItems[0].resolve('test').title).toBe('Gorillaz');
+                    expect(currentItems[0].resolve('test').get('created')).toBe(true);
+                    expect(currentItems[0].resolve('test').get('updated')).toBe(true);
 
                     // Post Malone
                     expect(currentItems[1].id).toBe(items[1].id);
@@ -105,9 +105,9 @@ describe('ItemDatabase', function() {
                     expect(currentItems[1].createdAt).toBe(items[1].createdAt);
                     expect(currentItems[1].updatedAt).toBeGreaterThan(items[1].updatedAt);
 
-                    expect(currentItems[1].get('test').title).toBe('post malone');
-                    expect(currentItems[1].get('test').created).toBe(true);
-                    expect(currentItems[1].get('test').updated).toBe(true);
+                    expect(currentItems[1].resolve('test').title).toBe('Post Malone');
+                    expect(currentItems[1].resolve('test').get('created')).toBe(true);
+                    expect(currentItems[1].resolve('test').get('updated')).toBe(true);
                 });
             });
         });
@@ -152,8 +152,8 @@ describe('ItemDatabase', function() {
                     expect(items[0].createdAt).toBeDefined();
                     expect(items[0].title).toBe('LCD Soundsystem');
 
-                    expect(items[0].get('test').created).toBe(true);
-                    expect(items[0].get('test').updated).toBeUndefined();
+                    expect(items[0].resolve('test').get('created')).toBe(true);
+                    expect(items[0].resolve('test').get('updated')).toBeUndefined();
                 });
             });
         });
@@ -215,8 +215,8 @@ describe('ItemDatabase', function() {
                     expect(items[0].createdAt).toBeDefined();
                     expect(items[0].title).toBe('Midnight Oil');
 
-                    expect(items[0].get('test').created).toBe(true);
-                    expect(items[0].get('test').updated).toBe(true);
+                    expect(items[0].resolve('test').get('created')).toBe(true);
+                    expect(items[0].resolve('test').get('updated')).toBe(true);
 
                     expect(Object.keys(items[1]).length).toBe(0);
                     expect(items[2]).toBe(5);
@@ -279,15 +279,15 @@ describe('ItemDatabase', function() {
                     expect(items[0].createdAt).toBeDefined();
                     expect(items[0].title).toBe('Miike Snow');
 
-                    expect(items[0].get('test').created).toBe(true);
-                    expect(items[0].get('test').updated).toBe(true);
+                    expect(items[0].resolve('test').get('created')).toBe(true);
+                    expect(items[0].resolve('test').get('updated')).toBe(true);
 
                     expect(items[1].id).toBeNull();
                     expect(items[1].createdAt).toBeNull();
                     expect(items[1].title).toBe('Talking Heads');
 
-                    expect(items[1].get('test').created).toBeUndefined();
-                    expect(items[1].get('test').updated).toBe(true);
+                    expect(items[1].resolve('test').get('created')).toBeUndefined();
+                    expect(items[1].resolve('test').get('updated')).toBe(true);
 
                     expect(items[2]).toBe(5);
                     expect(items[3]).toBe(false);
