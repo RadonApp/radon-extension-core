@@ -83,12 +83,7 @@ module.exports = function(config) {
                         use: {
                             loader: 'babel-loader',
                             options: {
-                                plugins: [
-                                    "istanbul",
-                                    "transform-class-properties",
-                                    "transform-object-rest-spread"
-                                ],
-                                presets: ['es2015', 'react']
+                                plugins: ["istanbul"]
                             }
                         }
                     },
@@ -104,13 +99,6 @@ module.exports = function(config) {
 
                         use: {
                             loader: 'babel-loader',
-                            options: {
-                                plugins: [
-                                    "transform-class-properties",
-                                    "transform-object-rest-spread"
-                                ],
-                                presets: ['es2015', 'react']
-                            }
                         }
                     },
                     {
