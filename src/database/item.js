@@ -46,11 +46,14 @@ export class ItemDatabase extends Database {
 
         // Create item in database
         return this.post(doc).then((result) => {
-            item.id = result.id;
-            item.revision = result.rev;
+            // Apply changes to item
+            item.apply({
+                id: result.id,
+                revision: result.rev,
 
-            item.createdAt = doc.createdAt;
-            item.updatedAt = doc.updatedAt;
+                createdAt: doc.createdAt,
+                updatedAt: doc.updatedAt
+            });
 
             return item;
         });
@@ -111,15 +114,17 @@ export class ItemDatabase extends Database {
                     continue;
                 }
 
-                // Update item
+                // Apply changes to item
                 let doc = docs[i];
                 let item = items[i];
 
-                item.id = result.id;
-                item.revision = result.rev;
+                item.apply({
+                    id: result.id,
+                    revision: result.rev,
 
-                item.createdAt = doc.createdAt;
-                item.updatedAt = doc.updatedAt;
+                    createdAt: doc.createdAt,
+                    updatedAt: doc.updatedAt
+                });
             }
 
             // Return result
@@ -129,10 +134,6 @@ export class ItemDatabase extends Database {
                 items
             };
         });
-    }
-
-    decode(item) {
-        return ItemDecoder.decodeItem(item);
     }
 
     update(item) {
@@ -148,7 +149,7 @@ export class ItemDatabase extends Database {
 
         // Retrieve current item from database
         return this.get(item.id).then((doc) => {
-            if(!item.merge(this.decode(doc))) {
+            if(!item.inherit(ItemDecoder.fromDocument(doc))) {
                 Log.trace('No changes detected for: %o', item);
 
                 return {
@@ -158,7 +159,9 @@ export class ItemDatabase extends Database {
             }
 
             // Update revision
-            item.revision = doc['_rev'];
+            item.apply({
+                revision: doc['_rev']
+            });
 
             // Encode item
             let update = {
@@ -180,12 +183,13 @@ export class ItemDatabase extends Database {
                     return Promise.reject(new Error('' + 'Put failed'));
                 }
 
-                // Update revision
-                item.revision = result.rev;
+                // Apply changes to item
+                item.apply({
+                    revision: result.rev,
 
-                // Update timestamps
-                item.createdAt = update.createdAt;
-                item.updatedAt = update.updatedAt;
+                    createdAt: update.createdAt,
+                    updatedAt: update.updatedAt
+                });
 
                 return {
                     updated: true,
@@ -235,7 +239,7 @@ export class ItemDatabase extends Database {
         return this.getMany(Map(createdItems, (item) => item.id)).then(({rows}) => {
             // Merge items with the current documents
             let changedItems = Filter(Map(rows, (row, i) => {
-                if(!createdItems[i].merge(this.decode(row.doc))) {
+                if(!createdItems[i].inherit(ItemDecoder.fromDocument(row.doc))) {
                     return null;
                 }
 
@@ -274,12 +278,13 @@ export class ItemDatabase extends Database {
                         errors.failed++;
                     }
 
-                    // Update revision
-                    changedItems[i].revision = result.rev;
+                    // Apply changes to item
+                    changedItems[i].apply({
+                        revision: result.rev,
 
-                    // Update timestamps
-                    changedItems[i].createdAt = docs[i].createdAt;
-                    changedItems[i].updatedAt = docs[i].updatedAt;
+                        createdAt: docs[i].createdAt,
+                        updatedAt: docs[i].updatedAt
+                    });
                 }
 
                 return {
