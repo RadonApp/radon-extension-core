@@ -112,15 +112,15 @@ export default class LibraryTransaction {
 
         // Add item
         if(item instanceof Track) {
-            return Promise.resolve(this.addTrack(item));
+            return Promise.resolve().then(() => this.addTrack(item));
         }
 
         if(item instanceof Album) {
-            return Promise.resolve(this.addAlbum(item));
+            return Promise.resolve().then(() => this.addAlbum(item));
         }
 
         if(item instanceof Artist) {
-            return Promise.resolve(this.addArtist(item));
+            return Promise.resolve().then(() => this.addArtist(item));
         }
 
         // Unsupported item
@@ -288,15 +288,15 @@ export default class LibraryTransaction {
 
         // Seed item
         if(item instanceof Track) {
-            return Promise.resolve(this.seedTrack(item));
+            return Promise.resolve().then(() => this.seedTrack(item));
         }
 
         if(item instanceof Album) {
-            return Promise.resolve(this.seedAlbum(item));
+            return Promise.resolve().then(() => this.seedAlbum(item));
         }
 
         if(item instanceof Artist) {
-            return Promise.resolve(this.seedArtist(item));
+            return Promise.resolve().then(() => this.seedArtist(item));
         }
 
         // Unsupported item
@@ -477,7 +477,7 @@ export default class LibraryTransaction {
         // Process items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.processItem(type, item).catch((err) => {
-                Log.warn('Unable to process item: %s', err && err.message, err);
+                Log.warn('Unable to process item %o:', item, err);
             }));
         }
 
