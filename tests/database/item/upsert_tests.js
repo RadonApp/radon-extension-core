@@ -54,7 +54,7 @@ describe('ItemDatabase', function() {
                     expect(current.createdAt).toBe(item.createdAt);
                     expect(current.updatedAt).toBeGreaterThan(item.updatedAt);
 
-                    expect(current.resolve('neon-extension-source-googlemusic').title).toBe('gorillaz');
+                    expect(current.resolve('neon-extension-source-googlemusic').title).toBe('Gorillaz');
                     expect(current.resolve('neon-extension-source-googlemusic').get('created')).toBe(true);
                     expect(current.resolve('neon-extension-source-googlemusic').get('updated')).toBe(true);
 
