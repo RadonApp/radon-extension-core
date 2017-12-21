@@ -1,5 +1,8 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import Map from 'lodash-es/map';
+
 import ItemDatabase from 'neon-extension-core/database/item';
+import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 
@@ -48,7 +51,9 @@ export class LibraryService extends BaseService {
             .then(() => transaction.fetch())
 
             // Add items to transaction in chunks
-            .then(() => transaction.addMany(items))
+            .then(() => transaction.addMany(Map(items, (item) =>
+                ItemDecoder.fromPlainObject(item)
+            )))
 
             // Execute transaction
             .then(() => transaction.execute())

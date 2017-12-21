@@ -1,4 +1,3 @@
-import Assign from 'lodash-es/assign';
 import Filter from 'lodash-es/filter';
 import ForEach from 'lodash-es/forEach';
 import Get from 'lodash-es/get';
@@ -6,7 +5,7 @@ import IsNil from 'lodash-es/isNil';
 import Has from 'lodash-es/has';
 import Map from 'lodash-es/map';
 import Merge from 'lodash-es/merge';
-import Omit from 'lodash-es/omit';
+import PickBy from 'lodash-es/pickBy';
 import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
@@ -14,6 +13,7 @@ import Uuid from 'uuid';
 import ItemDatabase from 'neon-extension-core/database/item';
 import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
+import Model from 'neon-extension-framework/models/core/base';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
 import {encodeTitle} from 'neon-extension-framework/core/helpers';
 import {createTasks} from 'neon-extension-framework/core/helpers/execution';
@@ -76,7 +76,12 @@ export default class LibraryTransaction {
             selector: {
                 'type': { $in: this.types }
             }
-        }).then(({ docs }) => this.seedMany(docs), (err) => {
+        }).then(({ docs }) => this.seedMany(
+            // Decode documents
+            Map(docs, (doc) =>
+                ItemDecoder.fromDocument(doc)
+            )
+        ), (err) => {
             Log.error('Unable to fetch existing items: %s', err && err.message, err);
             return Promise.reject(err);
         });
@@ -100,8 +105,8 @@ export default class LibraryTransaction {
 
         // Add items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.add(ItemDecoder.decodeItem(item)).catch((err) => {
-                Log.warn('Unable to add item %o:', item, err);
+            return runSequential(items, (item) => this.add(item).catch((err) => {
+                Log.warn('Unable to add item %o:', item, err && err.message, err);
             }));
         }
 
@@ -139,8 +144,10 @@ export default class LibraryTransaction {
         }
 
         // Add children
-        track.artist = this.addArtist(track.artist);
-        track.album = this.addAlbum(track.album, track.artist);
+        track.apply({
+            artist: this.addArtist(track.artist),
+            album: this.addAlbum(track.album, track.artist)
+        });
 
         // Generate track identifier
         let pk = this._createTitleId(
@@ -167,7 +174,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[track.type].push(current);
         } else {
-            this._update(current, track);
+            current.assign(track);
         }
 
         // Index track by identifiers
@@ -190,8 +197,10 @@ export default class LibraryTransaction {
             return null;
         }
 
-        // Seed children
-        album.artist = this.addArtist(artist) || null;
+        // Add children
+        album.apply({
+            artist: this.addArtist(artist) || null
+        });
 
         // Generate album identifier
         let pk = this._createTitleId(
@@ -217,7 +226,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[album.type].push(current);
         } else {
-            this._update(current, album);
+            current.assign(album);
         }
 
         // Index album by identifiers
@@ -255,7 +264,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[artist.type].push(current);
         } else {
-            this._update(current, artist);
+            current.assign(artist);
         }
 
         // Index artist by identifiers
@@ -276,7 +285,7 @@ export default class LibraryTransaction {
 
         // Seed items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.seed(ItemDecoder.decodeItem(item)).catch((err) => {
+            return runSequential(items, (item) => this.seed(item).catch((err) => {
                 Log.warn('Unable to seed transaction with item %o:', item, err);
             }));
         }
@@ -345,7 +354,7 @@ export default class LibraryTransaction {
             current = track;
             current['#id'] = Uuid.v4();
         } else {
-            current.merge(track);
+            current.assign(track);
         }
 
         // Index track by identifiers
@@ -388,7 +397,7 @@ export default class LibraryTransaction {
             current = album;
             current['#id'] = Uuid.v4();
         } else {
-            current.merge(album);
+            current.assign(album);
         }
 
         // Index album by identifiers
@@ -418,7 +427,7 @@ export default class LibraryTransaction {
             current = artist;
             current['#id'] = Uuid.v4();
         } else {
-            current.merge(artist);
+            current.assign(artist);
         }
 
         // Index artist by identifiers
@@ -451,9 +460,9 @@ export default class LibraryTransaction {
         // Process items, and update database
         return Promise.resolve()
             // Process items
-            .then(() => this.processMany(type, this.transactionItems['music/track']).then(onProcessComplete))
-            .then(() => this.processMany(type, this.transactionItems['music/album']).then(onProcessComplete))
-            .then(() => this.processMany(type, this.transactionItems['music/artist']).then(onProcessComplete))
+            .then(() => this.processMany(type, this.transactionItems['music/track'] || []).then(onProcessComplete))
+            .then(() => this.processMany(type, this.transactionItems['music/album'] || []).then(onProcessComplete))
+            .then(() => this.processMany(type, this.transactionItems['music/artist'] || []).then(onProcessComplete))
 
             // Create items
             .then(() => this.database.createMany(Object.values(this.created[type] || {})).then((results) => {
@@ -483,7 +492,7 @@ export default class LibraryTransaction {
         // Process items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.processItem(type, item).catch((err) => {
-                Log.warn('Unable to process item %o:', item, err);
+                Log.warn('Unable to process item %o:', item, err && err.message, err);
             }));
         }
 
@@ -523,13 +532,27 @@ export default class LibraryTransaction {
     }
 
     processItemChildren(type, item) {
-        return runSequential(Object.keys(item.children), (key) =>
-            this.processItem(type, item.children[key], item).then((result) => {
-                item.children[key] = result;
+        let children = PickBy(item.schema, (prop) =>
+            prop instanceof Model.Properties.Reference
+        );
+
+        return runSequential(Object.keys(children), (key) => {
+            let prop = children[key];
+
+            // Retrieve child
+            let child = prop.get(item.values, key);
+
+            if(IsNil(child)) {
+                return Promise.resolve();
+            }
+
+            // Process child
+            return this.processItem(type, child, item).then((result) => {
+                prop.set(item.values, key, result);
             }, (err) => {
                 Log.error('Unable to execute item: %s', err && err.message, err);
-            })
-        );
+            });
+        });
     }
 
     processTrack(track) {
@@ -554,7 +577,7 @@ export default class LibraryTransaction {
             current = track;
 
             this._storeItem('created', [track.type, current['#id']], current);
-        } else if(this._update(current, track)) {
+        } else if(current.inherit(track)) {
             this._storeItem('updated', [track.type, current['#id']], current);
         } else {
             this._storeItem('matched', [track.type, current['#id']], current);
@@ -593,7 +616,7 @@ export default class LibraryTransaction {
             current = album;
 
             this._storeItem('created', [album.type, current['#id']], current);
-        } else if(this._update(current, album)) {
+        } else if(current.inherit(album)) {
             this._storeItem('updated', [album.type, current['#id']], current);
         } else {
             this._storeItem('matched', [album.type, current['#id']], current);
@@ -626,7 +649,7 @@ export default class LibraryTransaction {
             current = artist;
 
             this._storeItem('created', [artist.type, current['#id']], current);
-        } else if(this._update(current, artist)) {
+        } else if(current.inherit(artist)) {
             this._storeItem('updated', [artist.type, current['#id']], current);
         } else {
             this._storeItem('matched', [artist.type, current['#id']], current);
@@ -680,91 +703,6 @@ export default class LibraryTransaction {
         ForEach(item.keys[this.source] || {}, (value, name) => {
             Set(collection, [item.type, name, value], item);
         });
-    }
-
-    _update(current, item, options) {
-        if(IsNil(current) || IsNil(item)) {
-            return false;
-        }
-
-        options = options || {};
-
-        // Encode items
-        let currentData = !IsNil(options.currentData) ? options.currentData : current.toDocument();
-        let itemData = !IsNil(options.itemData) ? options.itemData : item.toDocument();
-
-        // Compare properties
-        let changed = false;
-
-        for(let key in itemData) {
-            if(!itemData.hasOwnProperty(key)) {
-                continue;
-            }
-
-            if(['changed', 'complete'].indexOf(key) >= 0) {
-                continue;
-            }
-
-            // Ignore changes to undefined values
-            if(IsNil(item.values[key])) {
-                continue;
-            }
-
-            // Update child
-            if(!IsNil(current.children[key])) {
-                changed = this._update(current.children[key], item.children[key], {
-                    ...options,
-
-                    currentData: currentData[key],
-                    itemData: itemData[key],
-                    prefix: (options.prefix || '') + key + '.'
-                }) || changed;
-
-                continue;
-            }
-
-            // Update property
-            if(this._updateProperty(current.values, item.values, key)) {
-                changed = true;
-            }
-        }
-
-        return changed;
-    }
-
-    _updateProperty(current, item, key) {
-        if(IsNil(current[key]) && !IsNil(item[key])) {
-            current[key] = item[key];
-            return true;
-        }
-
-        if(key === 'duration') {
-            if(item[key] >= current[key]) {
-                return false;
-            }
-
-            current[key] = item[key];
-            return true;
-        }
-
-        if(key === 'ids') {
-            let added = Omit(item[key][this.source], Object.keys(current[key][this.source] || {}));
-
-            if(Object.keys(added).length < 1) {
-                return false;
-            }
-
-            // Update identifiers
-            if(IsNil(current[key][this.source])) {
-                current[key][this.source] = added;
-            } else {
-                Assign(current[key][this.source], added);
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     _storeItem(state, id, current) {
