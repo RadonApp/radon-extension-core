@@ -321,7 +321,9 @@ export class ItemDatabase extends Database {
 
         return this.match(selectors).then((result) => {
             if(!IsNil(result)) {
-                item.id = result['_id'];
+                item.apply({
+                    id: result['_id']
+                });
 
                 // Update item in database
                 return this.update(item).then(({ updated, item }) => ({
