@@ -26,6 +26,7 @@ export default class LibraryTransaction {
 
         // Parse options
         this.options = Merge({
+            database: ItemDatabase,
             source: null,
 
             add: {
@@ -41,6 +42,7 @@ export default class LibraryTransaction {
             }
         }, options || {});
 
+        this.database = options.database;
         this.source = options.source;
 
         // Transaction
@@ -56,6 +58,10 @@ export default class LibraryTransaction {
         this.matched = {};
 
         // Validate parameters
+        if(IsNil(this.database)) {
+            throw new Error('Missing required option: database');
+        }
+
         if(IsNil(this.source)) {
             throw new Error('Missing required option: source');
         }
@@ -66,7 +72,7 @@ export default class LibraryTransaction {
     }
 
     fetch() {
-        return ItemDatabase.find({
+        return this.database.find({
             selector: {
                 'type': { $in: this.types }
             }
@@ -450,12 +456,12 @@ export default class LibraryTransaction {
             .then(() => this.processMany(type, this.transactionItems['music/artist']).then(onProcessComplete))
 
             // Create items
-            .then(() => ItemDatabase.createMany(Object.values(this.created[type] || {})).then((results) => {
+            .then(() => this.database.createMany(Object.values(this.created[type] || {})).then((results) => {
                 result.errors.create += Filter(results, (result) => !result.ok);
             }))
 
             // Update items
-            .then(() => ItemDatabase.updateMany(Object.values(this.updated[type] || {})).then((results) => {
+            .then(() => this.database.updateMany(Object.values(this.updated[type] || {})).then((results) => {
                 result.errors.update += Filter(results, (result) => !result.ok);
             }))
 

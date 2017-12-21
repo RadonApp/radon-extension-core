@@ -40,9 +40,7 @@ export class LibraryService extends BaseService {
     }
 
     _update(source, items, types) {
-        let transaction = new LibraryTransaction(types, {
-            source
-        });
+        let transaction = new LibraryTransaction(types, { source });
 
         // Execute transaction
         return Promise.resolve()
