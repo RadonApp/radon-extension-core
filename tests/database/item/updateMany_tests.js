@@ -283,7 +283,7 @@ describe('ItemDatabase', function() {
                     expect(items[0].resolve('test').get('updated')).toBe(true);
 
                     expect(items[1].id).toBeNull();
-                    expect(items[1].createdAt).toBeNull();
+                    expect(items[1].createdAt).toBeDefined();
                     expect(items[1].title).toBe('Talking Heads');
 
                     expect(items[1].resolve('test').get('created')).toBeUndefined();
