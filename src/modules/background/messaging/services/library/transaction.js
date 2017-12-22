@@ -581,7 +581,7 @@ export default class LibraryTransaction {
             current = track;
 
             this._storeItem('created', [track.type, current['#id']], current);
-        } else if(current.inherit(track)) {
+        } else if(current.assign(track)) {
             this._storeItem('updated', [track.type, current['#id']], current);
         } else {
             this._storeItem('matched', [track.type, current['#id']], current);
@@ -622,7 +622,7 @@ export default class LibraryTransaction {
             current = album;
 
             this._storeItem('created', [album.type, current['#id']], current);
-        } else if(current.inherit(album)) {
+        } else if(current.assign(album)) {
             this._storeItem('updated', [album.type, current['#id']], current);
         } else {
             this._storeItem('matched', [album.type, current['#id']], current);
@@ -655,7 +655,7 @@ export default class LibraryTransaction {
             current = artist;
 
             this._storeItem('created', [artist.type, current['#id']], current);
-        } else if(current.inherit(artist)) {
+        } else if(current.assign(artist)) {
             this._storeItem('updated', [artist.type, current['#id']], current);
         } else {
             this._storeItem('matched', [artist.type, current['#id']], current);
