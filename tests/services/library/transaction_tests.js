@@ -61,14 +61,159 @@ describe('LibraryTransaction', function() {
                 expect(trackIds.length).toBe(1);
 
                 // Artist
-                expect(transaction.created['music/artist'][artistIds[0]].title).toBe('Gorillaz');
+                let artist = transaction.created['music/artist'][artistIds[0]];
+
+                expect(artist.id).toBeDefined();
+                expect(artist.revision).toBeDefined();
+
+                expect(artist.title).toBe('Gorillaz');
+
+                expect(artist.createdAt).toBeDefined();
+                expect(artist.updatedAt).toBeDefined();
 
                 // Album
-                expect(transaction.created['music/album'][albumIds[0]].title).toBe('Demon Days');
+                let album = transaction.created['music/album'][albumIds[0]];
+
+                expect(album.id).toBeDefined();
+                expect(album.revision).toBeDefined();
+
+                expect(album.title).toBe('Demon Days');
+
+                expect(album.artist.id).toBe(artist.id);
+
+                expect(album.createdAt).toBeDefined();
+                expect(album.updatedAt).toBeDefined();
 
                 // Track
-                expect(transaction.created['music/track'][trackIds[0]].title).toBe('Feel Good Inc');
+                let track = transaction.created['music/track'][trackIds[0]];
+
+                expect(track.id).toBeDefined();
+                expect(track.revision).toBeDefined();
+
+                expect(track.title).toBe('Feel Good Inc');
+
+                expect(track.artist.id).toBe(artist.id);
+                expect(track.album.id).toBe(album.id);
+
+                expect(track.createdAt).toBeDefined();
+                expect(track.updatedAt).toBeDefined();
             });
+    });
+
+    it('updates items', function() {
+        let artist = Artist.create('alpha', {
+            title: 'Gorillaz'
+        });
+
+        let album = Album.create('alpha', {
+            title: 'Demon Days',
+            artist
+        });
+
+        let track = Track.create('alpha', {
+            title: 'Feel Good Inc',
+            type: 'music/track',
+
+            artist,
+            album
+        });
+
+        return db.upsertTree(track).then(() => {
+            let transaction = new LibraryTransaction([
+                'music/artist',
+                'music/album',
+                'music/track'
+            ], {
+                database: db,
+                source: 'alpha'
+            });
+
+            let artist = Artist.create('beta', {
+                title: 'gorillaz',
+
+                keys: {
+                    id: 1
+                }
+            });
+
+            let album = Album.create('beta', {
+                title: 'demon days',
+
+                keys: {
+                    id: 2
+                },
+
+                artist
+            });
+
+            let track = Track.create('beta', {
+                title: 'feel good inc',
+                type: 'music/track',
+
+                keys: {
+                    id: 3
+                },
+
+                artist,
+                album
+            });
+
+            return Promise.resolve()
+                .then(() => transaction.fetch())
+                .then(() => transaction.add(track))
+                .then(() => transaction.execute())
+                .then(() => {
+                    console.log(transaction.created);
+                    console.log(transaction.updated);
+
+                    let artistIds = Object.keys(transaction.updated['music/artist'] || {});
+                    let albumIds = Object.keys(transaction.updated['music/album'] || {});
+                    let trackIds = Object.keys(transaction.updated['music/track'] || {});
+
+                    // Validate created item counts
+                    expect(artistIds.length).toBe(1);
+                    expect(albumIds.length).toBe(1);
+                    expect(trackIds.length).toBe(1);
+
+                    // Artist
+                    let artist = transaction.updated['music/artist'][artistIds[0]];
+
+                    expect(artist.id).toBeDefined();
+                    expect(artist.revision).toBeDefined();
+
+                    expect(artist.title).toBe('Gorillaz');
+
+                    expect(artist.createdAt).toBeDefined();
+                    expect(artist.updatedAt).toBeDefined();
+
+                    // Album
+                    let album = transaction.updated['music/album'][albumIds[0]];
+
+                    expect(album.id).toBeDefined();
+                    expect(album.revision).toBeDefined();
+
+                    expect(album.title).toBe('Demon Days');
+
+                    expect(album.artist.id).toBe(artist.id);
+
+                    expect(album.createdAt).toBeDefined();
+                    expect(album.updatedAt).toBeDefined();
+
+                    // Track
+                    let track = transaction.updated['music/track'][trackIds[0]];
+
+                    expect(track.id).toBeDefined();
+                    expect(track.revision).toBeDefined();
+
+                    expect(track.title).toBe('Feel Good Inc');
+
+                    expect(track.artist.id).toBe(artist.id);
+                    expect(track.album.id).toBe(album.id);
+
+                    expect(track.createdAt).toBeDefined();
+                    expect(track.updatedAt).toBeDefined();
+                });
+        });
     });
 
     afterEach(function() {
