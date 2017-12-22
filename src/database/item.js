@@ -34,25 +34,14 @@ export class ItemDatabase extends Database {
 
         Log.debug('Creating item: %o', item);
 
-        let now = Date.now();
-
-        // Build document
-        let doc = {
-            createdAt: now,
-            updatedAt: now,
-
-            ...item.toDocument()
-        };
+        let doc = item.toDocument();
 
         // Create item in database
         return this.post(doc).then((result) => {
             // Apply changes to item
             item.apply({
                 id: result.id,
-                revision: result.rev,
-
-                createdAt: doc.createdAt,
-                updatedAt: doc.updatedAt
+                revision: result.rev
             });
 
             return item;
@@ -69,8 +58,6 @@ export class ItemDatabase extends Database {
         }
 
         Log.trace('Creating %d item(s)', items.length);
-
-        let now = Date.now();
 
         let errors = {
             exists: 0,
@@ -92,12 +79,7 @@ export class ItemDatabase extends Database {
                 return null;
             }
 
-            return {
-                createdAt: now,
-                updatedAt: now,
-
-                ...item.toDocument()
-            };
+            return item.toDocument();
         }), (doc) => !IsNil(doc));
 
         // Create items in database
@@ -115,15 +97,11 @@ export class ItemDatabase extends Database {
                 }
 
                 // Apply changes to item
-                let doc = docs[i];
                 let item = items[i];
 
                 item.apply({
                     id: result.id,
-                    revision: result.rev,
-
-                    createdAt: doc.createdAt,
-                    updatedAt: doc.updatedAt
+                    revision: result.rev
                 });
             }
 
@@ -145,8 +123,6 @@ export class ItemDatabase extends Database {
             return Promise.reject(new Error('Item hasn\'t been created yet'));
         }
 
-        let now = Date.now();
-
         // Retrieve current item from database
         return this.get(item.id).then((doc) => {
             if(!item.inherit(ItemDecoder.fromDocument(doc))) {
@@ -163,32 +139,17 @@ export class ItemDatabase extends Database {
                 revision: doc['_rev']
             });
 
-            // Encode item
-            let update = {
-                // Ensure the `createdAt` timestamp has been set
-                createdAt: now,
-
-                // Encode item
-                ...item.toDocument(),
-
-                // Update the `updatedAt` timestamp
-                updatedAt: now
-            };
-
             // Store item in database
             Log.debug('Updating item: %o', item);
 
-            return this.put(update).then((result) => {
+            return this.put(item.toDocument()).then((result) => {
                 if(!result.ok) {
                     return Promise.reject(new Error('' + 'Put failed'));
                 }
 
                 // Apply changes to item
                 item.apply({
-                    revision: result.rev,
-
-                    createdAt: update.createdAt,
-                    updatedAt: update.updatedAt
+                    revision: result.rev
                 });
 
                 return {
@@ -209,8 +170,6 @@ export class ItemDatabase extends Database {
         }
 
         Log.trace('Updating %d item(s)', items.length);
-
-        let now = Date.now();
 
         let errors = {
             failed: 0,
@@ -247,16 +206,7 @@ export class ItemDatabase extends Database {
             }), (item) => !IsNil(item));
 
             // Encode items
-            let docs = Map(changedItems, (item) => ({
-                // Ensure the `createdAt` timestamp has been set
-                createdAt: now,
-
-                // Encode item
-                ...item.toDocument(),
-
-                // Update the `updatedAt` timestamp
-                updatedAt: now
-            }));
+            let docs = Map(changedItems, (item) => item.toDocument());
 
             if(docs.length < 1) {
                 return {
@@ -280,10 +230,7 @@ export class ItemDatabase extends Database {
 
                     // Apply changes to item
                     changedItems[i].apply({
-                        revision: result.rev,
-
-                        createdAt: docs[i].createdAt,
-                        updatedAt: docs[i].updatedAt
+                        revision: result.rev
                     });
                 }
 
