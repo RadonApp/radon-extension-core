@@ -324,8 +324,10 @@ export default class LibraryTransaction {
         }
 
         // Seed children
-        track.artist = this.seedArtist(track.artist);
-        track.album = this.seedAlbum(track.album, track.artist);
+        track.apply({
+            artist: this.seedArtist(track.artist),
+            album: this.seedAlbum(track.album, track.artist)
+        });
 
         // Validate artist
         if(IsNil(track.artist) || IsNil(track.artist.title)) {
@@ -374,7 +376,9 @@ export default class LibraryTransaction {
         }
 
         // Seed children
-        album.artist = this.seedArtist(artist) || null;
+        album.apply({
+            artist: this.seedArtist(artist) || null
+        });
 
         // Validate album
         if(IsNil(album.artist) || IsNil(album.artist.title)) {
@@ -597,7 +601,9 @@ export default class LibraryTransaction {
 
         // Use parent artist
         if(IsNil(album.artist) && !IsNil(parent) && parent.type === 'music/track') {
-            album.artist = parent.artist || null;
+            album.apply({
+                artist: parent.artist || null
+            });
         }
 
         // Generate album identifier
