@@ -286,7 +286,7 @@ export default class LibraryTransaction {
         // Seed items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.seed(item).catch((err) => {
-                Log.warn('Unable to seed transaction with item %o:', item, err);
+                Log.warn('Unable to seed transaction with item %o:', item, err && err.message, err);
             }));
         }
 
