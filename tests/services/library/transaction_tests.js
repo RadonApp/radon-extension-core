@@ -71,6 +71,9 @@ describe('LibraryTransaction', function() {
                 expect(artist.createdAt).toBeDefined();
                 expect(artist.updatedAt).toBeDefined();
 
+                expect(artist.resolve('alpha').title).toBe('Gorillaz');
+                expect(artist.resolve('alpha').updatedAt).toBeDefined();
+
                 // Album
                 let album = transaction.created['music/album'][albumIds[0]];
 
@@ -83,6 +86,9 @@ describe('LibraryTransaction', function() {
 
                 expect(album.createdAt).toBeDefined();
                 expect(album.updatedAt).toBeDefined();
+
+                expect(album.resolve('alpha').title).toBe('Demon Days');
+                expect(album.resolve('alpha').updatedAt).toBeDefined();
 
                 // Track
                 let track = transaction.created['music/track'][trackIds[0]];
@@ -97,6 +103,9 @@ describe('LibraryTransaction', function() {
 
                 expect(track.createdAt).toBeDefined();
                 expect(track.updatedAt).toBeDefined();
+
+                expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+                expect(track.resolve('alpha').updatedAt).toBeDefined();
             });
     });
 
@@ -186,6 +195,12 @@ describe('LibraryTransaction', function() {
                     expect(artist.createdAt).toBeDefined();
                     expect(artist.updatedAt).toBeDefined();
 
+                    expect(artist.resolve('alpha').title).toBe('Gorillaz');
+                    expect(artist.resolve('alpha').updatedAt).toBeDefined();
+
+                    expect(artist.resolve('beta').title).toBe('gorillaz');
+                    expect(artist.resolve('beta').updatedAt).toBeDefined();
+
                     // Album
                     let album = transaction.updated['music/album'][albumIds[0]];
 
@@ -198,6 +213,12 @@ describe('LibraryTransaction', function() {
 
                     expect(album.createdAt).toBeDefined();
                     expect(album.updatedAt).toBeDefined();
+
+                    expect(album.resolve('alpha').title).toBe('Demon Days');
+                    expect(album.resolve('alpha').updatedAt).toBeDefined();
+
+                    expect(album.resolve('beta').title).toBe('demon days');
+                    expect(album.resolve('beta').updatedAt).toBeDefined();
 
                     // Track
                     let track = transaction.updated['music/track'][trackIds[0]];
@@ -212,6 +233,12 @@ describe('LibraryTransaction', function() {
 
                     expect(track.createdAt).toBeDefined();
                     expect(track.updatedAt).toBeDefined();
+
+                    expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+                    expect(track.resolve('alpha').updatedAt).toBeDefined();
+
+                    expect(track.resolve('beta').title).toBe('feel good inc');
+                    expect(track.resolve('beta').updatedAt).toBeDefined();
                 });
         });
     });
