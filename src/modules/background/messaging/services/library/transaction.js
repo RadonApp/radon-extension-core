@@ -42,8 +42,8 @@ export default class LibraryTransaction {
             }
         }, options || {});
 
-        this.database = options.database;
-        this.source = options.source;
+        this.database = this.options.database;
+        this.source = this.options.source;
 
         // Transaction
         this.transactionItems = {};
