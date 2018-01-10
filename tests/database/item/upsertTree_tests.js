@@ -23,8 +23,7 @@ describe('ItemDatabase', function() {
             });
 
             let album = Album.create('test', {
-                title: 'Humanz'
-            }, {
+                title: 'Humanz',
                 artist
             });
 
@@ -32,8 +31,7 @@ describe('ItemDatabase', function() {
                 title: 'Andromeda (feat. D.R.A.M.)',
 
                 number: 10,
-                duration: 198000
-            }, {
+                duration: 198000,
                 artist,
                 album
             });
@@ -100,8 +98,7 @@ describe('ItemDatabase', function() {
             });
 
             let album = Album.create('test', {
-                title: 'Sound Of Silver'
-            }, {
+                title: 'Sound Of Silver',
                 artist
             });
 
@@ -109,8 +106,8 @@ describe('ItemDatabase', function() {
                 title: 'Time to Get Away',
 
                 number: 2,
-                duration: 251000
-            }, {
+                duration: 251000,
+
                 artist,
                 album
             });
