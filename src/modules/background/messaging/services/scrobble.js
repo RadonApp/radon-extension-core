@@ -166,7 +166,7 @@ export class ScrobbleService extends BaseService {
         // Retrieve item from database
         return ItemDatabase.get(item.id).then((doc) => {
             // Merge `item` with current document
-            item.merge(ItemDecoder.decodeItem(doc));
+            item.merge(ItemDecoder.fromDocument(doc));
 
             // Fetch children
             return this.fetchChildren(item);
