@@ -1,8 +1,12 @@
 {
   "icons": {
-    "24": "resources/images/icon24.png",
-    "48": "resources/images/icon.png",
-    "64": "resources/images/icon64.png"
+    "16": "resources/icon/16.png",
+    "24": "resources/icon/24.png",
+    "32": "resources/icon/32.png",
+    "48": "resources/icon/48.png",
+    "64": "resources/icon/64.png",
+    "96": "resources/icon/96.png",
+    "128": "resources/icon/128.png"
   },
   "origins": [
     "*://neon.skipthe.net/*",
