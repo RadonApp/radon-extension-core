@@ -1,6 +1,6 @@
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import Preferences from 'neon-extension-framework/preferences';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
 
@@ -14,16 +14,32 @@ export default class CheckboxComponent extends OptionComponent {
         };
     }
 
+    get id() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.id;
+    }
+
+    get preferences() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.preferences;
+    }
+
     componentWillMount() {
-        this.refresh(this.props.id);
+        this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.refresh(nextProps.id);
+        this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if(nextProps.id !== this.state.id) {
+        if(!IsNil(nextProps.item) && nextProps.item.id !== this.state.id) {
             return true;
         }
 
@@ -34,24 +50,23 @@ export default class CheckboxComponent extends OptionComponent {
         return false;
     }
 
-    refresh(id) {
+    refresh(props) {
         // Retrieve option state
-        Preferences.getBoolean(id).then((checked) => {
+        props.item.preferences.getBoolean(props.item.name).then((checked) => {
             this.setState({
-                id: id,
-                checked: checked
+                id: props.item.id,
+
+                checked
             });
         });
     }
 
     onChanged(event) {
-        var checked = event.target.checked;
+        let checked = event.target.checked;
 
         // Update option state
-        Preferences.putBoolean(this.props.id, checked).then(() => {
-            this.setState({
-                checked: checked
-            });
+        this.preferences.putBoolean(this.props.item.name, checked).then(() => {
+            this.setState({ checked });
         });
     }
 
@@ -59,27 +74,24 @@ export default class CheckboxComponent extends OptionComponent {
         return (
             <div data-component="neon-extension-core:settings.options.checkbox" className="option option-checkbox">
                 <input
-                    id={this.props.id}
+                    id={this.id}
                     type="checkbox"
                     checked={this.state.checked}
                     onChange={this.onChanged.bind(this)}
                 />
 
-                <label htmlFor={this.props.id} style={{fontSize: 14}}>{this.props.label}</label>
+                <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item && this.props.item.label}</label>
 
-                {this.props.options.summary && <div className="summary" style={{color: '#999', fontSize: 14}}>
-                    {this.props.options.summary}
-                </div>}
+                {this.props.item && this.props.item.options.summary &&
+                    <div className="summary" style={{color: '#999', fontSize: 14}}>
+                        {this.props.item.options.summary}
+                    </div>
+                }
             </div>
         );
     }
 }
 
 CheckboxComponent.defaultProps = {
-    id: null,
-    label: null,
-
-    options: {
-        summary: null
-    }
+    item: null
 };

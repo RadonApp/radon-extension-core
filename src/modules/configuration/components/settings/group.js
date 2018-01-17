@@ -217,11 +217,9 @@ export default class Group extends React.Component {
 
         // Render option component
         return <Component
-            key={item.key}
-            id={item.id}
-            label={item.label}
-            plugin={item.plugin}
-            options={item.options}
+            key={item.id}
+            item={item}
+
             onChange={onChanged}
         />;
     }

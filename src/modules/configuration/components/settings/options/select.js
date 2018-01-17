@@ -1,6 +1,6 @@
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import Preferences from 'neon-extension-framework/preferences';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
 
@@ -14,16 +14,32 @@ export default class SelectComponent extends OptionComponent {
         };
     }
 
+    get id() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.id;
+    }
+
+    get preferences() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.preferences;
+    }
+
     componentWillMount() {
-        this.refresh(this.props.id);
+        this.refresh(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.refresh(nextProps.id);
+        this.refresh(nextProps);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if(nextProps.id !== this.state.id) {
+        if(!IsNil(nextProps.item) && nextProps.item.id !== this.state.id) {
             return true;
         }
 
@@ -34,12 +50,13 @@ export default class SelectComponent extends OptionComponent {
         return false;
     }
 
-    refresh(id) {
+    refresh(props) {
         // Retrieve option state
-        Preferences.getString(id).then((current) => {
+        props.item.preferences.getString(props.item.name).then((current) => {
             this.setState({
-                id: id,
-                current: current
+                id: props.item.id,
+
+                current
             });
         });
     }
@@ -48,38 +65,32 @@ export default class SelectComponent extends OptionComponent {
         let current = event.target.value;
 
         // Update option state
-        Preferences.putString(this.props.id, current).then(() => {
-            this.setState({
-                current: current
-            });
+        this.preferences.putString(this.props.item.name, current).then(() => {
+            this.setState({ current });
         });
     }
 
     render() {
         return (
             <div data-component="neon-extension-core:settings.options.select" className="option option-select">
-                <label htmlFor={this.props.id} style={{fontSize: 14}}>{this.props.label}</label>
+                <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item.label}</label>
 
-                <select id={this.props.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>
-                    {this.props.options.choices.map((choice) => {
+                <select id={this.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>
+                    {this.props.item.options.choices.map((choice) => {
                         return <option key={choice.key} value={choice.key}>{choice.label}</option>;
                     })}
                 </select>
 
-                {this.props.options.summary && <div className="summary" style={{color: '#999', fontSize: 14}}>
-                    {this.props.options.summary}
-                </div>}
+                {this.props.item && this.props.item.options.summary &&
+                    <div className="summary" style={{color: '#999', fontSize: 14}}>
+                        {this.props.item.options.summary}
+                    </div>
+                }
             </div>
         );
     }
 }
 
 SelectComponent.defaultProps = {
-    id: null,
-    label: null,
-
-    options: {
-        choices: [],
-        summary: null
-    }
+    item: null
 };

@@ -1,7 +1,7 @@
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
 import Log from 'neon-extension-core/core/logger';
-import Preferences from 'neon-extension-framework/preferences';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 import {isString} from 'neon-extension-framework/core/helpers';
 
@@ -18,6 +18,30 @@ export default class EnableComponent extends OptionComponent {
         this._currentRefreshId = 0;
     }
 
+    get id() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.id;
+    }
+
+    get plugin() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.plugin;
+    }
+
+    get preferences() {
+        if(IsNil(this.props.item)) {
+            return null;
+        }
+
+        return this.props.item.preferences;
+    }
+
     componentWillMount() {
         this.refresh(this.props);
     }
@@ -31,7 +55,7 @@ export default class EnableComponent extends OptionComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if(nextProps.id !== this.state.id) {
+        if(!IsNil(nextProps.item) && nextProps.item.id !== this.state.id) {
             return true;
         }
 
@@ -51,7 +75,11 @@ export default class EnableComponent extends OptionComponent {
                 return;
             }
 
-            this.setState({id: props.id, enabled: enabled});
+            this.setState({
+                id: props.item.id,
+
+                enabled: enabled
+            });
         });
     }
 
@@ -59,9 +87,9 @@ export default class EnableComponent extends OptionComponent {
         let enabled = event.target.checked;
 
         // Process state change event
-        return this.updatePermissions(this.props, enabled)
-            .then(() => this.updateContentScripts(this.props, enabled))
-            .then(() => this.updatePreference(this.props, enabled))
+        return this.updatePermissions(enabled)
+            .then(() => this.updateContentScripts(enabled))
+            .then(() => this.updatePreference(enabled))
             .then(() => {
                 if(this.props.onChange === null) {
                     return;
@@ -79,14 +107,14 @@ export default class EnableComponent extends OptionComponent {
 
     isEnabled(props) {
         // Retrieve current plugin enabled state
-        return Preferences.getBoolean(props.id)
+        return props.item.preferences.getBoolean(props.item.name)
             .then((enabled) => {
                 if(!enabled) {
-                    if(props.options.type === 'plugin') {
-                        return Promise.reject('Plugin "' + props.plugin.id + '" hasn\'t been enabled');
+                    if(props.item.options.type === 'plugin') {
+                        return Promise.reject('Plugin "' + props.item.plugin.id + '" hasn\'t been enabled');
                     }
 
-                    return Promise.reject('Option "' + props.id + '" hasn\'t been enabled');
+                    return Promise.reject('Option "' + props.item.id + '" hasn\'t been enabled');
                 }
 
                 return true;
@@ -104,14 +132,15 @@ export default class EnableComponent extends OptionComponent {
     }
 
     isPermissionsGranted(props) {
-        if(!props.options.permissions) {
+        if(!props.item.options.permissions) {
             return Promise.resolve(true);
         }
 
-        return props.plugin.isPermissionsGranted().then((granted) => {
+        return props.item.plugin.isPermissionsGranted().then((granted) => {
             if(!granted) {
                 return Promise.reject(
-                    'Permissions for ' + props.options.type + ' "' + props.plugin.id + '" haven\'t been granted'
+                    'Permissions for ' + props.item.options.type +
+                    ' "' + props.item.plugin.id + '" haven\'t been granted'
                 );
             }
 
@@ -120,14 +149,15 @@ export default class EnableComponent extends OptionComponent {
     }
 
     isContentScriptsRegistered(props) {
-        if(!props.options.contentScripts) {
+        if(!props.item.options.contentScripts) {
             return Promise.resolve(true);
         }
 
-        return props.plugin.isContentScriptsRegistered().then((registered) => {
+        return props.item.plugin.isContentScriptsRegistered().then((registered) => {
             if(!registered) {
                 return Promise.reject(
-                    'Content scripts for ' + props.options.type + ' "' + props.plugin.id + '" haven\'t been registered'
+                    'Content scripts for ' + props.item.options.type +
+                    ' "' + props.item.plugin.id + '" haven\'t been registered'
                 );
             }
 
@@ -139,39 +169,38 @@ export default class EnableComponent extends OptionComponent {
 
     // region Update state
 
-    updatePreference(props, enabled) {
+    updatePreference(enabled) {
         // Update preference
-        return Preferences.putBoolean(props.id, enabled)
+        return this.preferences.putBoolean(this.props.item.name, enabled)
             .then(() => {
-                // Update component
-                this.setState({enabled: enabled});
+                this.setState({ enabled });
             });
     }
 
-    updatePermissions(props, enabled) {
-        if(!props.options.permissions) {
+    updatePermissions(enabled) {
+        if(!this.props.item.options.permissions) {
             return Promise.resolve();
         }
 
         // Update permissions state
         if(enabled) {
-            return this.props.plugin.requestPermissions();
+            return this.plugin.requestPermissions();
         }
 
-        return this.props.plugin.removePermissions();
+        return this.plugin.removePermissions();
     }
 
-    updateContentScripts(props, enabled) {
-        if(!props.options.contentScripts) {
+    updateContentScripts(enabled) {
+        if(!this.props.item.options.contentScripts) {
             return Promise.resolve();
         }
 
         // Update content scripts state
         if(enabled) {
-            return this.props.plugin.registerContentScripts();
+            return this.plugin.registerContentScripts();
         }
 
-        return this.props.plugin.removeContentScripts();
+        return this.plugin.removeContentScripts();
     }
 
     // endregion
@@ -181,16 +210,18 @@ export default class EnableComponent extends OptionComponent {
             <div data-component="neon-extension-core:settings.options.enable" className="switch tiny">
                 <input
                     className="switch-input"
-                    id={this.props.id}
+                    id={this.id}
                     type="checkbox"
                     checked={this.state.enabled}
                     onChange={this.onChanged.bind(this)}
                 />
 
-                <label className="switch-paddle" htmlFor={this.props.id}>
-                    {this.props.options.summary && <span className="show-for-sr">
-                        {this.props.options.summary}
-                    </span>}
+                <label className="switch-paddle" htmlFor={this.id}>
+                    {this.props.item && this.props.item.options.summary &&
+                        <span className="show-for-sr">
+                            {this.props.item.options.summary}
+                        </span>
+                    }
                 </label>
             </div>
         );
@@ -198,17 +229,7 @@ export default class EnableComponent extends OptionComponent {
 }
 
 EnableComponent.defaultProps = {
-    id: null,
-    label: null,
-    plugin: null,
-
-    options: {
-        summary: null,
-
-        type: 'option',
-        permissions: false,
-        contentScripts: false
-    },
+    item: null,
 
     onChange: null
 };
