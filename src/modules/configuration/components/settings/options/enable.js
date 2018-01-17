@@ -18,30 +18,6 @@ export default class EnableComponent extends OptionComponent {
         this._currentRefreshId = 0;
     }
 
-    get id() {
-        if(IsNil(this.props.item)) {
-            return null;
-        }
-
-        return this.props.item.id;
-    }
-
-    get plugin() {
-        if(IsNil(this.props.item)) {
-            return null;
-        }
-
-        return this.props.item.plugin;
-    }
-
-    get preferences() {
-        if(IsNil(this.props.item)) {
-            return null;
-        }
-
-        return this.props.item.preferences;
-    }
-
     componentWillMount() {
         this.refresh(this.props);
     }
@@ -229,7 +205,5 @@ export default class EnableComponent extends OptionComponent {
 }
 
 EnableComponent.defaultProps = {
-    item: null,
-
     onChange: null
 };

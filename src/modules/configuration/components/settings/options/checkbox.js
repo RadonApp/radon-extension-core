@@ -14,22 +14,6 @@ export default class CheckboxComponent extends OptionComponent {
         };
     }
 
-    get id() {
-        if(IsNil(this.props.item)) {
-            return null;
-        }
-
-        return this.props.item.id;
-    }
-
-    get preferences() {
-        if(IsNil(this.props.item)) {
-            return null;
-        }
-
-        return this.props.item.preferences;
-    }
-
     componentWillMount() {
         this.refresh(this.props);
     }
@@ -91,7 +75,3 @@ export default class CheckboxComponent extends OptionComponent {
         );
     }
 }
-
-CheckboxComponent.defaultProps = {
-    item: null
-};
