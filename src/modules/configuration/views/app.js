@@ -105,7 +105,7 @@ export default class App extends React.Component {
                                 let page = this.state.pages['core'][id];
 
                                 return (
-                                    <li key={page.id}><Link to={'/' + page.key}>
+                                    <li key={page.id}><Link to={'/' + page.name}>
                                         {page.title}
                                     </Link></li>
                                 );
