@@ -8,10 +8,7 @@
     "96": "resources/icon/96.png",
     "128": "resources/icon/128.png"
   },
-  "origins": [
-    "*://neon.skipthe.net/*",
-    "*://*.neon.skipthe.net/*"
-  ],
+  "origins": [],
   "permissions": [
     "tabs"
   ],
