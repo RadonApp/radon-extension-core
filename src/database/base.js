@@ -260,7 +260,7 @@ export default class Database {
 
             promise = this._migrateDestroyPersistent(database);
         } else {
-            promise = database.current.destroy();
+            promise = database.destroy();
         }
 
         // Log result
