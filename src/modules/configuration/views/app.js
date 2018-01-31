@@ -24,8 +24,8 @@ export default class App extends React.Component {
 
             pages: {
                 core: [],
-                destinations: [],
-                sources: []
+                destination: [],
+                source: []
             }
         };
     }
