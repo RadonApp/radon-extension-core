@@ -5,10 +5,11 @@ import Merge from 'lodash-es/merge';
 import QueryString from 'querystring';
 import React from 'react';
 import {Foundation} from 'foundation-sites/js/foundation.core';
-import {Link} from 'react-router';
 import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
+import {Link} from 'react-router';
 import {PropTypes} from 'prop-types';
 
+import Log from 'neon-extension-core/core/logger';
 import Platform, {Platforms} from 'neon-extension-browser/platform';
 import Plugin from 'neon-extension-core/core/plugin';
 import Preferences from 'neon-extension-framework/preferences';
@@ -30,6 +31,9 @@ export default class App extends React.Component {
     }
 
     componentWillMount() {
+        // Register foundation plugins
+        Foundation.plugin(OffCanvas, 'OffCanvas');
+
         // Parse query parameters
         let query = {};
 
@@ -69,11 +73,16 @@ export default class App extends React.Component {
         // Update page title
         document.title = `Options - ${Plugin.title}`;
 
-        // Register foundation plugins
-        Foundation.plugin(OffCanvas, 'OffCanvas');
+        // Initialize navigation
+        this.offcanvas = new Foundation.OffCanvas($('#navigation'));
+    }
 
-        // Initialize foundation
-        $(document).foundation();
+    componentWillUnmount() {
+        try {
+            this.offcanvas.destroy();
+        } catch(e) {
+            Log.warn('App: Unable to destroy offcanvas');
+        }
     }
 
     onRouteChange(location, action) {
