@@ -1,3 +1,4 @@
+import ClassNames from 'classnames';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
@@ -12,7 +13,8 @@ export default class InputComponent extends OptionComponent {
             id: null,
             type: null,
 
-            current: null
+            current: null,
+            valid: true
         };
     }
 
@@ -38,21 +40,62 @@ export default class InputComponent extends OptionComponent {
 
     refresh(props) {
         // Retrieve option state
-        props.item.preferences.getString(props.item.name).then((current) => {
+        props.item.get().then((current) => {
             this.setState({
                 id: props.item.id,
 
+                valid: this.props.item.isValid(current),
                 current
             });
         });
     }
 
-    onChanged(event) {
-        let current = event.target.value;
+    onBlur() {
+        if(!this.state.valid) {
+            return;
+        }
 
-        // Update option state
-        this.preferences.putString(this.props.item.name, current).then(() => {
-            this.setState({ current });
+        // Store value
+        this.props.item.put(this.state.current);
+    }
+
+    onChange(ev) {
+        let current = this.props.item.cleanValue(ev.target.value);
+
+        // Update state
+        this.setState({
+            valid: this.props.item.isValid(current),
+            current
+        });
+    }
+
+    onPaste(ev) {
+        ev.preventDefault();
+
+        // Retrieve clipboard value
+        let value = '';
+
+        if(window.clipboardData && window.clipboardData.getData) {
+            value = window.clipboardData.getData('Text');
+        } else if(ev.clipboardData && ev.clipboardData.getData) {
+            value = ev.clipboardData.getData('text/plain');
+        }
+
+        // Clean clipboard value
+        let current = this.props.item.cleanValue(value);
+
+        // Check if value is valid
+        let valid = this.props.item.isValid(current);
+
+        // Store value (if it's valid)
+        if(valid) {
+            this.props.item.put(current);
+        }
+
+        // Update state
+        this.setState({
+            valid,
+            current
         });
     }
 
@@ -61,10 +104,19 @@ export default class InputComponent extends OptionComponent {
             <div data-component="neon-extension-core:settings.options.input" className="option option-input">
                 <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item.label}</label>
 
-                <input id={this.id}
-                       type={this.state.type || 'text'}
-                       onChange={this.onChanged.bind(this)}
-                       value={this.state.current || ''} />
+                <input
+                    id={this.id}
+                    className={ClassNames({'is-invalid-input': !this.state.valid})}
+
+                    type={this.state.type || 'text'}
+                    minLength={this.props.item.minLength}
+                    maxLength={this.props.item.maxLength}
+                    value={this.state.current || ''}
+
+                    onBlur={this.onBlur.bind(this)}
+                    onChange={this.onChange.bind(this)}
+                    onPaste={this.onPaste.bind(this)}
+                />
 
                 {this.props.item && this.props.item.options.summary &&
                     <div className="summary" style={{color: '#999', fontSize: 14}}>
