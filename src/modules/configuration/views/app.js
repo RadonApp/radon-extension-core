@@ -5,6 +5,7 @@ import Merge from 'lodash-es/merge';
 import QueryString from 'querystring';
 import React from 'react';
 import {Foundation} from 'foundation-sites/js/foundation.core';
+import {DropdownMenu} from 'foundation-sites/js/foundation.dropdownMenu';
 import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 import {Link} from 'react-router';
 import {PropTypes} from 'prop-types';
@@ -32,6 +33,7 @@ export default class App extends React.Component {
 
     componentWillMount() {
         // Register foundation plugins
+        Foundation.plugin(DropdownMenu, 'DropdownMenu');
         Foundation.plugin(OffCanvas, 'OffCanvas');
 
         // Parse query parameters
@@ -74,14 +76,21 @@ export default class App extends React.Component {
         document.title = `Options - ${Plugin.title}`;
 
         // Initialize navigation
+        this.headerDropdownMenus = new Foundation.DropdownMenu($('#header'));
         this.offcanvas = new Foundation.OffCanvas($('#navigation'));
     }
 
     componentWillUnmount() {
         try {
+            this.headerDropdownMenus.destroy();
+        } catch(e) {
+            Log.warn('App: Unable to destroy header dropdown menus:', e);
+        }
+
+        try {
             this.offcanvas.destroy();
         } catch(e) {
-            Log.warn('App: Unable to destroy offcanvas');
+            Log.warn('App: Unable to destroy offcanvas:', e);
         }
     }
 
@@ -99,10 +108,24 @@ export default class App extends React.Component {
                 <div id="header" className="top-bar">
                     <div className="top-bar-left">
                         <button className="menu-toggle hide-for-large" data-toggle="navigation">
-                            <i className="menu-icon"></i>
+                            <i className="menu-icon"/>
                         </button>
                         <ul className="menu">
                             <li className="menu-text">{Plugin.title}</li>
+                        </ul>
+                    </div>
+
+                    <div className="top-bar-right">
+                        <ul className="dropdown menu" data-dropdown-menu>
+                            <li>
+                                <a>About</a>
+
+                                <ul className="menu vertical">
+                                    <li><Link to="/about">Neon</Link></li>
+                                    <li><Link to="/about/credits">Credits</Link></li>
+                                    <li><Link to="/about/libraries">Libraries</Link></li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>

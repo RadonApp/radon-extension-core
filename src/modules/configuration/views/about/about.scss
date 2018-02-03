@@ -1,0 +1,66 @@
+[data-view="neon-extension-core:about"] {
+  padding: 25px;
+
+  .build {
+    padding: 15px 0;
+  }
+
+  .modules {
+    display: grid;
+
+    margin: 15px 0 0;
+    padding: 0;
+
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    grid-column-gap: 1rem;
+    grid-row-gap: 0.25rem;
+
+    justify-content: space-between;
+    align-content: flex-start;
+
+    overflow: auto;
+  }
+
+  .module {
+    display: flex;
+    padding: 10px;
+    height: 69px;
+
+    img {
+      flex: 0 1 auto;
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  .module-section {
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    padding: 0 0 0 10px;
+  }
+
+  .module-header {
+    flex: 0 0 auto;
+
+    h5 {
+      margin: 0;
+
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .module-body {
+    flex: 1 1 auto;
+
+    p.version {
+      font-size: 0.8em;
+      color: #666;
+    }
+  }
+}

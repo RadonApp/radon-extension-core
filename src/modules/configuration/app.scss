@@ -37,14 +37,27 @@ app {
     cursor: pointer;
   }
 
-  ul.menu {
+  ul.menu, ul.menu a {
     background-color: #3e454c;
     color: white;
   }
 
-  li.menu-text {
-    font-size: 0.875rem;
+  ul.menu a:hover, ul.menu a:focus {
+    color: #d5d5d5;
   }
+
+  .dropdown-menu .is-dropdown-submenu {
+    border: 1px solid #4e575f;
+  }
+
+  .dropdown.menu > li.is-dropdown-submenu-parent > a::after {
+    border-color: #ffffff transparent transparent;
+    border-width: 5px;
+  }
+}
+
+#header > div {
+  font-size: 0.875rem;
 }
 
 #container {
