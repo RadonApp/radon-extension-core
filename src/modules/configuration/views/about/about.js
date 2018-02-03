@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Registry from 'neon-extension-framework/core/registry';
+import FrameworkPlugin from 'neon-extension-framework/core/plugin';
 
 import './about.scss';
 
@@ -26,25 +27,33 @@ export default class About extends React.Component {
                 <h3>Neon</h3>
 
                 <div className="build">
-                    <p><b>Version: </b> TODO</p>
+                    <p><b>Version: </b> {FrameworkPlugin.manifest.version}</p>
                 </div>
 
                 <h4>Modules</h4>
 
                 <div className="modules">
-                    {this.state.modules.map((module) =>
-                        <div className="module card">
-                            <div className="module-header">
-                                <h5 title={module.manifest.name}>
-                                    {module.manifest.name}
-                                </h5>
-                            </div>
+                    {this.state.modules.map(this.renderModule)}
+                </div>
+            </div>
+        );
+    }
 
-                            <div className="module-body">
-                                <p className="version">v{module.manifest.version}</p>
-                            </div>
-                        </div>
-                    )}
+    renderModule(module) {
+        if(module.id === 'neon-extension') {
+            return null;
+        }
+
+        return (
+            <div className="module card">
+                <div className="module-header">
+                    <h5 title={module.id}>
+                        {module.id}
+                    </h5>
+                </div>
+
+                <div className="module-body">
+                    <p className="version">v{module.manifest.version}</p>
                 </div>
             </div>
         );
