@@ -17,7 +17,7 @@ export default class About extends React.Component {
 
     componentDidMount() {
         // Fetch modules
-        Registry.listPlugins()
+        Registry.listPlugins({ disabled: true })
             .then((modules) => this.setState({ modules }));
     }
 
