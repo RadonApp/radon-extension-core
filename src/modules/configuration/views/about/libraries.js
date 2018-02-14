@@ -9,15 +9,17 @@ export default class Libraries extends React.Component {
         super(props);
 
         this.state = {
-            libraries: []
+            credits: {
+                libraries: []
+            }
         };
     }
 
     componentDidMount() {
         // Fetch libraries
-        fetch('/libraries.json')
+        fetch('/credits.json')
             .then((response) => response.json())
-            .then((libraries) => this.setState({ libraries }));
+            .then((credits) => this.setState({ credits }));
     }
 
     getLabelIcon(name) {
@@ -34,7 +36,7 @@ export default class Libraries extends React.Component {
                 <h4>Libraries</h4>
 
                 <div className="libraries">
-                    {this.state.libraries.map((library) =>
+                    {this.state.credits.libraries.map((library) =>
                         <div className="library card">
                             <h5 title={library.name}>{library.name}</h5>
 

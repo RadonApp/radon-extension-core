@@ -11,7 +11,9 @@ export default class Credits extends React.Component {
         super(props);
 
         this.state = {
-            credits: []
+            credits: {
+                people: []
+            }
         };
     }
 
@@ -68,20 +70,20 @@ export default class Credits extends React.Component {
                 <h4>Credits</h4>
 
                 <div className="credits">
-                    {this.state.credits.map((credit) =>
+                    {this.state.credits.people.map((person) =>
                         <div className="credit card">
-                            {credit.email && <img
-                                src={'https://www.gravatar.com/avatar/' + MD5(credit.email.trim()) + '?s=512'}
+                            {person.email && <img
+                                src={'https://www.gravatar.com/avatar/' + MD5(person.email.trim()) + '?s=512'}
                             />}
 
                             <div className="credit-section">
                                 <div className="credit-header">
                                     <div className="credit-badges">
-                                        {this.renderTypeBadge(credit.type)}
+                                        {this.renderTypeBadge(person.type)}
                                     </div>
 
-                                    <h5 title={credit.name}>
-                                        {credit.name}
+                                    <h5 title={person.name}>
+                                        {person.name}
                                     </h5>
                                 </div>
 
@@ -89,9 +91,9 @@ export default class Credits extends React.Component {
 
                                 <div className="credit-footer">
                                     <div className="credit-labels">
-                                        {this.renderLabel('package', credit.packages && credit.packages.length)}
-                                        {this.renderLabel('module', credit.modules && credit.modules.length)}
-                                        {this.renderLabel('commit', credit.commits)}
+                                        {this.renderLabel('package', person.packages && person.packages.length)}
+                                        {this.renderLabel('module', person.modules && person.modules.length)}
+                                        {this.renderLabel('commit', person.commits)}
                                     </div>
                                 </div>
                             </div>
