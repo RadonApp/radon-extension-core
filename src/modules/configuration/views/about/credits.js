@@ -137,8 +137,7 @@ export default class Credits extends React.Component {
         }
 
         return (
-            <span className={ClassNames('badge', 'badge-' + type)}
-                  title={this.getTypeBadgeTitle(type)}>
+            <span className={ClassNames('badge', 'badge-' + type)} title={this.getTypeBadgeTitle(type)}>
                 <i className={this.getTypeBadgeIcon(type)}/>
             </span>
         );
