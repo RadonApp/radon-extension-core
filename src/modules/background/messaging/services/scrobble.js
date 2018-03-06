@@ -2,7 +2,6 @@
 import IsNil from 'lodash-es/isNil';
 
 import ItemDatabase from 'neon-extension-core/database/item';
-import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Registry from 'neon-extension-framework/core/registry';
@@ -93,8 +92,8 @@ export class ScrobbleService extends BaseService {
         // Track client (subscribe to "disconnect" event)
         this.onClientConnected(sender);
 
-        // Fetch item metadata (if not available)
-        this.fetch(session.item).then(() => {
+        // Fetch item from database
+        ItemDatabase.fetch(session.item).then(() => {
             // Process event
             return this.processEvent(event, session, sender);
         });
@@ -150,59 +149,6 @@ export class ScrobbleService extends BaseService {
         }, (err) => {
             Log.error('Unable to update session: %s', err.message, err);
         });
-    }
-
-    fetch(item) {
-        if(IsNil(item) || !IsNil(item.revision)) {
-            return Promise.resolve(item);
-        }
-
-        if(IsNil(item.id)) {
-            return this.fetchChildren(item);
-        }
-
-        Log.trace('Retrieving item "%s" from database', item.id);
-
-        // Retrieve item from database
-        return ItemDatabase.get(item.id).then((doc) => {
-            // Merge `item` with current document
-            item.inherit(ItemDecoder.fromDocument(doc));
-
-            // Fetch children
-            return this.fetchChildren(item);
-        });
-    }
-
-    fetchChildren(item) {
-        let fetch = this.fetch.bind(this);
-
-        // Track
-        if(item.type === 'music/track') {
-            return Promise.all([
-                fetch(item.artist).then(function(artist) {
-                    item.artist = artist;
-                }),
-                fetch(item.album).then(function(album) {
-                    item.album = album;
-                })
-            ]).then(function() {
-                return item;
-            });
-        }
-
-        // Album
-        if(item.type === 'music/album') {
-            return Promise.all([
-                fetch(item.artist).then(function(artist) {
-                    item.artist = artist;
-                })
-            ]).then(function() {
-                return item;
-            });
-        }
-
-        // Unknown item
-        return Promise.resolve(item);
     }
 
     update(event, session) {

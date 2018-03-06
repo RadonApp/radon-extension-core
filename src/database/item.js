@@ -27,14 +27,17 @@ export class ItemDatabase extends Database {
         //
 
         [MediaTypes.Music.Track]: {
+            fetch: { children: ['artist', 'album'] },
             upsert: { after: ['artist', 'album'] }
         },
 
         [MediaTypes.Music.Album]: {
+            fetch: { children: ['artist'] },
             upsert: { before: ['artist'] }
         },
 
         [MediaTypes.Music.Artist]: {
+            fetch: true,
             upsert: true
         },
 
@@ -43,16 +46,20 @@ export class ItemDatabase extends Database {
         //
 
         [MediaTypes.Video.Episode]: {
+            fetch: { children: ['season'] },
             upsert: { after: ['season'] }
         },
 
         [MediaTypes.Video.Season]: {
+            fetch: { children: ['show'] },
             upsert: { before: ['show'] }
         },
         [MediaTypes.Video.Show]: {
+            fetch: true,
             upsert: true
         },
         [MediaTypes.Video.Movie]: {
+            fetch: true,
             upsert: true
         }
     };
@@ -151,6 +158,83 @@ export class ItemDatabase extends Database {
                 errors,
                 items
             };
+        });
+    }
+
+    fetch(item) {
+        if(IsNil(item) || !IsNil(item.revision)) {
+            return this.fetchChildren(item);
+        }
+
+        Log.trace('Fetching item: %o', item);
+
+        // Fetch item
+        let resolve;
+
+        if(IsNil(item.id)) {
+            // Create selectors
+            let selectors;
+
+            try {
+                selectors = item.createSelectors();
+            } catch(e) {
+                return Promise.reject(e || new Error('Unable to create selectors'));
+            }
+
+            if(selectors.length < 1) {
+                return Promise.reject(new Error('No selectors available'));
+            }
+
+            // Find item
+            Log.trace('Finding items matching: %o', selectors);
+
+            resolve = this.match(selectors).then((result) => {
+                if(IsNil(result) || IsNil(result['_id'])) {
+                    return Promise.reject(new Error('Unable to find item'));
+                }
+
+                return this.get(result['_id']);
+            });
+        } else {
+            resolve = this.get(item.id);
+        }
+
+        // Update `item`
+        return resolve.then((doc) => {
+            // Merge `item` with current document
+            item.inherit(ItemDecoder.fromDocument(doc));
+
+            // Fetch children
+            return this.fetchChildren(item);
+        });
+    }
+
+    fetchChildren(item) {
+        let children = [];
+
+        // Parse options
+        let options = ItemDatabase.Tree[item.type];
+
+        if(IsNil(options) || IsNil(options.fetch)) {
+            return Promise.reject(new Error(
+                `Unsupported item type: ${item.type}`
+            ));
+        }
+
+        if(IsPlainObject(options.fetch)) {
+            children = Map(options.fetch.children || [], (name) =>
+                Get(item, name)
+            );
+        }
+
+        // Fetch children from database
+        return runSequential(children, (child) => {
+            if(IsNil(child)) {
+                return Promise.resolve();
+            }
+
+            // Fetch child from database
+            return this.fetch(child);
         });
     }
 
