@@ -263,12 +263,12 @@ export class ScrobbleService extends BaseService {
         let item = session.item;
 
         // Write logger message
-        if(item.type === MediaTypes.Movie) {
+        if(item.type === MediaTypes.Video.Movie) {
             Log.debug(
                 '[%s] %s (%s) : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
-                // Name
+                // Movie
                 item.title,
                 item.year,
 
@@ -277,15 +277,20 @@ export class ScrobbleService extends BaseService {
                 session.state,
                 session.progress
             );
-        } else if(item.type === MediaTypes.Television.Episode) {
+        } else if(item.type === MediaTypes.Video.Episode) {
             Log.debug(
-                '[%s] %s - Season %2d (%s) - Episode %2d : [event: %s, state: %s, progress: %.2f]',
+                '[%s] %s (%s) - Season %2d (%s) - Episode %2d : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
-                // Name
-                item.show.title,
+                // Show
+                item.season.show.title,
+                item.season.show.year,
+
+                // Season
                 item.season.number,
                 item.season.year,
+
+                // Episode
                 item.number,
 
                 // Status
@@ -298,8 +303,10 @@ export class ScrobbleService extends BaseService {
                 '[%s] %s - %s : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
-                // Name
+                // Artist
                 item.artist.title,
+
+                // Track
                 item.title,
 
                 // Status
