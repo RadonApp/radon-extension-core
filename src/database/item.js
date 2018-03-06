@@ -1,11 +1,15 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import Filter from 'lodash-es/filter';
+import Get from 'lodash-es/get';
 import IsNil from 'lodash-es/isNil';
+import IsPlainObject from 'lodash-es/isPlainObject';
 import Map from 'lodash-es/map';
 
 import Item from 'neon-extension-framework/models/item/core/base';
 import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import Log from 'neon-extension-core/core/logger';
-import {Track} from 'neon-extension-framework/models/item/music';
+import {MediaTypes} from 'neon-extension-framework/core/enums';
+import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 import Database from './base';
 
@@ -17,6 +21,42 @@ const Indexes = {
 };
 
 export class ItemDatabase extends Database {
+    static Tree = {
+        //
+        // Music
+        //
+
+        [MediaTypes.Music.Track]: {
+            upsert: { after: ['artist', 'album'] }
+        },
+
+        [MediaTypes.Music.Album]: {
+            upsert: { before: ['artist'] }
+        },
+
+        [MediaTypes.Music.Artist]: {
+            upsert: true
+        },
+
+        //
+        // Video
+        //
+
+        [MediaTypes.Video.Episode]: {
+            upsert: { after: ['season'] }
+        },
+
+        [MediaTypes.Video.Season]: {
+            upsert: { before: ['show'] }
+        },
+        [MediaTypes.Video.Show]: {
+            upsert: true
+        },
+        [MediaTypes.Video.Movie]: {
+            upsert: true
+        }
+    };
+
     constructor(name, options) {
         super(name || 'items', {
             indexes: Indexes
@@ -295,6 +335,8 @@ export class ItemDatabase extends Database {
     }
 
     upsertTree(item) {
+        let self = this;
+
         let created = false;
         let updated = false;
 
@@ -317,24 +359,46 @@ export class ItemDatabase extends Database {
             });
         }
 
-        if(item instanceof Track) {
-            return Promise.resolve()
-                .then(() => process('track', this.upsert(item)))
-                .then(() => process('artist', this.upsert(item.artist)))
-                .then(() => process('artist', this.upsert(item.album.artist)))
-                .then(() => process('album', this.upsert(item.album)))
-                .then(() => this.upsert(item).then(() => ({
-                    created,
-                    updated,
+        function run(item) {
+            let before = [];
+            let after = [];
 
-                    children,
-                    item
-                })));
+            // Parse options
+            let options = ItemDatabase.Tree[item.type];
+
+            if(IsNil(options) || IsNil(options.upsert)) {
+                return Promise.reject(new Error(
+                    `Unsupported item type: ${item.type}`
+                ));
+            }
+
+            if(IsPlainObject(options.upsert)) {
+                before = Map(options.upsert.before || [], (name) =>
+                    Get(item, name)
+                );
+
+                after = Map(options.upsert.after || [], (name) =>
+                    Get(item, name)
+                );
+            }
+
+            return Promise.resolve()
+                // Run `before` children
+                .then(() => runSequential(before, run))
+                // Upsert `item`
+                .then(() => process(item.type, self.upsert(item)))
+                // Run `after` children
+                .then(() => runSequential(after, run));
         }
 
-        return Promise.reject(new Error(
-            'Unknown item type'
-        ));
+        // Upsert item tree
+        return run(item).then(() => this.upsert(item).then(() => ({
+            created,
+            updated,
+
+            children,
+            item
+        })));
     }
 }
 

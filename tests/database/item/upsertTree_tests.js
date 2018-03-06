@@ -43,11 +43,11 @@ describe('ItemDatabase', function() {
                 expect(created).toBe(true);
                 expect(updated).toBe(false);
 
-                expect(children.created['artist']).toBe(true);
-                expect(children.created['album']).toBe(true);
+                expect(children.created['music/artist']).toBe(true);
+                expect(children.created['music/album']).toBe(true);
 
-                expect(children.updated['artist']).toBe(false);
-                expect(children.updated['album']).toBe(false);
+                expect(children.updated['music/artist']).toBe(false);
+                expect(children.updated['music/album']).toBe(false);
 
                 // Track
                 expect(item.id).toBeDefined();
@@ -78,11 +78,11 @@ describe('ItemDatabase', function() {
                     expect(created).toBe(false);
                     expect(updated).toBe(false);
 
-                    expect(children.created['artist']).toBe(false);
-                    expect(children.created['album']).toBe(false);
+                    expect(children.created['music/artist']).toBe(false);
+                    expect(children.created['music/album']).toBe(false);
 
-                    expect(children.updated['artist']).toBe(false);
-                    expect(children.updated['album']).toBe(false);
+                    expect(children.updated['music/artist']).toBe(false);
+                    expect(children.updated['music/album']).toBe(false);
 
                     expect(item.id).toBe(id);
                     expect(item.revision).toBe(revision);
@@ -116,11 +116,11 @@ describe('ItemDatabase', function() {
                 expect(created).toBe(true);
                 expect(updated).toBe(false);
 
-                expect(children.created['artist']).toBe(true);
-                expect(children.created['album']).toBe(true);
+                expect(children.created['music/artist']).toBe(true);
+                expect(children.created['music/album']).toBe(true);
 
-                expect(children.updated['artist']).toBe(false);
-                expect(children.updated['album']).toBe(false);
+                expect(children.updated['music/artist']).toBe(false);
+                expect(children.updated['music/album']).toBe(false);
 
                 // Update artist
                 artist.update('test', {
@@ -148,11 +148,11 @@ describe('ItemDatabase', function() {
                     expect(created).toBe(false);
                     expect(updated).toBe(true);
 
-                    expect(children.created['artist']).toBe(false);
-                    expect(children.created['album']).toBe(false);
+                    expect(children.created['music/artist']).toBe(false);
+                    expect(children.created['music/album']).toBe(false);
 
-                    expect(children.updated['artist']).toBe(true);
-                    expect(children.updated['album']).toBe(true);
+                    expect(children.updated['music/artist']).toBe(true);
+                    expect(children.updated['music/album']).toBe(true);
 
                     expect(artist.resolve('test').keys.id).toBe(1);
                     expect(album.resolve('test').keys.id).toBe(2);
