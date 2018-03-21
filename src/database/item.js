@@ -444,6 +444,10 @@ export class ItemDatabase extends Database {
         }
 
         function run(item) {
+            if(IsNil(item)) {
+                return Promise.resolve();
+            }
+
             let before = [];
             let after = [];
 

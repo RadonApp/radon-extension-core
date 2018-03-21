@@ -93,7 +93,7 @@ export class ScrobbleService extends BaseService {
         this.onClientConnected(sender);
 
         // Fetch item from database
-        ItemDatabase.fetch(session.item).then(() => {
+        ItemDatabase.fetch(session.item).catch(() => false).then(() => {
             // Process event
             return this.processEvent(event, session, sender);
         });
