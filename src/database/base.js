@@ -6,12 +6,11 @@ import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
 import Log from 'neon-extension-core/core/logger';
-import Platform, {Platforms} from 'neon-extension-browser/platform';
-import Storage from 'neon-extension-browser/storage';
+import {LocalStorage} from 'neon-extension-framework/storage';
 import {resolveOne, runSequential} from 'neon-extension-framework/core/helpers/promise';
 
 
-const DatabaseState = Storage && Storage.context('database');
+const DatabaseState = LocalStorage.context('database');
 
 const DatabasePersistentStorage = (function() {
     if(IsNil(navigator) || IsNil(navigator.storage) || !IsFunction(navigator.storage.persist)) {
@@ -45,7 +44,7 @@ export default class Database {
         }
 
         // Retrieve storage context
-        this._state = DatabaseState && DatabaseState.context(this.name);
+        this._state = DatabaseState.context(this.name);
 
         // Initial state
         this._database = null;
@@ -182,7 +181,7 @@ export default class Database {
             'revs_limit': 1,
 
             // Persistent Indexed DB Migration (Firefox 56+)
-            ...(Platform.name === Platforms.Firefox && Platform.version.major >= 56 && IsNil(version) ? {
+            ...(neon.browser.name === 'firefox' && IsNil(version) ? {
                 'storage': 'persistent'
             } : {})
         };
@@ -254,7 +253,7 @@ export default class Database {
 
         let promise;
 
-        if(Platform.name === Platforms.Firefox && Platform.version.major >= 56 && IsNil(version)) {
+        if(neon.browser.name === 'firefox' && IsNil(version)) {
             // Persistent databases can't be deleted currently (possible bug?), instead clear out
             // their object stores and attempt deletion.
 

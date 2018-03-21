@@ -11,7 +11,6 @@ import {Link} from 'react-router';
 import {PropTypes} from 'prop-types';
 
 import Log from 'neon-extension-core/core/logger';
-import Platform, {Platforms} from 'neon-extension-browser/platform';
 import Plugin from 'neon-extension-core/core/plugin';
 import Preferences from 'neon-extension-framework/preferences';
 
@@ -46,11 +45,11 @@ export default class App extends React.Component {
         // Detect embedded configuration frame
         let embedded = !IsNil(query.embedded);
 
-        if(Platform.name === Platforms.Chrome) {
+        if(neon.browser.name === 'chrome') {
             if(window.innerHeight > 550) {
                 embedded = false;
             }
-        } else if(Platform.name === Platforms.Firefox) {
+        } else if(neon.browser.name === 'firefox') {
             if(window.innerHeight > 500) {
                 embedded = false;
             }
@@ -102,7 +101,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <app data-view="neon-extension-core:app" data-platform={Platform.name} className={ClassNames({
+            <app data-view="neon-extension-core:app" data-platform={neon.browser.name} className={ClassNames({
                 'embedded': this.state.embedded
             })}>
                 <div id="header" className="top-bar">

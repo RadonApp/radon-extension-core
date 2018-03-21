@@ -1,15 +1,15 @@
 import IsString from 'lodash-es/isString';
+import Runtime from 'wes/runtime';
+import Tabs from 'wes/tabs';
 
-import Extension from 'neon-extension-browser/extension';
 import Log from 'neon-extension-framework/core/logger';
 import Registry from 'neon-extension-framework/core/registry';
-import Tabs from 'neon-extension-browser/tabs';
 
 
 export class Main {
     constructor() {
         // Bind to extension events
-        Extension.on('installed', this._onInstalled.bind(this));
+        Runtime.onInstalled.addListener(this._onInstalled.bind(this));
 
         // Update plugin registration
         this._updatePlugins();
@@ -20,7 +20,7 @@ export class Main {
 
         // Display configuration page on installation
         if(this._shouldDisplayConfigurationPage(reason, previousVersion)) {
-            Tabs.create({ url: Extension.getUrl('configuration/configuration.html') });
+            Tabs.create({ url: Runtime.getURL('configuration/configuration.html') });
         }
 
         // Update plugin registration
@@ -77,6 +77,8 @@ export class Main {
                 }
 
                 return true;
+            }, (err) => {
+                Log.error(`Unable to check permissions have been granted for the "${plugin.id}" plugin`, err);
             }))
             // Ensure content scripts are registered
             .then(() => plugin.isContentScriptsRegistered().then((registered) => {
@@ -88,6 +90,8 @@ export class Main {
                 return plugin.registerContentScripts().then(() => {
                     return true;
                 });
+            }, (err) => {
+                Log.error(`Unable to ensure content scripts have been registered for the "${plugin.id}" plugin`, err);
             }));
     }
 }

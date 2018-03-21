@@ -1,11 +1,11 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
+import Runtime from 'wes/runtime';
+import Tabs from 'wes/tabs';
 
 import Log from 'neon-extension-core/core/logger';
 import MessageClient from 'neon-extension-framework/messaging/client';
-import Messaging from 'neon-extension-browser/messaging';
-import Tabs from 'neon-extension-browser/tabs';
 import {parseMessageName} from 'neon-extension-framework/messaging/core/helpers';
 
 import MessageBrokerChannel from './channel';
@@ -34,12 +34,13 @@ export class MessageBroker extends EventEmitter {
         MessageClient.bind(this);
 
         // Bind to messaging events
-        if(!Messaging.supported) {
+        if(!Runtime.$exists()) {
+            Log.error('Runtime API doesn\'t exist, unable to create the message broker');
             return;
         }
 
-        Messaging.on('connect', this._onPortConnected.bind(this));
-        Messaging.on('message', this._onMessage.bind(this));
+        Runtime.onConnect.addListener(this._onPortConnected.bind(this));
+        Runtime.onMessage.addListener(this._onMessage.bind(this));
     }
 
     channel(name) {
@@ -81,12 +82,18 @@ export class MessageBroker extends EventEmitter {
         });
 
         // Bind to events
-        port.on('message', (message) => client.emit('message', message));
-        port.on('disconnect', () => client.onDisconnected());
+        port.onMessage.addListener((message) => client.emit('message', message));
+        port.onDisconnect.addListener(() => client.onDisconnected());
 
         // Bind to tab events
         if(!IsNil(port.sender.tab) && !IsNil(port.sender.tab.id)) {
-            Tabs.once('removed#' + port.sender.tab.id, () => client.onDisconnected());
+            Tabs.onRemoved.addListener((tabId) => {
+                if(tabId !== port.sender.tab.id) {
+                    return;
+                }
+
+                client.onDisconnected();
+            });
         }
 
         // Fire event

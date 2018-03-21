@@ -90,7 +90,6 @@ module.exports = function(config) {
                     {
                         test: /\.js$/,
                         include: [
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-browser-base/src')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework/src')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/foundation-sites')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
@@ -110,9 +109,7 @@ module.exports = function(config) {
 
             resolve: {
                 alias: {
-                    'neon-extension-browser': fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-browser-base/src')),
                     'neon-extension-framework': fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework/src')),
-
                     'neon-extension-core': fs.realpathSync(path.resolve(__dirname, 'src/'))
                 },
 
