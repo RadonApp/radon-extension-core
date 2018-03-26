@@ -39,8 +39,13 @@ export class MessageBroker extends EventEmitter {
             return;
         }
 
-        Runtime.onConnect.addListener(this._onPortConnected.bind(this));
-        Runtime.onMessage.addListener(this._onMessage.bind(this));
+        if(Runtime.$has('onConnect')) {
+            Runtime.onConnect.addListener(this._onPortConnected.bind(this));
+        }
+
+        if(Runtime.$has('onMessage')) {
+            Runtime.onMessage.addListener(this._onMessage.bind(this));
+        }
     }
 
     channel(name) {

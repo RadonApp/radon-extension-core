@@ -93,6 +93,7 @@ module.exports = function(config) {
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework/src')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/foundation-sites')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes')),
                             fs.realpathSync(path.resolve('tests/'))
                         ],
 

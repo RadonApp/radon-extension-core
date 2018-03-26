@@ -9,7 +9,9 @@ import Registry from 'neon-extension-framework/core/registry';
 export class Main {
     constructor() {
         // Bind to extension events
-        Runtime.onInstalled.addListener(this._onInstalled.bind(this));
+        if(Runtime.$exists() && Runtime.$has('onInstalled')) {
+            Runtime.onInstalled.addListener(this._onInstalled.bind(this));
+        }
 
         // Update plugin registration
         this._updatePlugins();
