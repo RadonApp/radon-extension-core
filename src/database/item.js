@@ -1,9 +1,12 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Filter from 'lodash-es/filter';
+import ForEach from 'lodash-es/forEach';
+import FromPairs from 'lodash-es/fromPairs';
 import Get from 'lodash-es/get';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import Map from 'lodash-es/map';
+import MD5 from 'crypto-js/md5';
 
 import Item from 'neon-extension-framework/models/item/core/base';
 import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
@@ -14,13 +17,14 @@ import {runSequential} from 'neon-extension-framework/core/helpers/promise';
 import Database from './base';
 
 
-const Indexes = {
-    'type': {
-        fields: ['type']
-    }
-};
-
 export class ItemDatabase extends Database {
+    static Keys = {
+        Music: {
+            'neon-extension-source-googlemusic': ['id'],
+            'neon-extension-source-spotify': ['uri']
+        }
+    };
+
     static Tree = {
         //
         // Music
@@ -66,7 +70,7 @@ export class ItemDatabase extends Database {
 
     constructor(name, options) {
         super(name || 'items', {
-            indexes: Indexes
+            indexes: ItemDatabase.createIndexes()
         }, options);
     }
 
@@ -487,6 +491,63 @@ export class ItemDatabase extends Database {
             children,
             item
         })));
+    }
+
+    static createIndexes() {
+        return {
+            'type': {
+                fields: ['type']
+            },
+
+            ...ItemDatabase.createMusicIndexes()
+        };
+    }
+
+    static createMusicIndexes() {
+        let indexes = {};
+
+        ForEach(ItemDatabase.Keys.Music, (names, source) => {
+            let keys = {
+                item: {
+                    slug: true
+                },
+                [source]: FromPairs(Map(names, (name) => (
+                    [name, true]
+                )))
+            };
+
+            let artist = ItemDecoder.fromDocument({
+                type: MediaTypes.Music.Artist,
+                keys
+            });
+
+            let album = ItemDecoder.fromDocument({
+                type: MediaTypes.Music.Album,
+                keys,
+
+                artist
+            });
+
+            let track = ItemDecoder.fromDocument({
+                type: MediaTypes.Music.Track,
+                keys,
+
+                album,
+                artist
+            });
+
+            // Create indexes
+            ForEach([artist, album, track], (item) => {
+                ForEach(item.createSelectors(), (selector) => {
+                    let fields = Object.keys(selector).sort();
+
+                    // Create index
+                    indexes[`generated-${MD5(fields.join(','))}`] = { fields };
+                });
+            });
+        });
+
+        return indexes;
     }
 }
 
