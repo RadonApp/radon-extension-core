@@ -52,14 +52,12 @@ export class BasicContentScript {
             }
 
             // Register content script
-            try {
-                this._registered[id] = {
-                    instance: ContentScripts.register(state),
-                    state
-                };
-            } catch(e) {
-                Log.warn(`Unable to register "${id}" content script`, e);
-            }
+            ContentScripts.register(state).then((instance) => {
+                // Store instance (for later un-registration)
+                this._registered[id] = { instance, state };
+            }, (err) => {
+                Log.warn(`Unable to register "${id}" content script`, err);
+            });
         });
     }
 
@@ -71,6 +69,8 @@ export class BasicContentScript {
             if(IsNil(this._registered[id])) {
                 return;
             }
+
+            Log.debug('Un-registering content script:', this._registered[id]);
 
             try {
                 // Unregister content script
