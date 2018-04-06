@@ -142,7 +142,7 @@ export default class App extends React.Component {
                                 );
                             })}
 
-                            <li className="title-link"><Link to="/destinations">Destinations</Link></li>
+                            <li className="title-link"><a>Destinations</a></li>
                             {Object.keys(this.state.pages['destination']).map((id) => {
                                 let page = this.state.pages['destination'][id];
 
@@ -153,7 +153,7 @@ export default class App extends React.Component {
                                 );
                             })}
 
-                            <li className="title-link"><Link to="/sources">Sources</Link></li>
+                            <li className="title-link"><a>Sources</a></li>
                             {Object.keys(this.state.pages['source']).map((id) => {
                                 let page = this.state.pages['source'][id];
 
