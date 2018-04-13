@@ -17,10 +17,6 @@
     "type": "git",
     "url": "https://github.com/NeApp/neon-extension-core"
   },
-  "scripts": {
-    "test": "karma start --single-run --browsers PhantomJS_D2",
-    "test-watch": "karma start --browsers PhantomJS_D2 --auto-watch"
-  },
   "dependencies": {
     "argsarray": "0.0.1",
     "immediate": "3.0.6",
@@ -99,5 +95,9 @@
     "react-router": "^2.6.1",
     "uuid": "^2.0.3",
     "wes": "^1.0.0"
+  },
+  "scripts": {
+    "test": "karma start --single-run --browsers PhantomJS_D2",
+    "test-watch": "karma start --browsers PhantomJS_D2 --auto-watch"
   }
 }
