@@ -7,7 +7,14 @@ import {PluginOption} from 'neon-extension-framework/services/configuration/mode
 export default class LoggerLevelOption extends PluginOption {
     constructor(plugin, key, label, options) {
         super(plugin, 'logger.level', key, label, Merge({
-            componentId: 'services.configuration:logger.level'
+            componentId: 'services.configuration:logger.level',
+
+            default: {
+                levels: {
+                    [null]: 'warning'
+                },
+                mode: 'basic'
+            }
         }, options));
     }
 
