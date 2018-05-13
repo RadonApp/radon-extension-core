@@ -1,0 +1,51 @@
+[data-component="neon-extension:logger.level"] {
+  label {
+    .mode {
+      float: right;
+    }
+  }
+
+  select {
+    font-size: 0.9rem;
+
+    -moz-appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .loggers {
+    width: 100%;
+
+    border-spacing: 0;
+    margin: 0 0 1rem;
+
+    font-size: 0.8rem;
+
+    select {
+      height: 2.2rem;
+
+      margin: 0;
+
+      font-size: 0.8rem;
+    }
+
+    tr td {
+      padding: 0.14rem 0;
+    }
+
+    tr td:first-child {
+      padding: 0.14rem 0 0.14rem 0.4rem;
+    }
+
+    tr:first-child td {
+      padding: 0;
+    }
+
+    tr:first-child td:first-child {
+      padding: 0 0 0 0.4rem;
+    }
+
+    tr:hover, tr:focus-within {
+      background: #F5F5F5;
+    }
+  }
+}
