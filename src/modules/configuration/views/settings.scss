@@ -21,5 +21,8 @@
 [data-component="neon-extension-core:settings.options.select"] {
   select {
     font-size: 0.9rem;
+
+    -moz-appearance: none;
+    -webkit-appearance: none;
   }
 }
