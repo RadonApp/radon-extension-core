@@ -5,9 +5,9 @@ import Plugin from '../../core/plugin';
 
 
 export default [
-    new Page(Plugin, 'debugging', 'Debugging', [
-        new Group(Plugin, 'logging', 'Logging', [
-            new LoggerLevelOption(Plugin, 'log_level', 'Log Level')
+    new Page(Plugin, 'debugging', [
+        new Group(Plugin, 'logging', [
+            new LoggerLevelOption(Plugin, 'log_level')
         ])
     ])
 ];
