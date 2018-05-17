@@ -1,0 +1,11 @@
+{
+  "title": "Credits",
+  "contributorBadgeTooltip": "Contributor",
+  "leadBadgeTooltip": "Project Lead",
+  "commitLabelTooltip": "{{count}} commit",
+  "commitLabelTooltip_plural": "{{count}} commits",
+  "moduleLabelTooltip": "{{count}} module",
+  "moduleLabelTooltip_plural": "{{count}} modules",
+  "packageLabelTooltip": "{{count}} package",
+  "packageLabelTooltip_plural": "{{count}} packages"
+}

@@ -1,0 +1,32 @@
+{
+  "title": "Debugging",
+
+  "logging": {
+    "title": "Logging",
+
+    "log_level": {
+      "label": "Log Level",
+
+      "levels": {
+        "error": "Error",
+        "warning": "Warning",
+        "notice": "Notice",
+        "info": "Info",
+        "debug": "Debug",
+        "trace": "Trace"
+      },
+
+      "mode": {
+        "label": {
+          "advanced": "Advanced",
+          "basic": "Basic"
+        },
+
+        "tooltip": {
+          "advanced": "Switch to advanced mode",
+          "basic": "Switch to basic mode"
+        }
+      }
+    }
+  }
+}
