@@ -9,13 +9,16 @@ import {DropdownMenu} from 'foundation-sites/js/foundation.dropdownMenu';
 import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 import {Link} from 'react-router';
 import {PropTypes} from 'prop-types';
+import {translate} from 'react-i18next';
 
 import Log from 'neon-extension-core/core/logger';
 import Plugin from 'neon-extension-core/core/plugin';
 import Preferences from 'neon-extension-framework/preferences';
 
+import I18n from '../components/I18n';
 
-export default class App extends React.Component {
+
+class App extends React.Component {
     constructor() {
         super();
 
@@ -100,6 +103,8 @@ export default class App extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
+
         return (
             <app data-view="neon-extension-core:app" data-platform={neon.browser.name} className={ClassNames({
                 'embedded': this.state.embedded
@@ -110,19 +115,27 @@ export default class App extends React.Component {
                             <i className="menu-icon"/>
                         </button>
                         <ul className="menu">
-                            <li className="menu-text">{Plugin.title}</li>
+                            <li className="menu-text">{t('neon-extension/common:title')}</li>
                         </ul>
                     </div>
 
                     <div className="top-bar-right">
                         <ul className="dropdown menu" data-dropdown-menu>
                             <li>
-                                <a>About</a>
+                                <a>{t('neon-extension/navigation:about')}</a>
 
                                 <ul className="menu vertical">
-                                    <li><Link to="/about">Neon</Link></li>
-                                    <li><Link to="/about/credits">Credits</Link></li>
-                                    <li><Link to="/about/libraries">Libraries</Link></li>
+                                    <li><Link to="/about">
+                                        {t('neon-extension/common:title')}
+                                    </Link></li>
+
+                                    <li><Link to="/about/credits">
+                                        {t('neon-extension/navigation:credits')}
+                                    </Link></li>
+
+                                    <li><Link to="/about/libraries">
+                                        {t('neon-extension/navigation:libraries')}
+                                    </Link></li>
                                 </ul>
                             </li>
                         </ul>
@@ -136,31 +149,43 @@ export default class App extends React.Component {
                                 let page = this.state.pages['core'][id];
 
                                 return (
-                                    <li key={page.id}><Link to={'/' + page.name}>
-                                        {page.title}
-                                    </Link></li>
+                                    <I18n ns={page.namespace}>
+                                        {(t) => (
+                                            <li key={page.id}><Link to={'/' + page.name}>
+                                                {t('title')}
+                                            </Link></li>
+                                        )}
+                                    </I18n>
                                 );
                             })}
 
-                            <li className="title-link"><a>Destinations</a></li>
+                            <li className="title-link"><a>{t('destinations')}</a></li>
                             {Object.keys(this.state.pages['destination']).map((id) => {
                                 let page = this.state.pages['destination'][id];
 
                                 return (
-                                    <li key={page.id}><Link to={'/destination/' + page.plugin.id}>
-                                        {page.title}
-                                    </Link></li>
+                                    <I18n ns={page.plugin.namespace}>
+                                        {(t) => (
+                                            <li key={page.id}><Link to={'/destination/' + page.plugin.id}>
+                                                {t('title')}
+                                            </Link></li>
+                                        )}
+                                    </I18n>
                                 );
                             })}
 
-                            <li className="title-link"><a>Sources</a></li>
+                            <li className="title-link"><a>{t('sources')}</a></li>
                             {Object.keys(this.state.pages['source']).map((id) => {
                                 let page = this.state.pages['source'][id];
 
                                 return (
-                                    <li key={page.id}><Link to={'/source/' + page.plugin.id}>
-                                        {page.title}
-                                    </Link></li>
+                                    <I18n ns={page.plugin.namespace}>
+                                        {(t) => (
+                                            <li key={page.id}><Link to={'/source/' + page.plugin.id}>
+                                                {t('title')}
+                                            </Link></li>
+                                        )}
+                                    </I18n>
                                 );
                             })}
                         </ul>
@@ -178,3 +203,9 @@ export default class App extends React.Component {
 App.contextTypes = {
     router: PropTypes.object.isRequired
 };
+
+export default translate([
+    'neon-extension/configuration',
+    'neon-extension/navigation',
+    'neon-extension/common'
+], { wait: true })(App);

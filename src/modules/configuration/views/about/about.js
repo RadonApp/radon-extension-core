@@ -1,4 +1,5 @@
 import React from 'react';
+import {Trans, translate} from 'react-i18next';
 
 import Registry from 'neon-extension-framework/core/registry';
 import FrameworkPlugin from 'neon-extension-framework/core/plugin';
@@ -6,7 +7,7 @@ import FrameworkPlugin from 'neon-extension-framework/core/plugin';
 import './about.scss';
 
 
-export default class About extends React.Component {
+class About extends React.Component {
     constructor(props) {
         super(props);
 
@@ -22,15 +23,21 @@ export default class About extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
+
+        let version = FrameworkPlugin.manifest.version;
+
         return (
             <div data-view="neon-extension-core:about">
-                <h3>Neon</h3>
+                <h3>{t('neon-extension/common:title')}</h3>
 
                 <div className="build">
-                    <p><b>Version: </b> {FrameworkPlugin.manifest.version}</p>
+                    <Trans i18nKey="version" version={version}>
+                        <b>Version:</b> {{version}}
+                    </Trans>
                 </div>
 
-                <h4>Modules</h4>
+                <h4>{t('modules')}</h4>
 
                 <div className="modules">
                     {this.state.modules.map(this.renderModule)}
@@ -59,3 +66,8 @@ export default class About extends React.Component {
         );
     }
 }
+
+export default translate([
+    'neon-extension/about',
+    'neon-extension/common'
+], { wait: true })(About);

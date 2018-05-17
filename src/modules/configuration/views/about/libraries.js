@@ -1,10 +1,11 @@
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
+import {translate} from 'react-i18next';
 
 import './libraries.scss';
 
 
-export default class Libraries extends React.Component {
+class Libraries extends React.Component {
     constructor(props) {
         super(props);
 
@@ -31,9 +32,11 @@ export default class Libraries extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
+
         return (
             <div data-view="neon-extension-core:libraries">
-                <h4>Libraries</h4>
+                <h4>{t('title')}</h4>
 
                 <div className="libraries">
                     {this.state.credits.libraries.map((library) =>
@@ -51,6 +54,8 @@ export default class Libraries extends React.Component {
     }
 
     renderLabel(name, count) {
+        const { t } = this.props;
+
         if(IsNil(name)) {
             return null;
         }
@@ -60,10 +65,10 @@ export default class Libraries extends React.Component {
         }
 
         // Build tooltip
-        let tooltip = count + ' ' + name;
+        let tooltip;
 
-        if(count !== 1) {
-            tooltip += 's';
+        if(name === 'credit') {
+            tooltip = t('creditLabelTooltip', { count });
         }
 
         return (
@@ -73,3 +78,8 @@ export default class Libraries extends React.Component {
         );
     }
 }
+
+export default translate([
+    'neon-extension/libraries',
+    'neon-extension/common'
+], { wait: true })(Libraries);

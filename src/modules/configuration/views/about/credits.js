@@ -2,11 +2,12 @@ import ClassNames from 'classnames';
 import IsNil from 'lodash-es/isNil';
 import MD5 from 'crypto-js/md5';
 import React from 'react';
+import {translate} from 'react-i18next';
 
 import './credits.scss';
 
 
-export default class Credits extends React.Component {
+class Credits extends React.Component {
     constructor(props) {
         super(props);
 
@@ -37,12 +38,14 @@ export default class Credits extends React.Component {
     }
 
     getTypeBadgeTitle(type) {
+        const { t } = this.props;
+
         if(type === 'lead') {
-            return 'Project Lead';
+            return t('leadBadgeTooltip');
         }
 
         if(type === 'contributor') {
-            return 'Contributor';
+            return t('contributorBadgeTooltip');
         }
 
         throw new Error('Unknown type badge: ' + type);
@@ -65,9 +68,11 @@ export default class Credits extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
+
         return (
             <div data-view="neon-extension-core:credits">
-                <h4>Credits</h4>
+                <h4>{t('title')}</h4>
 
                 <div className="credits">
                     {this.state.credits.people.map((person) =>
@@ -105,6 +110,8 @@ export default class Credits extends React.Component {
     }
 
     renderLabel(name, count) {
+        const { t } = this.props;
+
         if(IsNil(name)) {
             return null;
         }
@@ -117,10 +124,14 @@ export default class Credits extends React.Component {
         let style = name === 'commit' ? 'primary' : 'secondary';
 
         // Build tooltip
-        let tooltip = count + ' ' + name;
+        let tooltip;
 
-        if(count !== 1) {
-            tooltip += 's';
+        if(name === 'package') {
+            tooltip = t('packageLabelTooltip', { count });
+        } else if(name === 'module') {
+            tooltip = t('moduleLabelTooltip', { count });
+        } else if(name === 'commit') {
+            tooltip = t('commitLabelTooltip', { count });
         }
 
         // Render label
@@ -143,3 +154,8 @@ export default class Credits extends React.Component {
         );
     }
 }
+
+export default translate([
+    'neon-extension/credits',
+    'neon-extension/common'
+], { wait: true })(Credits);
