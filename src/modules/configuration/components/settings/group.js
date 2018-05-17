@@ -7,24 +7,22 @@ import Registry from 'neon-extension-framework/core/registry';
 import {Model, EnableOption, PluginOption} from 'neon-extension-framework/services/configuration/models';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
+import I18n from '../I18n';
 import Options from './options';
 import './group.scss';
 
 
 export default class Group extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.state = {
             enabled: true,
-            options: [],
 
-            header: {
-                option: null
-            }
+            headerOption: null,
+
+            namespaces: []
         };
-
-        this._currentRefreshId = 0;
     }
 
     componentWillMount() {
@@ -35,149 +33,89 @@ export default class Group extends React.Component {
         this.refresh(nextProps);
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if(nextState.enabled !== this.state.enabled) {
-            return true;
-        }
-
-        if(nextState.option !== this.state.header.option) {
-            return true;
-        }
-
-        if(nextProps.children.length !== this.props.children.length) {
-            return true;
-        }
-
-        for(let i = 0; i < nextProps.children.length; ++i) {
-            if(nextProps.children[i].id !== this.props.children[i].id) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    refresh(props) {
-        let id = ++this._currentRefreshId;
-
-        // Update options
-        this.setState({
-            options: props.children.filter(
-                (option) => option.type !== 'enable'
-            )
-        });
-
-        // Refresh header option
-        return this.refreshHeaderOption(id, props);
-    }
-
-    refreshHeaderOption(id, props) {
-        let option = this._getHeaderOption(props.children);
-
-        if(IsNil(option)) {
-            this.setState({
-                enabled: true,
-
-                header: {
-                    option: null
-                }
-            });
-
-            return true;
-        }
-
-        // Process header enable/disable option
-        if(option instanceof EnableOption) {
-            return option.isEnabled().then((enabled) => {
-                if(this._currentRefreshId !== id) {
-                    return false;
-                }
-
-                this.setState({
-                    enabled: enabled,
-
-                    header: {
-                        option: option
-                    }
-                });
-
-                return true;
-            });
-        }
-
-        // Update state
-        this.setState({
-            enabled: true,
-
-            header: {
-                option: null
-            }
-        });
-
-        // Return promise rejection
-        return Promise.reject(new Error(
-            'Unknown header option: ' + option
-        ));
-    }
-
     onEnableChanged(enabled) {
         this.setState({
             enabled: enabled
         });
     }
 
+    refresh(props) {
+        // Update state
+        this.setState({
+            enabled: true,
+
+            headerOption: this._getHeaderOption(props.item.children),
+
+            namespaces: [
+                props.item.namespace,
+                props.item.plugin.namespace
+            ]
+        });
+
+        // Refresh enable option
+        this.refreshEnableOption();
+    }
+
+    refreshEnableOption() {
+        if(IsNil(this.state.headerOption)) {
+            return;
+        }
+
+        if(!(this.state.headerOption instanceof EnableOption)) {
+            return;
+        }
+
+        // Fetch current state
+        this.state.headerOption.isEnabled().then((enabled) => {
+            // Update state
+            this.setState({
+                enabled
+            });
+        });
+    }
+
     render() {
-        let type = this.props.type;
-
         return (
-            <div data-component="neon-extension-core:settings.group" className={ClassNames('group', {
-                'row': type !== 'flat',
-                'box': type !== 'flat',
-                'group-box': type !== 'flat',
-                'group-flat': type === 'flat',
-                'enabled': this.state.enabled
-            })}>
-                <div className="header columns">
-                    <div className={ClassNames('header-inner', 'row', {
-                        'large-8': type === 'flat'
-                    })}>
-                        <div className="header-title small-10 columns">
-                            <h3>{this.props.title || 'Unknown Title'}</h3>
-                        </div>
-                        {this.state.header.option && <div className="header-option small-2 columns" style={{
-                            textAlign: 'right'
-                        }}>
-                            {this.renderItem(
-                                this.state.header.option,
+            <I18n ns={this.state.namespaces}>
+                {(t) => (
+                    <div data-component="neon-extension-core:settings.group"
+                        className={ClassNames('group group-box box row', {'enabled': this.state.enabled})}>
+                        <div className="header columns">
+                            <div className={ClassNames('header-inner', 'row')}>
+                                <div className="header-title small-10 columns">
+                                    <h3>{t(`${this.props.item.key}.title`)}</h3>
+                                </div>
 
-                                // Bind to change event
-                                this.state.header.option instanceof EnableOption ?
-                                    this.onEnableChanged.bind(this) :
-                                    null
-                            )}
+                                {this.state.headerOption &&
+                                    <div className="header-option small-2 columns" style={{ textAlign: 'right' }}>
+                                        {this.state.headerOption.type === 'enable' &&
+                                            Group.renderItem(this.state.headerOption, this.onEnableChanged.bind(this))
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        {this.props.item.children.length > 0 && <div className="content columns">
+                            <div className={ClassNames('children', 'row')}>
+                                {this.props.item.children.map((item) => {
+                                    if(item.type === 'enable') {
+                                        return null;
+                                    }
+
+                                    return Group.renderItem(item);
+                                })}
+                            </div>
+
+                            <div className="overlay"/>
                         </div>}
                     </div>
-                </div>
-                {this.state.options.length > 0 && <div className="content columns">
-                    <div className={ClassNames('children', 'row', {
-                        'large-8': type === 'flat'
-                    })}>
-                        {this.state.options.map((item) => {
-                            if(item.type === 'enable') {
-                                return null;
-                            }
-
-                            return this.renderItem(item);
-                        })}
-                    </div>
-
-                    <div className="overlay"/>
-                </div>}
-            </div>
+                )}
+            </I18n>
         );
     }
 
-    renderItem(item, onChanged) {
+    static renderItem(item, onChanged) {
         if(!(item instanceof Model)) {
             Log.warn('Ignoring invalid option: %O', item);
             return null;
@@ -190,8 +128,7 @@ export default class Group extends React.Component {
         if(item.type === 'group') {
             return <Group
                 key={item.key}
-                title={item.title}
-                children={item.children}
+                item={item}
             />;
         }
 
@@ -238,6 +175,5 @@ export default class Group extends React.Component {
 }
 
 Group.defaultProps = {
-    title: null,
-    children: []
+    item: {}
 };

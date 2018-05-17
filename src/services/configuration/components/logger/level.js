@@ -7,6 +7,7 @@ import Reduce from 'lodash-es/reduce';
 import Registry from 'neon-extension-framework/core/registry';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
+import I18n from '../../../../modules/configuration/components/I18n';
 import Plugin from '../../../../core/plugin';
 import './level.scss';
 
@@ -35,6 +36,8 @@ export default class LoggerLevelComponent extends OptionComponent {
             id: null,
             type: null,
 
+            namespaces: [],
+
             current: CloneDeep(DefaultState),
             valid: true,
 
@@ -50,8 +53,8 @@ export default class LoggerLevelComponent extends OptionComponent {
         this.refresh(nextProps);
     }
 
-    getModeTooltip() {
-        return `Switch to ${this.state.current.mode === 'basic' ? 'advanced' : 'basic'} mode`;
+    getToggleMode() {
+        return this.state.current.mode === 'basic' ? 'advanced' : 'basic';
     }
 
     onChanged(plugin, event) {
@@ -78,6 +81,15 @@ export default class LoggerLevelComponent extends OptionComponent {
     }
 
     refresh(props) {
+        this.setState({
+            id: props.item.id,
+
+            namespaces: [
+                this.props.item.namespace,
+                this.props.item.plugin.namespace
+            ]
+        });
+
         // Retrieve plugins
         Registry.listPlugins({ disabled: true }).then((plugins) => {
             this.setState({ plugins });
@@ -92,8 +104,6 @@ export default class LoggerLevelComponent extends OptionComponent {
 
             // Update state
             this.setState({
-                id: props.item.id,
-
                 valid: true,
                 current
             });
@@ -151,12 +161,17 @@ export default class LoggerLevelComponent extends OptionComponent {
         });
     }
 
-    renderDropdown(plugin = null) {
+    renderDropdown(t, plugin = null) {
+        let pluginId = plugin && plugin.id;
+
         return (
-            <select value={this.state.current.levels[plugin && plugin.id] || ''}
-                onChange={this.onChanged.bind(this, plugin)}>
+            <select value={this.state.current.levels[pluginId] || ''} onChange={this.onChanged.bind(this, plugin)}>
                 {Levels.map((choice) => {
-                    return <option key={choice.key} value={choice.key}>{choice.label}</option>;
+                    return (
+                        <option key={choice.key} value={choice.key}>
+                            {t(`${this.props.item.key}.levels.${choice.key}`)}
+                        </option>
+                    );
                 })}
             </select>
         );
@@ -164,31 +179,48 @@ export default class LoggerLevelComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component={Plugin.id + ':logger.level'} className="option option-input">
-                <label htmlFor={this.id} style={{fontSize: 14}}>
-                    <span>Log Level</span>
+            <I18n ns={this.state.namespaces}>
+                {(t) => (
+                    <div data-component={Plugin.id + ':logger.level'} className="option option-input">
+                        <label htmlFor={this.id} style={{fontSize: 14}}>
+                            <span>{t(`${this.props.item.key}.label`)}</span>
 
-                    <a className="mode" title={this.getModeTooltip()} onClick={this.setMode.bind(this, null)}>
-                        {this.state.current.mode === 'basic' && <span>Basic</span>}
-                        {this.state.current.mode === 'advanced' && <span>Advanced</span>}
-                    </a>
-                </label>
+                            <a className="mode"
+                                title={t(`${this.props.item.key}.mode.tooltip.${this.getToggleMode()}`)}
+                                onClick={this.setMode.bind(this, null)}>
 
-                {this.state.current.mode === 'basic' && this.renderDropdown()}
+                                {this.state.current.mode === 'basic' && <span>
+                                    {t(`${this.props.item.key}.mode.label.basic`)}
+                                </span>}
 
-                {this.state.current.mode === 'advanced' && <table className="loggers">
-                    <tbody>
-                        {Map(this.state.plugins, (plugin) => {
-                            return (
-                                <tr>
-                                    <td>{plugin.title}</td>
-                                    <td>{this.renderDropdown(plugin)}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>}
-            </div>
+                                {this.state.current.mode === 'advanced' && <span>
+                                    {t(`${this.props.item.key}.mode.label.advanced`)}
+                                </span>}
+
+                            </a>
+                        </label>
+
+                        {this.state.current.mode === 'basic' && this.renderDropdown(t)}
+
+                        {this.state.current.mode === 'advanced' && <table className="loggers">
+                            <tbody>
+                                {Map(this.state.plugins, (plugin) => {
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <I18n ns={plugin.namespace}>
+                                                    {(t) => <span>{t('title')}</span>}
+                                                </I18n>
+                                            </td>
+                                            <td>{this.renderDropdown(t, plugin)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>}
+                    </div>
+                )}
+            </I18n>
         );
     }
 }

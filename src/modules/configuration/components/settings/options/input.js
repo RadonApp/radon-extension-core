@@ -4,6 +4,8 @@ import React from 'react';
 
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
+import I18n from '../../I18n';
+
 
 export default class InputComponent extends OptionComponent {
     constructor() {
@@ -12,6 +14,8 @@ export default class InputComponent extends OptionComponent {
         this.state = {
             id: null,
             type: null,
+
+            namespaces: [],
 
             current: null,
             valid: true
@@ -39,11 +43,18 @@ export default class InputComponent extends OptionComponent {
     }
 
     refresh(props) {
+        this.setState({
+            id: props.item.id,
+
+            namespaces: [
+                this.props.item.namespace,
+                this.props.item.plugin.namespace
+            ]
+        });
+
         // Retrieve option state
         props.item.get().then((current) => {
             this.setState({
-                id: props.item.id,
-
                 valid: this.props.item.isValid(current),
                 current
             });
@@ -101,29 +112,33 @@ export default class InputComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component="neon-extension-core:settings.options.input" className="option option-input">
-                <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item.label}</label>
+            <I18n ns={this.state.namespaces}>
+                {(t, {i18n}) => (
+                    <div data-component="neon-extension-core:settings.options.input" className="option option-input">
+                        <label htmlFor={this.id} style={{fontSize: 14}}>{t(`${this.props.item.key}.label`)}</label>
 
-                <input
-                    id={this.id}
-                    className={ClassNames({'is-invalid-input': !this.state.valid})}
+                        <input
+                            id={this.id}
+                            className={ClassNames({'is-invalid-input': !this.state.valid})}
 
-                    type={this.state.type || 'text'}
-                    minLength={this.props.item.minLength}
-                    maxLength={this.props.item.maxLength}
-                    value={this.state.current || ''}
+                            type={this.state.type || 'text'}
+                            minLength={this.props.item.minLength}
+                            maxLength={this.props.item.maxLength}
+                            value={this.state.current || ''}
 
-                    onBlur={this.onBlur.bind(this)}
-                    onChange={this.onChange.bind(this)}
-                    onPaste={this.onPaste.bind(this)}
-                />
+                            onBlur={this.onBlur.bind(this)}
+                            onChange={this.onChange.bind(this)}
+                            onPaste={this.onPaste.bind(this)}
+                        />
 
-                {this.props.item && this.props.item.options.summary &&
-                    <div className="summary" style={{color: '#999', fontSize: 14}}>
-                        {this.props.item.options.summary}
+                        {this.props.item && i18n.exists(this.props.item.key + '.summary') &&
+                            <div className="summary" style={{color: '#999', fontSize: 14}}>
+                                {t(this.props.item.key + '.summary')}
+                            </div>
+                        }
                     </div>
-                }
-            </div>
+                )}
+            </I18n>
         );
     }
 }

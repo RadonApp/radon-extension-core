@@ -3,6 +3,8 @@ import React from 'react';
 
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
+import I18n from '../../I18n';
+
 
 export default class CheckboxComponent extends OptionComponent {
     constructor() {
@@ -10,6 +12,8 @@ export default class CheckboxComponent extends OptionComponent {
 
         this.state = {
             id: null,
+            namespaces: [],
+
             checked: false
         };
     }
@@ -35,11 +39,18 @@ export default class CheckboxComponent extends OptionComponent {
     }
 
     refresh(props) {
+        this.setState({
+            id: props.item.id,
+
+            namespaces: [
+                this.props.item.namespace,
+                this.props.item.plugin.namespace
+            ]
+        });
+
         // Retrieve option state
         props.item.preferences.getBoolean(props.item.name).then((checked) => {
             this.setState({
-                id: props.item.id,
-
                 checked
             });
         });
@@ -56,22 +67,27 @@ export default class CheckboxComponent extends OptionComponent {
 
     render() {
         return (
-            <div data-component="neon-extension-core:settings.options.checkbox" className="option option-checkbox">
-                <input
-                    id={this.id}
-                    type="checkbox"
-                    checked={this.state.checked}
-                    onChange={this.onChanged.bind(this)}
-                />
+            <I18n ns={this.state.namespaces}>
+                {(t, {i18n}) => (
+                    <div data-component="neon-extension-core:settings.options.checkbox"
+                        className="option option-checkbox">
+                        <input
+                            id={this.id}
+                            type="checkbox"
+                            checked={this.state.checked}
+                            onChange={this.onChanged.bind(this)}
+                        />
 
-                <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item && this.props.item.label}</label>
+                        <label htmlFor={this.id} style={{fontSize: 14}}>{t(`${this.props.item.key}.label`)}</label>
 
-                {this.props.item && this.props.item.options.summary &&
-                    <div className="summary" style={{color: '#999', fontSize: 14}}>
-                        {this.props.item.options.summary}
+                        {this.props.item && i18n.exists(this.props.item.key + '.summary') &&
+                            <div className="summary" style={{color: '#999', fontSize: 14}}>
+                                {t(this.props.item.key + '.summary')}
+                            </div>
+                        }
                     </div>
-                }
-            </div>
+                )}
+            </I18n>
         );
     }
 }

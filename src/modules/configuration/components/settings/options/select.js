@@ -3,6 +3,8 @@ import React from 'react';
 
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
+import I18n from '../../I18n';
+
 
 export default class SelectComponent extends OptionComponent {
     constructor() {
@@ -10,6 +12,8 @@ export default class SelectComponent extends OptionComponent {
 
         this.state = {
             id: null,
+            namespaces: [],
+
             current: null
         };
     }
@@ -35,11 +39,18 @@ export default class SelectComponent extends OptionComponent {
     }
 
     refresh(props) {
+        this.setState({
+            id: props.item.id,
+
+            namespaces: [
+                this.props.item.namespace,
+                this.props.item.plugin.namespace
+            ]
+        });
+
         // Retrieve option state
         props.item.preferences.getString(props.item.name).then((current) => {
             this.setState({
-                id: props.item.id,
-
                 current
             });
         });
@@ -54,23 +65,28 @@ export default class SelectComponent extends OptionComponent {
         });
     }
 
+    // TODO Use choice labels from translation namespace
     render() {
         return (
-            <div data-component="neon-extension-core:settings.options.select" className="option option-select">
-                <label htmlFor={this.id} style={{fontSize: 14}}>{this.props.item.label}</label>
+            <I18n ns={this.state.namespaces}>
+                {(t, {i18n}) => (
+                    <div data-component="neon-extension-core:settings.options.select" className="option option-select">
+                        <label htmlFor={this.id} style={{fontSize: 14}}>{t(`${this.props.item.key}.label`)}</label>
 
-                <select id={this.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>
-                    {this.props.item.options.choices.map((choice) => {
-                        return <option key={choice.key} value={choice.key}>{choice.label}</option>;
-                    })}
-                </select>
+                        <select id={this.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>
+                            {this.props.item.options.choices.map((choice) => {
+                                return <option key={choice.key} value={choice.key}>{choice.label}</option>;
+                            })}
+                        </select>
 
-                {this.props.item && this.props.item.options.summary &&
-                    <div className="summary" style={{color: '#999', fontSize: 14}}>
-                        {this.props.item.options.summary}
+                        {this.props.item && i18n.exists(this.props.item.key + '.summary') &&
+                            <div className="summary" style={{color: '#999', fontSize: 14}}>
+                                {t(this.props.item.key + '.summary')}
+                            </div>
+                        }
                     </div>
-                }
-            </div>
+                )}
+            </I18n>
         );
     }
 }
