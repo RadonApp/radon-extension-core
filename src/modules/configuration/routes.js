@@ -9,7 +9,7 @@ import Settings from './views/settings';
 
 export const routes = (
     <Route path="/" component={App}>
-        <IndexRedirect to="/general"/>
+        <IndexRedirect to="/debugging"/>
 
         <Route path="about" component={About}/>
         <Route path="about/credits" component={Credits}/>
