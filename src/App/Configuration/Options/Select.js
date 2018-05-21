@@ -64,17 +64,22 @@ export default class SelectOptionComponent extends OptionComponent {
         });
     }
 
-    // TODO Use choice labels from translation namespace
     render() {
         return (
             <TranslationNamespace ns={this.state.namespaces}>
                 {(t, {i18n}) => (
                     <div data-component="neon-extension-core:settings.options.select" className="option option-select">
-                        <label htmlFor={this.id} style={{fontSize: 14}}>{t(`${this.props.item.key}.label`)}</label>
+                        <label htmlFor={this.id} style={{fontSize: 14}}>
+                            {t(`${this.props.item.key}.label`)}
+                        </label>
 
                         <select id={this.id} onChange={this.onChanged.bind(this)} value={this.state.current || ''}>
-                            {this.props.item.options.choices.map((choice) => {
-                                return <option key={choice.key} value={choice.key}>{choice.label}</option>;
+                            {this.props.item.options.choices.map((key) => {
+                                return (
+                                    <option key={key} value={key}>
+                                        {t(`${this.props.item.key}.choices.${key}`)}
+                                    </option>
+                                );
                             })}
                         </select>
 
