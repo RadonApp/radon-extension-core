@@ -1,4 +1,6 @@
 {
+  "configuration": "Configuration",
+
   "about": "About",
   "credits": "Credits",
   "libraries": "Libraries"

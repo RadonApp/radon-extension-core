@@ -1,0 +1,100 @@
+[data-view="neon-extension-core:credits"] {
+  float: left;
+  width: 100%;
+
+  padding: 25px;
+
+  .credits {
+    display: grid;
+
+    margin: 15px 0 0;
+    padding: 0;
+
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-column-gap: 1rem;
+    grid-row-gap: 0.25rem;
+
+    justify-content: space-between;
+    align-content: flex-start;
+
+    overflow: auto;
+  }
+
+  .credit {
+    display: flex;
+    flex-direction: row;
+
+    padding: 5px;
+
+    height: 92px;
+
+    img {
+      flex: 0 1 auto;
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  .credit-section {
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    padding: 0 0 0 10px;
+  }
+
+  .credit-header {
+    flex: 0 0 auto;
+
+    h5 {
+      margin: 0;
+
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .credit-badges {
+    float: right;
+
+    padding: 2px 2px 0 0;
+
+    .badge {
+      min-width: 25px;
+      padding: 2px;
+
+      font-size: 14px;
+    }
+
+    .badge-lead {
+      background: #1779ba;
+    }
+
+    .badge-contributor {
+      background: #a5a5a5;
+    }
+  }
+
+  .credit-body {
+    flex: 1 1 auto;
+  }
+
+  .credit-footer {
+    flex: 0 0 auto;
+  }
+
+  .credit-labels {
+    float: right;
+
+    .label {
+      margin-left: 6px;
+
+      i {
+        margin-right: 8px;
+      }
+    }
+  }
+}

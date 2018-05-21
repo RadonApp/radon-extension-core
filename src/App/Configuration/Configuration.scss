@@ -1,0 +1,74 @@
+#navigation {
+  top: 3.375em;
+
+  padding: 1rem 0;
+  overflow-y: auto;
+
+  background: #2c3136;
+
+  font-size: inherit;
+
+  a {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+
+    font-size: inherit;
+    color: inherit;
+  }
+
+  a:hover {
+    background-color: #33383e;
+  }
+
+  li {
+    font-size: 0.75rem;
+    color: #ffffff;
+  }
+
+  li > a {
+    display: block;
+    padding: 1em;
+
+    line-height: 1;
+  }
+
+  li > a.active {
+    background: #434a51;
+  }
+
+  li.disabled > a {
+    cursor: pointer;
+    pointer-events: none;
+
+    color: #bbb;
+  }
+
+  li.title,
+  li.title-link {
+    margin: 0.96em 0 0;
+
+    font-size: 0.625rem;
+    font-weight: bold;
+
+    letter-spacing: .1em;
+    line-height: 1;
+    text-transform: uppercase;
+
+    color: #656a70;
+  }
+}
+
+#content {
+  height: 100%;
+
+  padding: 0;
+}
+
+app.embedded {
+  #navigation {
+    top: 0;
+
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px 0 0 3px;
+  }
+}

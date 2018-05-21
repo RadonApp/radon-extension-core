@@ -1,11 +1,27 @@
 {
   "title": "Credits",
-  "contributorBadgeTooltip": "Contributor",
-  "leadBadgeTooltip": "Project Lead",
-  "commitLabelTooltip": "{{count}} commit",
-  "commitLabelTooltip_plural": "{{count}} commits",
-  "moduleLabelTooltip": "{{count}} module",
-  "moduleLabelTooltip_plural": "{{count}} modules",
-  "packageLabelTooltip": "{{count}} package",
-  "packageLabelTooltip_plural": "{{count}} packages"
+
+  "badge": {
+    "contributor": {
+      "tooltip": "Contributor",
+    },
+    "lead": {
+      "tooltip": "Project Lead",
+    }
+  },
+
+  "label": {
+    "commit": {
+      "tooltip": "{{count}} commit",
+      "tooltip_plural": "{{count}} commits",
+    },
+    "module": {
+      "tooltip": "{{count}} module",
+      "tooltip_plural": "{{count}} modules",
+    },
+    "package": {
+      "tooltip": "{{count}} package",
+      "tooltip_plural": "{{count}} packages"
+    }
+  }
 }

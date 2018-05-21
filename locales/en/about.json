@@ -1,5 +1,12 @@
 {
   "title": "About",
-  "modules": "Modules",
-  "version": "<0>Version:</0> <2>{{version}}</2>"
+
+  "build": {
+    "title": "Build",
+    "version": "<0>Version:</0> <2>{{version}}</2>"
+  },
+
+  "modules": {
+    "title": "Modules"
+  }
 }

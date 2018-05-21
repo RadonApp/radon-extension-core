@@ -22,7 +22,7 @@ export class Main {
 
         // Display configuration page on installation
         if(this._shouldDisplayConfigurationPage(reason, previousVersion)) {
-            Tabs.create({ url: Runtime.getURL('configuration/configuration.html') });
+            Tabs.create({ url: Runtime.getURL('application.html#/configuration') });
         }
 
         // Update plugin registration

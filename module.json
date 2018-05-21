@@ -16,6 +16,6 @@
     "configuration"
   ],
   "web_accessible_resources": [
-    "configuration/configuration.html"
+    "application.html"
   ]
 }

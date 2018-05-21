@@ -5,9 +5,9 @@ import React from 'react';
 import Reduce from 'lodash-es/reduce';
 
 import Registry from 'neon-extension-framework/core/registry';
+import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
 import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
 
-import I18n from '../../../../modules/configuration/components/I18n';
 import Plugin from '../../../../core/plugin';
 import './level.scss';
 
@@ -179,7 +179,7 @@ export default class LoggerLevelComponent extends OptionComponent {
 
     render() {
         return (
-            <I18n ns={this.state.namespaces}>
+            <TranslationNamespace ns={this.state.namespaces}>
                 {(t) => (
                     <div data-component={Plugin.id + ':logger.level'} className="option option-input">
                         <label htmlFor={this.id} style={{fontSize: 14}}>
@@ -208,9 +208,9 @@ export default class LoggerLevelComponent extends OptionComponent {
                                     return (
                                         <tr>
                                             <td>
-                                                <I18n ns={plugin.namespace}>
+                                                <TranslationNamespace ns={plugin.namespace}>
                                                     {(t) => <span>{t('title')}</span>}
-                                                </I18n>
+                                                </TranslationNamespace>
                                             </td>
                                             <td>{this.renderDropdown(t, plugin)}</td>
                                         </tr>
@@ -220,7 +220,7 @@ export default class LoggerLevelComponent extends OptionComponent {
                         </table>}
                     </div>
                 )}
-            </I18n>
+            </TranslationNamespace>
         );
     }
 }

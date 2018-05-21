@@ -1,0 +1,96 @@
+.group {
+  .overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    background: rgba(50, 50, 50, 0.6);
+    display: none;
+  }
+}
+
+.group > .children {
+  padding: 10px 0;
+
+  background-color: #FFF;
+}
+
+.group-box {
+  background-color: #FFF;
+
+  .PageHeader {
+    padding: 0;
+
+    background-color: #F5F5F5;
+    border: 1px solid #D8D8D8;
+  }
+
+  .PageHeader-title {
+    padding: 0;
+
+    h3 {
+      margin: 0;
+      padding: 9px 10px 10px;
+
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 17px;
+    }
+  }
+
+  .PageHeader-option {
+    padding: 0;
+
+    .switch {
+      padding: 6px;
+
+      .switch-paddle {
+        float: right;
+      }
+    }
+  }
+}
+
+.group-box > .content {
+  padding: 10px;
+
+  border: 1px solid #D8D8D8;
+  border-top: 0;
+
+  .option-checkbox input[type="checkbox"] {
+    margin: 0 0 0.6rem;
+  }
+}
+
+.group-box:last-child {
+  margin-bottom: 0;
+}
+
+.group-box:not(.enabled) > .content {
+  padding: 0;
+
+  border-top: none;
+}
+
+.group-box:not(.enabled) > .content > .children {
+  display: none;
+}
+
+.group-flat {
+  height: 100%;
+}
+
+.group-flat > .content {
+  position: relative;
+  min-height: calc(100% - 61px);
+
+  padding: 20px 30px;
+
+  background-color: #FFF;
+}
+
+.group-flat:not(.enabled) > .content > .overlay {
+  display: block;
+}
