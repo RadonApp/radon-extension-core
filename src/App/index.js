@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import $ from 'jquery';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
