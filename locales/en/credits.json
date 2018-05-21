@@ -3,21 +3,21 @@
 
   "badge": {
     "contributor": {
-      "tooltip": "Contributor",
+      "tooltip": "Contributor"
     },
     "lead": {
-      "tooltip": "Project Lead",
+      "tooltip": "Project Lead"
     }
   },
 
   "label": {
     "commit": {
       "tooltip": "{{count}} commit",
-      "tooltip_plural": "{{count}} commits",
+      "tooltip_plural": "{{count}} commits"
     },
     "module": {
       "tooltip": "{{count}} module",
-      "tooltip_plural": "{{count}} modules",
+      "tooltip_plural": "{{count}} modules"
     },
     "package": {
       "tooltip": "{{count}} package",
