@@ -3,11 +3,11 @@ import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import Log from 'neon-extension-core/core/logger';
+import Log from 'neon-extension-core/Core/Logger';
 import PageHeader from 'neon-extension-framework/Components/Page/Header';
-import Preferences from 'neon-extension-framework/preferences';
+import Preferences from 'neon-extension-framework/Preferences';
 import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {EnableOption} from 'neon-extension-framework/services/configuration/models';
+import {Options} from 'neon-extension-framework/Models/Configuration';
 
 import ConfigurationGroup from './ConfigurationGroup';
 import './ConfigurationPage.scss';
@@ -100,7 +100,7 @@ export default class ConfigurationPage extends React.Component {
             return;
         }
 
-        if(!(this.state.headerOption instanceof EnableOption)) {
+        if(!(this.state.headerOption instanceof Options.EnableOption)) {
             return;
         }
 

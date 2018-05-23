@@ -1,9 +1,9 @@
 import IsNil from 'lodash-es/isNil';
+import IsString from 'lodash-es/isString';
 import React from 'react';
 
-import Log from 'neon-extension-core/core/logger';
-import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
-import {isString} from 'neon-extension-framework/core/helpers';
+import Log from 'neon-extension-core/Core/Logger';
+import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
 
 
 export default class EnableOptionComponent extends OptionComponent {
@@ -98,7 +98,7 @@ export default class EnableOptionComponent extends OptionComponent {
             .then(() => this.isPermissionsGranted(props))
             .then(() => this.isContentScriptsRegistered(props))
             .catch((err) => {
-                if(isString(err)) {
+                if(IsString(err)) {
                     Log.info(err);
                 } else {
                     Log.warn('Unable to check enabled state, error:', err.stack);

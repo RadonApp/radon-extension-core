@@ -20,7 +20,7 @@ class Libraries extends React.Component {
 
     componentDidMount() {
         // Fetch libraries
-        fetch('/credits.json')
+        fetch('/Resources/credits.json')
             .then((response) => response.json())
             .then((credits) => this.setState({ credits }));
     }

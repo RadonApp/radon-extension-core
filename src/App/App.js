@@ -9,7 +9,7 @@ import {DropdownMenu} from 'foundation-sites/js/foundation.dropdownMenu';
 import {Link} from 'react-router';
 import {translate} from 'react-i18next';
 
-import Log from 'neon-extension-core/core/logger';
+import Log from 'neon-extension-core/Core/Logger';
 
 
 class App extends React.Component {

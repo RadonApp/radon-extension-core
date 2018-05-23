@@ -2,7 +2,7 @@ import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
 import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
+import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
 
 
 export default class CheckboxOptionComponent extends OptionComponent {

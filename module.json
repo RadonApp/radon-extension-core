@@ -1,21 +1,26 @@
 {
   "icons": {
-    "16": "resources/icon/16.png",
-    "24": "resources/icon/24.png",
-    "32": "resources/icon/32.png",
-    "48": "resources/icon/48.png",
-    "64": "resources/icon/64.png",
-    "96": "resources/icon/96.png",
-    "128": "resources/icon/128.png"
+    "16": "Resources/Icons/application/16.png",
+    "24": "Resources/Icons/application/24.png",
+    "32": "Resources/Icons/application/32.png",
+    "48": "Resources/Icons/application/48.png",
+    "64": "Resources/Icons/application/64.png",
+    "96": "Resources/Icons/application/96.png",
+    "128": "Resources/Icons/application/128.png"
   },
   "origins": [],
   "permissions": [
     "tabs"
   ],
   "services": [
-    "configuration"
+    "App",
+    "Configuration",
+    "ContentScript",
+    "Library",
+    "Migrate",
+    "Scrobble"
   ],
   "web_accessible_resources": [
-    "application.html"
+    "Application.html"
   ]
 }

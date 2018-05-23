@@ -1,6 +1,6 @@
-import LibraryTransaction from 'neon-extension-core/modules/background/messaging/services/library/transaction';
-import {ItemDatabase} from 'neon-extension-core/database/item';
-import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
+import LibraryTransaction from 'neon-extension-core/Services/Library/LibraryTransaction';
+import {ItemDatabase} from 'neon-extension-core/Database/Item';
+import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
 
 import Uuid from 'uuid';
 

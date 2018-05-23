@@ -22,7 +22,7 @@ class Credits extends React.Component {
 
     componentDidMount() {
         // Fetch credits
-        fetch('/credits.json')
+        fetch('/Resources/credits.json')
             .then((response) => response.json())
             .then((credits) => this.setState({ credits }));
     }

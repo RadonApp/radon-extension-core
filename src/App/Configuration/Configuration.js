@@ -8,9 +8,9 @@ import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 import {PropTypes} from 'prop-types';
 import {translate} from 'react-i18next';
 
-import Log from 'neon-extension-core/core/logger';
-import Preferences from 'neon-extension-framework/preferences';
-import Registry from 'neon-extension-framework/core/registry';
+import Log from 'neon-extension-core/Core/Logger';
+import Preferences from 'neon-extension-framework/Preferences';
+import Registry from 'neon-extension-framework/Core/Registry';
 
 import './Configuration.scss';
 

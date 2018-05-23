@@ -1,8 +1,8 @@
 import React from 'react';
 import {Trans, translate} from 'react-i18next';
 
-import FrameworkPlugin from 'neon-extension-framework/core/plugin';
-import Registry from 'neon-extension-framework/core/registry';
+import FrameworkPlugin from 'neon-extension-framework/Core/Plugin';
+import Registry from 'neon-extension-framework/Core/Registry';
 import PageHeader from 'neon-extension-framework/Components/Page/Header';
 
 import './About.scss';

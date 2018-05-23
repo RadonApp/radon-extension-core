@@ -2,14 +2,14 @@ import ClassNames from 'classnames';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import Log from 'neon-extension-core/core/logger';
+import Log from 'neon-extension-core/Core/Logger';
 import PageHeader from 'neon-extension-framework/Components/Page/Header';
-import Registry from 'neon-extension-framework/core/registry';
+import Registry from 'neon-extension-framework/Core/Registry';
 import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {Model, EnableOption, PluginOption} from 'neon-extension-framework/services/configuration/models';
-import {OptionComponent} from 'neon-extension-framework/services/configuration/components';
+import {Model, Options} from 'neon-extension-framework/Models/Configuration';
+import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
 
-import Options from './Options';
+import OptionComponents from './Options';
 import './ConfigurationGroup.scss';
 
 
@@ -62,7 +62,7 @@ export default class Group extends React.Component {
             return;
         }
 
-        if(!(this.state.headerOption instanceof EnableOption)) {
+        if(!(this.state.headerOption instanceof Options.EnableOption)) {
             return;
         }
 
@@ -130,10 +130,10 @@ export default class Group extends React.Component {
         // Try retrieve option component
         let Component;
 
-        if(item instanceof PluginOption && !IsNil(item.options.componentId)) {
+        if(item instanceof Options.PluginOption && !IsNil(item.options.componentId)) {
             Component = Registry.components[item.options.componentId];
         } else {
-            Component = Options[item.type];
+            Component = OptionComponents[item.type];
         }
 
         // Verify component has been found

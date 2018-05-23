@@ -5,7 +5,7 @@ import {reactI18nextModule} from 'react-i18next';
 
 i18n.use(XHR).use(reactI18nextModule).init({
     allowMultiLoading: false,
-    loadPath: '/locales/{{lng}}/{{ns}}.json',
+    loadPath: '/Locales/{{lng}}/{{ns}}.json',
 
     debug: true,
     fallbackLng: 'en',
