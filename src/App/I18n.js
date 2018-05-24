@@ -1,23 +1,12 @@
-import i18n from 'i18next';
-import XHR from 'i18next-xhr-backend';
 import {reactI18nextModule} from 'react-i18next';
 
+import I18nManager from 'neon-extension-framework/Core/I18n';
 
-i18n.use(XHR).use(reactI18nextModule).init({
-    debug: process.env['NODE_ENV'] === 'development',
-    fallbackLng: 'en',
+
+export default I18nManager.createInstance({
+    plugins: [reactI18nextModule],
 
     ns: 'neon-extension/common',
-    defaultNS: 'neon-extension/common',
-
-    backend: {
-        allowMultiLoading: false,
-        loadPath: '/Locales/{{lng}}/{{ns}}.json'
-    },
-
-    interpolation: {
-        escapeValue: false
-    },
 
     react: {
         defaultTransParent: 'div',
@@ -28,5 +17,3 @@ i18n.use(XHR).use(reactI18nextModule).init({
         nsMode: 'default'
     }
 });
-
-export default i18n;
