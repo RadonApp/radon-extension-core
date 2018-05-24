@@ -4,14 +4,16 @@ import {reactI18nextModule} from 'react-i18next';
 
 
 i18n.use(XHR).use(reactI18nextModule).init({
-    allowMultiLoading: false,
-    loadPath: '/Locales/{{lng}}/{{ns}}.json',
-
-    debug: true,
+    debug: process.env['NODE_ENV'] === 'development',
     fallbackLng: 'en',
 
     ns: 'neon-extension/common',
     defaultNS: 'neon-extension/common',
+
+    backend: {
+        allowMultiLoading: false,
+        loadPath: '/Locales/{{lng}}/{{ns}}.json'
+    },
 
     interpolation: {
         escapeValue: false
