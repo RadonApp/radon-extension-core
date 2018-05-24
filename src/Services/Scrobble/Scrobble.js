@@ -318,7 +318,7 @@ export default class ScrobbleService extends Service {
     }
 
     _shouldEmitEvent(event, previousState, currentState) {
-        if(event === 'progress') {
+        if(['progress', 'seeked'].indexOf(event) >= 0) {
             return true;
         }
 
