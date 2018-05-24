@@ -9,6 +9,7 @@ import Service from 'neon-extension-core/Messaging/Core/Service';
 import Session from 'neon-extension-framework/Models/Session';
 import SessionDatabase from 'neon-extension-core/Database/Session';
 import {MediaTypes} from 'neon-extension-framework/Core/Enums';
+import {Services} from 'neon-extension-framework/Core/Constants';
 
 
 export default class ScrobbleService extends Service {
@@ -232,7 +233,7 @@ export default class ScrobbleService extends Service {
     // region Private methods
 
     _getServices() {
-        return Registry.listServices('destination/scrobble', { disabled: true }).then((services) => {
+        return Registry.listServices(Services.Destination.Scrobble, { disabled: true }).then((services) => {
             let result = {};
 
             for(let i = 0; i < services.length; ++i) {

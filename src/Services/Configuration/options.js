@@ -1,6 +1,5 @@
 import Plugin from 'neon-extension-framework/Core/Plugin';
 import {Group, Page} from 'neon-extension-framework/Models/Configuration';
-
 import {LoggerLevelOption} from 'neon-extension-core/Models/Configuration';
 
 
