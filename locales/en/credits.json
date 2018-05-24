@@ -12,16 +12,19 @@
 
   "label": {
     "commit": {
-      "tooltip": "{{count}} commit",
-      "tooltip_plural": "{{count}} commits"
+      "body": "{{count, decimal}}",
+      "tooltip": "{{count, decimal}} commit",
+      "tooltip_plural": "{{count, decimal}} commits"
     },
     "module": {
-      "tooltip": "{{count}} module",
-      "tooltip_plural": "{{count}} modules"
+      "body": "{{count, decimal}}",
+      "tooltip": "{{count, decimal}} module",
+      "tooltip_plural": "{{count, decimal}} modules"
     },
     "package": {
-      "tooltip": "{{count}} package",
-      "tooltip_plural": "{{count}} packages"
+      "body": "{{count, decimal}}",
+      "tooltip": "{{count, decimal}} package",
+      "tooltip_plural": "{{count, decimal}} packages"
     }
   }
 }

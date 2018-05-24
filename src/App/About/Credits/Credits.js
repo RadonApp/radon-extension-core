@@ -126,7 +126,7 @@ class Credits extends React.Component {
         // Render label
         return (
             <span className={ClassNames('label', style)} title={this.getLabelTooltip(name, count)}>
-                <i className={this.getLabelIcon(name)}/>{count}
+                <i className={this.getLabelIcon(name)}/>{this.props.t(`label.${name}.body`, { count })}
             </span>
         );
     }

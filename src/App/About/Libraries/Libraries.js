@@ -77,7 +77,7 @@ class Libraries extends React.Component {
         // Render label
         return (
             <span className="label secondary" title={this.getLabelTooltip(name, count)}>
-                <i className={this.getLabelIcon(name)}/>{count}
+                <i className={this.getLabelIcon(name)}/>{this.props.t(`label.${name}.body`, { count })}
             </span>
         );
     }

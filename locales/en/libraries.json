@@ -3,8 +3,9 @@
 
   "label": {
     "credit": {
-      "tooltip": "{{count}} credit",
-      "tooltip_plural": "{{count}} credits"
+      "body": "{{count, decimal}}",
+      "tooltip": "{{count, decimal}} credit",
+      "tooltip_plural": "{{count, decimal}} credits"
     }
   }
 }
