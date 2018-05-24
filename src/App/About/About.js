@@ -36,7 +36,7 @@ class About extends React.Component {
             <div id="container" className="expanded row">
                 <PageHeader title={t('neon-extension/common:title')}/>
 
-                <div data-view="neon-extension-core:about">
+                <div data-view="neon-extension-core:about" className="row">
                     <h4>{t('build.title')}</h4>
 
                     <div className="build">

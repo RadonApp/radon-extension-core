@@ -48,7 +48,7 @@ class Libraries extends React.Component {
             <div id="container" className="expanded row">
                 <PageHeader title={t('title')}/>
 
-                <div data-view="neon-extension-core:libraries">
+                <div data-view="neon-extension-core:libraries" className="row">
                     <div className="libraries">
                         {this.state.credits.libraries.map((library) =>
                             <div className="library card">

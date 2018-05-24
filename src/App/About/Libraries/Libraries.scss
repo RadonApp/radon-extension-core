@@ -1,11 +1,10 @@
 [data-view="neon-extension-core:libraries"] {
-  float: left;
-  width: 100%;
-
-  padding: 25px;
+  padding: 8px;
 
   .libraries {
     display: grid;
+    float: left;
+    width: 100%;
 
     margin: 15px 0 0;
     padding: 0;

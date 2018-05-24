@@ -74,7 +74,7 @@ class Credits extends React.Component {
             <div id="container" className="expanded row">
                 <PageHeader title={t('title')}/>
 
-                <div data-view="neon-extension-core:credits">
+                <div data-view="neon-extension-core:credits" className="row">
                     <div className="credits">
                         {this.state.credits.people.map((person) =>
                             <div className="credit card">

@@ -118,7 +118,7 @@ export default class ConfigurationPage extends React.Component {
             <TranslationNamespace ns={this.state.namespaces} nsMode="fallback">
                 {(t) => (
                     <div data-view="neon-extension-core:settings"
-                        className={ClassNames('group group-flat row', {'enabled': this.state.enabled})}>
+                        className={ClassNames('group group-flat expanded row', {'enabled': this.state.enabled})}>
                         <PageHeader title={t('title')}>
                             {this.state.headerOption &&
                                 <div className="PageHeader-option small-2 columns" style={{ textAlign: 'right' }}>
