@@ -81,35 +81,37 @@ export default class ConfigurationPage extends React.Component {
             ];
         }
 
+        // Find header option
+        let headerOption = this._getHeaderOption(page.children);
+
         // Update state
         this.setState({
             enabled: true,
 
             page: page || null,
-            headerOption: this._getHeaderOption(page.children),
+            headerOption,
 
             namespaces
         });
 
         // Refresh enable option
-        this.refreshEnableOption();
+        this.refreshEnableState(headerOption);
     }
 
-    refreshEnableOption() {
-        if(IsNil(this.state.headerOption)) {
+    refreshEnableState(headerOption) {
+        if(IsNil(headerOption)) {
+            this.setState({ enabled: true });
             return;
         }
 
-        if(!(this.state.headerOption instanceof Options.EnableOption)) {
+        if(!(headerOption instanceof Options.EnableOption)) {
+            this.setState({ enabled: true });
             return;
         }
 
-        // Fetch current state
-        this.state.headerOption.isEnabled().then((enabled) => {
-            // Update state
-            this.setState({
-                enabled
-            });
+        // Update current state
+        headerOption.isEnabled().then((enabled) => {
+            this.setState({ enabled });
         });
     }
 
