@@ -23,6 +23,13 @@ app {
 
   z-index: 999;
 
+
+  .top-bar-left,
+  .top-bar-right {
+    flex: 0 1 auto;
+    margin-left: auto;
+  }
+
   .top-bar-left {
     margin: 0;
   }
