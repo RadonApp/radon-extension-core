@@ -1,6 +1,6 @@
 {
   "name": "neon-extension-core",
-  "version": "1.9.0-beta.6",
+  "version": "1.9.0-beta.7",
   "description": "Neon Extension: Core",
   "keywords": [
     "neon",
@@ -72,7 +72,7 @@
     "karma-spec-reporter": "0.0.31",
     "karma-webpack": "^2.0.6",
     "lodash-es": "4.16.1",
-    "neon-extension-framework": "1.9.0-beta.6",
+    "neon-extension-framework": "1.9.0-beta.7",
     "prop-types": "15.5.10",
     "react": "15.3.0",
     "react-dom": "15.3.0",
@@ -93,7 +93,7 @@
     "i18next": "^11.3.1",
     "i18next-xhr-backend": "^1.5.1",
     "lodash-es": "^4.16.1",
-    "neon-extension-framework": "^1.9.0-beta.6",
+    "neon-extension-framework": "^1.9.0-beta.7",
     "process": "^0.11.10",
     "prop-types": "^15.5.10",
     "querystring": "^0.2.0",
