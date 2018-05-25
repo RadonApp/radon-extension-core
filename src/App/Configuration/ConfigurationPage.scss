@@ -18,6 +18,10 @@
   }
 }
 
+[data-view="neon-extension-core:settings"] > .content > .children {
+  max-width: 60rem;
+}
+
 [data-component="neon-extension-core:settings.options.select"] {
   select {
     font-size: 0.9rem;
