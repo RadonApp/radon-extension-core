@@ -110,7 +110,11 @@ module.exports = function(config) {
                         path.resolve(__dirname, 'node_modules/neon-extension-framework')
                     ),
 
-                    'neon-extension-core': fs.realpathSync(__dirname)
+                    'neon-extension-core': fs.realpathSync(__dirname),
+
+                    // Dependencies
+                    'lodash': 'lodash-es',
+                    'lodash-amd': 'lodash-es'
                 },
 
                 modules: [
