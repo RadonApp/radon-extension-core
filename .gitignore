@@ -1,5 +1,5 @@
 /.phantomjs
-/build
+/Build
 /node_modules
 
 /package-lock.json
