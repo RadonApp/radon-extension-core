@@ -11,21 +11,19 @@ module.exports = function(config) {
         basePath: './',
         frameworks: ['jasmine'],
 
+        browserNoActivityTimeout: 100 * 1000,
+
         files: [
             'node_modules/@babel/polyfill/dist/polyfill.js',
             'node_modules/jasmine-promises/dist/jasmine-promises.js',
 
-            'tests/init.js',
+            'karma.init.js',
 
-            {pattern: 'tests/*_tests.js', watched: false},
-            {pattern: 'tests/**/*_tests.js', watched: false}
+            {pattern: '!(.phantomjs|Build|node_modules)/{**/,}*.js', watched: false}
         ],
 
         preprocessors: {
-            'tests/init.js': ['webpack', 'sourcemap'],
-
-            'tests/*_tests.js': ['webpack', 'sourcemap'],
-            'tests/**/*_tests.js': ['webpack', 'sourcemap']
+            '!(.phantomjs|Build|node_modules)/{**/,}*.js': ['webpack', 'sourcemap']
         },
 
         reporters: [
@@ -36,19 +34,19 @@ module.exports = function(config) {
         ],
 
         coverageReporter: {
-            dir: 'build/coverage',
+            dir: 'Build/Coverage',
 
             reporters: [
-                { type: 'html', subdir: '.' },
-                { type: 'lcovonly', subdir: '.' },
+                { type: 'html', subdir: '.', includeAllSources: true },
+                { type: 'lcovonly', subdir: '.', includeAllSources: true }
             ]
         },
 
         htmlReporter: {
-            outputDir: 'build/test',
+            outputDir: 'Build/Tests',
 
             focusOnFailures: true,
-            preserveDescribeNesting: true,
+            preserveDescribeNesting: true
         },
 
         customLaunchers: {
@@ -78,27 +76,24 @@ module.exports = function(config) {
                 rules: [
                     {
                         test: /\.js$/,
-                        include: path.resolve('src/'),
+                        include: path.resolve('./'),
 
-                        use: {
-                            loader: 'babel-loader',
-                            options: {
-                                plugins: ["istanbul"]
-                            }
-                        }
+                        oneOf: [
+                            { test: /\.Spec\.js$/, use: { loader: 'babel-loader' } },
+                            { test: /\.js$/, use: { loader: 'babel-loader', options: { plugins: ['istanbul'] } } }
+                        ]
                     },
                     {
                         test: /\.js$/,
                         include: [
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework/src')),
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/foundation-sites')),
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes')),
-                            fs.realpathSync(path.resolve('tests/'))
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes'))
                         ],
 
                         use: {
-                            loader: 'babel-loader',
+                            loader: 'babel-loader'
                         }
                     },
                     {
@@ -110,8 +105,11 @@ module.exports = function(config) {
 
             resolve: {
                 alias: {
-                    'neon-extension-framework': fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework/src')),
-                    'neon-extension-core': fs.realpathSync(path.resolve(__dirname, 'src/'))
+                    'neon-extension-framework': fs.realpathSync(
+                        path.resolve(__dirname, 'node_modules/neon-extension-framework')
+                    ),
+
+                    'neon-extension-core': fs.realpathSync(__dirname)
                 },
 
                 modules: [
@@ -129,11 +127,12 @@ module.exports = function(config) {
                         'NODE_ENV': '"development"',
                         'TEST': 'true'
                     }
-                }),
+                })
             ]
         },
 
         webpackMiddleware: {
+            noInfo: true,
             stats: 'errors-only'
         }
     });
