@@ -12,6 +12,7 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
 
         browserNoActivityTimeout: 100 * 1000,
+        failOnEmptyTestSuite: false,
 
         files: [
             'node_modules/@babel/polyfill/dist/polyfill.js',
