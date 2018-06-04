@@ -1,3 +1,4 @@
+/* eslint-disable jasmine/no-promise-without-done-fail */
 import Uuid from 'uuid';
 
 import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
