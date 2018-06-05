@@ -30,7 +30,7 @@ class About extends React.Component {
         document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
 
         // Render about page
-        let version = FrameworkPlugin.manifest.version;
+        let version = FrameworkPlugin.version;
 
         return (
             <div id="container" className="expanded row">
@@ -69,7 +69,7 @@ class About extends React.Component {
                 </div>
 
                 <div className="module-body">
-                    <p className="version">v{module.manifest.version}</p>
+                    <p className="version">v{module.version}</p>
                 </div>
             </div>
         );
