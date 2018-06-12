@@ -4,6 +4,13 @@ var uuid = require('uuid');
 var webpack = require('webpack');
 
 
+let libraries = [
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework')),
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/foundation-sites')),
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/wes'))
+];
+
 module.exports = function(config) {
     var phantomStoragePath = path.resolve('.phantomjs/' + uuid.v4());
 
@@ -83,6 +90,7 @@ module.exports = function(config) {
                     {
                         test: /\.js$/,
                         include: path.resolve('./'),
+                        exclude: libraries,
 
                         oneOf: [
                             { test: /\.Spec\.js$/, use: { loader: 'babel-loader' } },
@@ -91,12 +99,7 @@ module.exports = function(config) {
                     },
                     {
                         test: /\.js$/,
-                        include: [
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/foundation-sites')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes'))
-                        ],
+                        include: libraries,
 
                         use: {
                             loader: 'babel-loader',
