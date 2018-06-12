@@ -178,6 +178,7 @@ export default class Database {
 
     _open(version) {
         let options = {
+            'adapter': 'idb',
             'auto_compaction': true,
             'revs_limit': 1,
 
