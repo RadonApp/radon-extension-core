@@ -19,13 +19,11 @@ module.exports = function(config) {
             'node_modules/jasmine-promises/dist/jasmine-promises.js',
             'node_modules/whatwg-fetch/fetch.js',
 
-            'karma.init.js',
-
-            {pattern: '!(.phantomjs|Build|node_modules)/{**/,}*.js', watched: false}
+            './karma.init.js'
         ],
 
         preprocessors: {
-            '!(.phantomjs|Build|node_modules)/{**/,}*.js': ['webpack', 'sourcemap']
+            './karma.init.js': ['webpack', 'sourcemap']
         },
 
         reporters: [
