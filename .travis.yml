@@ -5,8 +5,8 @@ before_install:
 - npm install -g npm@'^5.10.0'
 - npm install -g NeApp/neon-extension-build#$TRAVIS_BRANCH || npm install -g NeApp/neon-extension-build#develop
 install:
-- neb travis:install $TRAVIS_BRANCH
 - npm install
+- neb travis:install $TRAVIS_BRANCH
 - npm dedupe
 - npm ls
 - npm install coveralls
