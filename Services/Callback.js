@@ -29,7 +29,7 @@ class CallbackService extends Service {
         // Start listening for callback requests
         Promise.resolve().then(() => {
             // Ensure the WebRequest API is supported
-            if(!WebRequest.supported) {
+            if(!WebRequest.$exists()) {
                 reject(new Error('WebRequest is not supported'));
                 return;
             }
