@@ -22,6 +22,10 @@ export class ItemDatabase extends Database {
         Music: {
             'neon-extension-source-googlemusic': ['id'],
             'neon-extension-source-spotify': ['uri']
+        },
+        Video: {
+            'neon-extension-source-amazonvideo': ['id'],
+            'neon-extension-source-netflix': ['id']
         }
     };
 
@@ -499,7 +503,8 @@ export class ItemDatabase extends Database {
                 fields: ['type']
             },
 
-            ...ItemDatabase.createMusicIndexes()
+            ...ItemDatabase.createMusicIndexes(),
+            ...ItemDatabase.createVideoIndexes()
         };
     }
 
@@ -538,6 +543,57 @@ export class ItemDatabase extends Database {
 
             // Create indexes
             ForEach([artist, album, track], (item) => {
+                ForEach(item.createSelectors(), (selector) => {
+                    let fields = Object.keys(selector).sort();
+
+                    // Create index
+                    indexes[`generated-${MD5(fields.join(','))}`] = { fields };
+                });
+            });
+        });
+
+        return indexes;
+    }
+
+    static createVideoIndexes() {
+        let indexes = {};
+
+        ForEach(ItemDatabase.Keys.Video, (names, source) => {
+            let keys = {
+                item: {
+                    slug: true
+                },
+                [source]: FromPairs(Map(names, (name) => (
+                    [name, true]
+                )))
+            };
+
+            let movie = ItemDecoder.fromDocument({
+                type: MediaTypes.Video.Movie,
+                keys
+            });
+
+            let show = ItemDecoder.fromDocument({
+                type: MediaTypes.Video.Show,
+                keys
+            });
+
+            let season = ItemDecoder.fromDocument({
+                type: MediaTypes.Video.Season,
+                keys,
+
+                show
+            });
+
+            let episode = ItemDecoder.fromDocument({
+                type: MediaTypes.Video.Episode,
+                keys,
+
+                season
+            });
+
+            // Create indexes
+            ForEach([movie, show, season, episode], (item) => {
                 ForEach(item.createSelectors(), (selector) => {
                     let fields = Object.keys(selector).sort();
 
