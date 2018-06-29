@@ -5,11 +5,11 @@ import Plugin from '../../Core/Plugin';
 import Options from './options';
 
 
-export class NeonConfigurationService extends ConfigurationService {
+export class RadonConfigurationService extends ConfigurationService {
     constructor() {
         super(Plugin, Options);
     }
 }
 
 // Register service
-Registry.registerService(new NeonConfigurationService());
+Registry.registerService(new RadonConfigurationService());
