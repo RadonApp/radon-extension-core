@@ -1,5 +1,6 @@
+import IsNil from 'lodash-es/isNil';
 import React from 'react';
-import {Trans, translate} from 'react-i18next';
+import {translate} from 'react-i18next';
 
 import FrameworkPlugin from 'neon-extension-framework/Core/Plugin';
 import Registry from 'neon-extension-framework/Core/Registry';
@@ -19,8 +20,33 @@ class About extends React.Component {
 
     componentDidMount() {
         // Fetch modules
-        Registry.listPlugins({ disabled: true })
-            .then((modules) => this.setState({ modules }));
+        Registry.listPlugins({ disabled: true }).then((modules) =>
+            this.setState({ modules })
+        );
+    }
+
+    getRepositoryUrl(plugin) {
+        let repository = plugin.repository;
+
+        // Ensure repository exists
+        if(IsNil(repository)) {
+            return null;
+        }
+
+        // Ignore dirty plugins
+        if(repository.dirty) {
+            return null;
+        }
+
+        if(!IsNil(repository.tag)) {
+            return `https://github.com/NeApp/${plugin.name}/releases/tag/${repository.tag}`;
+        }
+
+        if(!IsNil(repository.commit)) {
+            return `https://github.com/NeApp/${plugin.name}/commit/${repository.commit}`;
+        }
+
+        return null;
     }
 
     render() {
@@ -29,50 +55,52 @@ class About extends React.Component {
         // Update page title
         document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
 
-        // Render about page
-        let version = FrameworkPlugin.version;
-
+        // Render page
         return (
             <div id="container" className="expanded row">
-                <PageHeader title={t('neon-extension/common:title')}/>
+                <PageHeader title={t('neon-extension/common:title')} subtitle={this.renderVersion(FrameworkPlugin)}/>
 
                 <div data-view="neon-extension-core:about" className="row">
-                    <h4>{t('build.title')}</h4>
-
-                    <div className="build">
-                        <Trans i18nKey="build.version" version={version}>
-                            <b>Version:</b> {{version}}
-                        </Trans>
-                    </div>
-
-                    <h4>{t('modules.title')}</h4>
-
                     <div className="modules">
-                        {this.state.modules.map(this.renderModule)}
+                        {this.state.modules.map(this.renderModule.bind(this))}
                     </div>
                 </div>
             </div>
         );
     }
 
-    renderModule(module) {
-        if(module.id === 'neon-extension') {
+    renderModule(plugin) {
+        if(IsNil(plugin) || plugin.id === 'neon-extension') {
             return null;
         }
 
         return (
             <div className="module card">
                 <div className="module-header">
-                    <h5 title={module.id}>
-                        {module.id}
-                    </h5>
+                    <a href={`https://github.com/NeApp/${plugin.name}`} target="_blank">
+                        <h5 title={plugin.id}>
+                            {plugin.title}
+                        </h5>
+                    </a>
                 </div>
 
                 <div className="module-body">
-                    <p className="version">v{module.version}</p>
+                    {this.renderVersion(plugin)}
                 </div>
             </div>
         );
+    }
+
+    renderVersion(plugin) {
+        let url = this.getRepositoryUrl(plugin);
+        let version = `v${plugin.versionName}`;
+
+        // Render element
+        if(!IsNil(url)) {
+            return <a className="version" href={url} target="_blank">{version}</a>;
+        }
+
+        return <p className="version">{version}</p>;
     }
 }
 

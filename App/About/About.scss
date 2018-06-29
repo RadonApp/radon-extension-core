@@ -12,7 +12,7 @@
     margin: 15px 0 0;
     padding: 0;
 
-    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     grid-column-gap: 1rem;
     grid-row-gap: 0.25rem;
 
@@ -25,7 +25,6 @@
   .module {
     display: flex;
     padding: 10px;
-    height: 69px;
 
     img {
       flex: 0 1 auto;
@@ -47,6 +46,14 @@
   .module-header {
     flex: 0 0 auto;
 
+    a {
+      color: #0a0a0a;
+    }
+
+    a:hover {
+      color: #1468a0;
+    }
+
     h5 {
       margin: 0;
 
@@ -59,9 +66,16 @@
   .module-body {
     flex: 1 1 auto;
 
-    p.version {
+    a.version, p.version {
       font-size: 0.8em;
+    }
+
+    p.version {
       color: #666;
+    }
+
+    *:last-child {
+      margin-bottom: 0;
     }
   }
 }
