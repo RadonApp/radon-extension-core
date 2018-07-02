@@ -21,17 +21,15 @@ class CallbackService extends Service {
     }
 
     listen(payload, resolve, reject) {
-        if(this._listening) {
-            resolve();
-            return;
-        }
-
-        // Start listening for callback requests
         Promise.resolve().then(() => {
+            if(this._listening) {
+                return true;
+            }
+
             // Ensure the WebRequest API is supported
             if(!WebRequest.$exists()) {
-                reject(new Error('WebRequest is not supported'));
-                return;
+                Log.info('Unable to listen for "%s" requests: WebRequest is not available', CallbackPattern);
+                return false;
             }
 
             Log.debug('Listening for "%s" requests', CallbackPattern);
@@ -40,9 +38,20 @@ class CallbackService extends Service {
             this._listening = true;
 
             // Listen for "onBeforeRequest" events
-            WebRequest.onBeforeRequest.addListener(this.onBeforeRequest.bind(this), {
-                urls: [ CallbackPattern ]
-            });
+            try {
+                WebRequest.onBeforeRequest.addListener(this.onBeforeRequest.bind(this), {
+                    urls: [CallbackPattern]
+                });
+
+                return true;
+            } catch(e) {
+                Log.warn('Unable to listen for "%s" requests:', CallbackPattern, e);
+            }
+
+            // Reset state
+            this._listening = false;
+
+            return false;
         }).then(
             resolve,
             reject
