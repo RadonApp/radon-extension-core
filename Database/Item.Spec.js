@@ -2,6 +2,7 @@
 import Uuid from 'uuid';
 
 import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
+import {Show, Season, Episode} from 'neon-extension-framework/Models/Metadata/Video';
 
 import {ItemDatabase} from './Item';
 
@@ -193,6 +194,57 @@ describe('ItemDatabase', function() {
 
                 expect(items[2]).toBe(false);
                 expect(items[3]).toBe(12);
+            });
+        });
+    });
+
+    describe('fetch', function() {
+        beforeAll(createDatabase);
+
+        it('should support items with missing children', () => {
+            // Create item
+            return db.upsertTree(Episode.create('test', {
+                keys: {
+                    id: 1
+                },
+
+                number: 2,
+                title: 'Top Banana'
+            })).then(({created, updated, children, item}) => {
+                expect(created).toBe(true);
+                expect(updated).toBe(false);
+
+                expect(item.season).toBeNull();
+
+                let id = item.id;
+                let revision = item.revision;
+
+                // Fetch item
+                let current = Episode.create('test', {
+                    keys: {
+                        id: 1
+                    },
+
+                    number: 2,
+                    title: 'Top Banana',
+
+                    season: Season.create('test', {
+                        number: 1,
+                        title: 'Season 1',
+
+                        show: Show.create('test', {
+                            title: 'Arrested Development'
+                        })
+                    })
+                });
+
+                return db.fetch(current).then(() => {
+                    expect(current.id).toBe(id);
+                    expect(current.revision).toBe(revision);
+
+                    expect(current.season).toBeDefined();
+                    expect(current.season.show).toBeDefined();
+                });
             });
         });
     });
@@ -803,6 +855,50 @@ describe('ItemDatabase', function() {
                 });
             }, (err) => {
                 console.log('Error returned:', err.message);
+            });
+        });
+
+        it('replaces items with missing children', () => {
+            // Create item
+            return db.upsertTree(Episode.create('test', {
+                keys: {
+                    id: 1
+                },
+
+                number: 2,
+                title: 'Top Banana'
+            })).then(({created, updated, children, item}) => {
+                expect(created).toBe(true);
+                expect(updated).toBe(false);
+
+                // Replace item with season
+                return db.upsertTree(Episode.create('test', {
+                    id: item.id,
+                    revision: item.revision,
+
+                    keys: {
+                        id: 1
+                    },
+
+                    number: 2,
+                    title: 'Top Banana',
+
+                    season: Season.create('test', {
+                        number: 1,
+                        title: 'Season 1',
+
+                        show: Show.create('test', {
+                            title: 'Arrested Development'
+                        })
+                    })
+                })).then(({created, updated, children, item}) => {
+                    expect(created).toBe(true);
+                    expect(updated).toBe(false);
+
+                    expect(item);
+                    expect(item.season);
+                    expect(item.season.show);
+                });
             });
         });
 

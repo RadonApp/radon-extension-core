@@ -198,17 +198,27 @@ export class ItemDatabase extends Database {
 
             resolve = this.match(selectors).then((result) => {
                 if(IsNil(result) || IsNil(result['_id'])) {
-                    return Promise.reject(new Error('Unable to find item'));
+                    return Promise.reject(new Error('No match found'));
                 }
 
                 return this.get(result['_id']);
+            }).catch((err) => {
+                Log.warn('Unable to find item matching: %o (%s)', selectors, (err && err.message) ? err.message : err);
+                return null;
             });
         } else {
-            resolve = this.get(item.id);
+            resolve = this.get(item.id).catch((err) => {
+                Log.warn('Unable to find item: %o (%s)', item.id, (err && err.message) ? err.message : err);
+                return null;
+            });
         }
 
         // Update `item`
         return resolve.then((doc) => {
+            if(IsNil(doc)) {
+                return this.fetchChildren(item);
+            }
+
             // Merge `item` with current document
             item.inherit(ItemDecoder.fromDocument(doc));
 
