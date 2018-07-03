@@ -107,7 +107,7 @@ export default class LibraryTransaction {
         // Add items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
             return runSequential(items, (item) => this.add(item).catch((err) => {
-                Log.warn('Unable to add item %o:', item, err && err.message, err);
+                Log.warn('Unable to add item %o: %s', item, (err && err.message) ? err.message : err);
             }));
         }
 
