@@ -6,6 +6,7 @@ import Has from 'lodash-es/has';
 import Map from 'lodash-es/map';
 import Merge from 'lodash-es/merge';
 import PickBy from 'lodash-es/pickBy';
+import Reduce from 'lodash-es/reduce';
 import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
@@ -106,14 +107,32 @@ export default class LibraryTransaction {
 
         // Add items sequentially (if chunks are disabled, or not required)
         if(IsNil(options.chunk) || items.length <= options.chunk) {
-            return runSequential(items, (item) => this.add(item).catch((err) => {
+            let added = 0;
+
+            return runSequential(items, (item) => this.add(item).then(() => {
+                added++;
+            }, (err) => {
                 Log.warn('Unable to add item %o: %s', item, (err && err.message) ? err.message : err);
+            })).then(() => ({
+                ignored: items.length - added,
+                added
             }));
         }
 
         // Add items in task chunks
         return createTasks(items, options.chunk, (chunk) =>
             this.addMany(chunk, { chunk: null })
+        ).then((results) =>
+            // Merge chunk results
+            Reduce(results, (result, { added, ignored }) => {
+                result.added += added;
+                result.ignored += ignored;
+
+                return result;
+            }, {
+                added: 0,
+                ignored: 0
+            })
         );
     }
 
@@ -175,7 +194,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[track.type].push(current);
         } else {
-            current.assign(track);
+            current.assign(track, { strict: false });
         }
 
         // Index track by identifiers
@@ -227,7 +246,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[album.type].push(current);
         } else {
-            current.assign(album);
+            current.assign(album, { strict: false });
         }
 
         // Index album by identifiers
@@ -265,7 +284,7 @@ export default class LibraryTransaction {
             // Add track to `items` collection
             this.transactionItems[artist.type].push(current);
         } else {
-            current.assign(artist);
+            current.assign(artist, { strict: false });
         }
 
         // Index artist by identifiers
@@ -357,7 +376,7 @@ export default class LibraryTransaction {
             current = track;
             current['#id'] = Uuid.v4();
         } else {
-            current.assign(track);
+            current.assign(track, { strict: false });
         }
 
         // Index track by identifiers
@@ -402,7 +421,7 @@ export default class LibraryTransaction {
             current = album;
             current['#id'] = Uuid.v4();
         } else {
-            current.assign(album);
+            current.assign(album, { strict: false });
         }
 
         // Index album by identifiers
@@ -432,7 +451,7 @@ export default class LibraryTransaction {
             current = artist;
             current['#id'] = Uuid.v4();
         } else {
-            current.assign(artist);
+            current.assign(artist, { strict: false });
         }
 
         // Index artist by identifiers
@@ -582,7 +601,7 @@ export default class LibraryTransaction {
             current = track;
 
             this._storeItem('created', [track.type, current['#id']], current);
-        } else if(current.assign(track)) {
+        } else if(current.assign(track, { strict: false })) {
             this._storeItem('updated', [track.type, current['#id']], current);
         } else {
             this._storeItem('matched', [track.type, current['#id']], current);
@@ -623,7 +642,7 @@ export default class LibraryTransaction {
             current = album;
 
             this._storeItem('created', [album.type, current['#id']], current);
-        } else if(current.assign(album)) {
+        } else if(current.assign(album, { strict: false })) {
             this._storeItem('updated', [album.type, current['#id']], current);
         } else {
             this._storeItem('matched', [album.type, current['#id']], current);
@@ -656,7 +675,7 @@ export default class LibraryTransaction {
             current = artist;
 
             this._storeItem('created', [artist.type, current['#id']], current);
-        } else if(current.assign(artist)) {
+        } else if(current.assign(artist, { strict: false })) {
             this._storeItem('updated', [artist.type, current['#id']], current);
         } else {
             this._storeItem('matched', [artist.type, current['#id']], current);

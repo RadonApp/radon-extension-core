@@ -28,37 +28,102 @@ describe('LibraryTransaction', function() {
             source: 'alpha'
         });
 
-        let artist = Artist.create('alpha', {
-            title: 'Gorillaz',
-
-            createdAt: 2000,
-            updatedAt: 2000
-        });
-
-        let album = Album.create('alpha', {
-            title: 'Demon Days',
-
-            createdAt: 2000,
-            updatedAt: 2000,
-
-            artist
-        });
-
         let tracks = [
             Track.create('alpha', {
+                keys: {
+                    id: 300
+                },
+
                 title: 'Feel Good Inc',
 
                 createdAt: 2000,
                 updatedAt: 2000,
 
-                artist,
-                album
+                artist: Artist.create('alpha', {
+                    keys: {
+                        id: 100
+                    },
+
+                    title: 'Gorillaz',
+
+                    createdAt: 2000,
+                    updatedAt: 2000
+                }),
+
+                album: Album.create('alpha', {
+                    keys: {
+                        id: 200
+                    },
+
+                    title: 'Demon Days',
+
+                    createdAt: 2000,
+                    updatedAt: 2000,
+
+                    artist: Artist.create('alpha', {
+                        keys: {
+                            id: 100
+                        },
+
+                        title: 'Gorillaz',
+
+                        createdAt: 2000,
+                        updatedAt: 2000
+                    })
+                })
+            }),
+
+            Track.create('alpha', {
+                keys: {
+                    id: 301
+                },
+
+                title: 'Feel Good Inc',
+
+                createdAt: 2000,
+                updatedAt: 2000,
+
+                artist: Artist.create('alpha', {
+                    keys: {
+                        id: 101
+                    },
+
+                    title: 'Gorillaz',
+
+                    createdAt: 2000,
+                    updatedAt: 2000
+                }),
+
+                album: Album.create('alpha', {
+                    keys: {
+                        id: 201
+                    },
+
+                    title: 'Demon Days',
+
+                    createdAt: 2000,
+                    updatedAt: 2000,
+
+                    artist: Artist.create('alpha', {
+                        keys: {
+                            id: 101
+                        },
+
+                        title: 'Gorillaz',
+
+                        createdAt: 2000,
+                        updatedAt: 2000
+                    })
+                })
             })
         ];
 
         return Promise.resolve()
             .then(() => transaction.fetch())
-            .then(() => transaction.addMany(tracks))
+            .then(() => transaction.addMany(tracks, { chunk: 1 }).then(({ added, ignored }) => {
+                expect(added).toBe(2);
+                expect(ignored).toBe(0);
+            }))
             .then(() => transaction.execute())
             .then(() => {
                 let artistIds = Object.keys(transaction.created['music/artist'] || {});
