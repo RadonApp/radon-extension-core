@@ -39,11 +39,11 @@ class About extends React.Component {
         }
 
         if(!IsNil(repository.tag)) {
-            return `https://github.com/NeApp/${plugin.name}/releases/tag/${repository.tag}`;
+            return `${plugin.repository.url}/releases/tag/${repository.tag}`;
         }
 
         if(!IsNil(repository.commit)) {
-            return `https://github.com/NeApp/${plugin.name}/commit/${repository.commit}`;
+            return `${plugin.repository.url}/commit/${repository.commit}`;
         }
 
         return null;
@@ -77,7 +77,7 @@ class About extends React.Component {
         return (
             <div className="module card">
                 <div className="module-header">
-                    <a href={`https://github.com/NeApp/${plugin.name}`} target="_blank">
+                    <a href={plugin.repository.url} target="_blank">
                         <h5 title={plugin.id}>
                             {plugin.title}
                         </h5>
