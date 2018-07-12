@@ -2,11 +2,11 @@ import ClassNames from 'classnames';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import PageHeader from 'neon-extension-framework/Components/Page/Header';
-import Registry from 'neon-extension-framework/Core/Registry';
-import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {Model, Options} from 'neon-extension-framework/Models/Configuration';
-import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
+import PageHeader from '@radon-extension/framework/Components/Page/Header';
+import Registry from '@radon-extension/framework/Core/Registry';
+import TranslationNamespace from '@radon-extension/framework/Components/Translation/Namespace';
+import {Model, Options} from '@radon-extension/framework/Models/Configuration';
+import {OptionComponent} from '@radon-extension/framework/Components/Configuration';
 
 import Log from '../../Core/Logger';
 import OptionComponents from './Options';

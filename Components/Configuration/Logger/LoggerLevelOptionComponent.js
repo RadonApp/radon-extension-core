@@ -4,10 +4,10 @@ import Map from 'lodash-es/map';
 import React from 'react';
 import Reduce from 'lodash-es/reduce';
 
-import Plugin from 'neon-extension-framework/Core/Plugin';
-import Registry from 'neon-extension-framework/Core/Registry';
-import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
+import Plugin from '@radon-extension/framework/Core/Plugin';
+import Registry from '@radon-extension/framework/Core/Registry';
+import TranslationNamespace from '@radon-extension/framework/Components/Translation/Namespace';
+import {OptionComponent} from '@radon-extension/framework/Components/Configuration';
 
 import './LoggerLevelOptionComponent.scss';
 

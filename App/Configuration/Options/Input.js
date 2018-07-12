@@ -2,8 +2,8 @@ import ClassNames from 'classnames';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
+import TranslationNamespace from '@radon-extension/framework/Components/Translation/Namespace';
+import {OptionComponent} from '@radon-extension/framework/Components/Configuration';
 
 
 export default class InputOptionComponent extends OptionComponent {

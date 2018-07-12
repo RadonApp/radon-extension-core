@@ -8,8 +8,8 @@ import {OffCanvas} from 'foundation-sites/js/foundation.offcanvas';
 import {PropTypes} from 'prop-types';
 import {translate} from 'react-i18next';
 
-import Preferences from 'neon-extension-framework/Preferences';
-import Registry from 'neon-extension-framework/Core/Registry';
+import Preferences from '@radon-extension/framework/Preferences';
+import Registry from '@radon-extension/framework/Core/Registry';
 
 import Log from '../../Core/Logger';
 import './Configuration.scss';

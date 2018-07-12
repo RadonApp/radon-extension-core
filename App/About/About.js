@@ -2,9 +2,9 @@ import IsNil from 'lodash-es/isNil';
 import React from 'react';
 import {translate} from 'react-i18next';
 
-import FrameworkPlugin from 'neon-extension-framework/Core/Plugin';
-import Registry from 'neon-extension-framework/Core/Registry';
-import PageHeader from 'neon-extension-framework/Components/Page/Header';
+import FrameworkPlugin from '@radon-extension/framework/Core/Plugin';
+import Registry from '@radon-extension/framework/Core/Registry';
+import PageHeader from '@radon-extension/framework/Components/Page/Header';
 
 import './About.scss';
 

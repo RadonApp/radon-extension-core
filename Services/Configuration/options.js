@@ -1,5 +1,5 @@
-import Plugin from 'neon-extension-framework/Core/Plugin';
-import {Group, Page} from 'neon-extension-framework/Models/Configuration';
+import Plugin from '@radon-extension/framework/Core/Plugin';
+import {Group, Page} from '@radon-extension/framework/Models/Configuration';
 
 import {LoggerLevelOption} from '../../Models/Configuration';
 

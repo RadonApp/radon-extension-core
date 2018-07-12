@@ -2,8 +2,8 @@ import IsString from 'lodash-es/isString';
 import Runtime from 'wes/runtime';
 import Tabs from 'wes/tabs';
 
-import Log from 'neon-extension-framework/Core/Logger';
-import Registry from 'neon-extension-framework/Core/Registry';
+import Log from '@radon-extension/framework/Core/Logger';
+import Registry from '@radon-extension/framework/Core/Registry';
 
 
 export default class AppService {

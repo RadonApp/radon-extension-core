@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Map from 'lodash-es/map';
 
-import ItemDecoder from 'neon-extension-framework/Models/Metadata/Core/Decoder';
+import ItemDecoder from '@radon-extension/framework/Models/Metadata/Core/Decoder';
 
 import ItemDatabase from '../../Database/Item';
 import Log from '../../Core/Logger';

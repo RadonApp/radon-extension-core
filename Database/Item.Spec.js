@@ -1,8 +1,8 @@
 /* eslint-disable jasmine/no-promise-without-done-fail */
 import Uuid from 'uuid';
 
-import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
-import {Show, Season, Episode} from 'neon-extension-framework/Models/Metadata/Video';
+import {Artist, Album, Track} from '@radon-extension/framework/Models/Metadata/Music';
+import {Show, Season, Episode} from '@radon-extension/framework/Models/Metadata/Video';
 
 import {ItemDatabase} from './Item';
 

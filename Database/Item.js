@@ -8,11 +8,11 @@ import IsPlainObject from 'lodash-es/isPlainObject';
 import Map from 'lodash-es/map';
 import MD5 from 'crypto-js/md5';
 
-import Item from 'neon-extension-framework/Models/Metadata/Core/Base';
-import ItemDecoder from 'neon-extension-framework/Models/Metadata/Core/Decoder';
-import {MediaTypes} from 'neon-extension-framework/Core/Enums';
-import {PropertyConflictError} from 'neon-extension-framework/Properties/Core/Exceptions';
-import {runSequential} from 'neon-extension-framework/Utilities/Promise';
+import Item from '@radon-extension/framework/Models/Metadata/Core/Base';
+import ItemDecoder from '@radon-extension/framework/Models/Metadata/Core/Decoder';
+import {MediaTypes} from '@radon-extension/framework/Core/Enums';
+import {PropertyConflictError} from '@radon-extension/framework/Properties/Core/Exceptions';
+import {runSequential} from '@radon-extension/framework/Utilities/Promise';
 
 import Log from '../Core/Logger';
 import Database from './Base';

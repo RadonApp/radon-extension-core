@@ -1,7 +1,7 @@
 import ForEach from 'lodash-es/forEach';
 import IsNil from 'lodash-es/isNil';
 
-import Log from 'neon-extension-framework/Core/Logger';
+import Log from '@radon-extension/framework/Core/Logger';
 
 
 export default class MigrateService {

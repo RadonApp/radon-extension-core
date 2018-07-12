@@ -2,7 +2,7 @@ import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
 import React from 'react';
 
-import {OptionComponent} from 'neon-extension-framework/Components/Configuration';
+import {OptionComponent} from '@radon-extension/framework/Components/Configuration';
 
 import Log from '../../../Core/Logger';
 

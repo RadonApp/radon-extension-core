@@ -3,10 +3,10 @@ import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import React from 'react';
 
-import PageHeader from 'neon-extension-framework/Components/Page/Header';
-import Preferences from 'neon-extension-framework/Preferences';
-import TranslationNamespace from 'neon-extension-framework/Components/Translation/Namespace';
-import {Options} from 'neon-extension-framework/Models/Configuration';
+import PageHeader from '@radon-extension/framework/Components/Page/Header';
+import Preferences from '@radon-extension/framework/Preferences';
+import TranslationNamespace from '@radon-extension/framework/Components/Translation/Namespace';
+import {Options} from '@radon-extension/framework/Models/Configuration';
 
 import ConfigurationGroup from './ConfigurationGroup';
 import Log from '../../Core/Logger';

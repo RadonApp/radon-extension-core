@@ -1,6 +1,6 @@
 import {reactI18nextModule} from 'react-i18next';
 
-import I18nManager from 'neon-extension-framework/Core/I18n';
+import I18nManager from '@radon-extension/framework/Core/I18n';
 
 
 export default I18nManager.createInstance({

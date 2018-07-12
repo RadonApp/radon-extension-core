@@ -1,4 +1,4 @@
-import Plugin from 'neon-extension-framework/Core/Plugin';
+import Plugin from '@radon-extension/framework/Core/Plugin';
 
 
 export default Plugin;

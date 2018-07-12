@@ -4,7 +4,7 @@ import MD5 from 'crypto-js/md5';
 import React from 'react';
 import {translate} from 'react-i18next';
 
-import PageHeader from 'neon-extension-framework/Components/Page/Header';
+import PageHeader from '@radon-extension/framework/Components/Page/Header';
 
 import './Credits.scss';
 

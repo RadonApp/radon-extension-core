@@ -11,12 +11,12 @@ import Set from 'lodash-es/set';
 import Unset from 'lodash-es/unset';
 import Uuid from 'uuid';
 
-import ItemDecoder from 'neon-extension-framework/Models/Metadata/Core/Decoder';
-import Model from 'neon-extension-framework/Models/Core/Schema';
-import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
-import {encodeTitle} from 'neon-extension-framework/Utilities/Metadata';
-import {createTasks} from 'neon-extension-framework/Utilities/Execution';
-import {runSequential} from 'neon-extension-framework/Utilities/Promise';
+import ItemDecoder from '@radon-extension/framework/Models/Metadata/Core/Decoder';
+import Model from '@radon-extension/framework/Models/Core/Schema';
+import {Artist, Album, Track} from '@radon-extension/framework/Models/Metadata/Music';
+import {encodeTitle} from '@radon-extension/framework/Utilities/Metadata';
+import {createTasks} from '@radon-extension/framework/Utilities/Execution';
+import {runSequential} from '@radon-extension/framework/Utilities/Promise';
 
 import ItemDatabase from '../../Database/Item';
 import Log from '../../Core/Logger';

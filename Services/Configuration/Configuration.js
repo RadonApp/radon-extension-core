@@ -1,5 +1,5 @@
-import ConfigurationService from 'neon-extension-framework/Services/Configuration';
-import Registry from 'neon-extension-framework/Core/Registry';
+import ConfigurationService from '@radon-extension/framework/Services/Configuration';
+import Registry from '@radon-extension/framework/Core/Registry';
 
 import Plugin from '../../Core/Plugin';
 import Options from './options';

@@ -1,10 +1,10 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import IsNil from 'lodash-es/isNil';
 
-import Registry from 'neon-extension-framework/Core/Registry';
-import Session from 'neon-extension-framework/Models/Session';
-import {MediaTypes} from 'neon-extension-framework/Core/Enums';
-import {Services} from 'neon-extension-framework/Core/Constants';
+import Registry from '@radon-extension/framework/Core/Registry';
+import Session from '@radon-extension/framework/Models/Session';
+import {MediaTypes} from '@radon-extension/framework/Core/Enums';
+import {Services} from '@radon-extension/framework/Core/Constants';
 
 import ItemDatabase from '../../Database/Item';
 import Log from '../../Core/Logger';

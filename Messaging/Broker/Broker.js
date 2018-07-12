@@ -4,8 +4,8 @@ import IsString from 'lodash-es/isString';
 import Runtime from 'wes/runtime';
 import Tabs from 'wes/tabs';
 
-import Messaging from 'neon-extension-framework/Messaging';
-import {parseMessageName} from 'neon-extension-framework/Messaging/Helpers';
+import Messaging from '@radon-extension/framework/Messaging';
+import {parseMessageName} from '@radon-extension/framework/Messaging/Helpers';
 
 import Log from '../../Core/Logger';
 import MessageBrokerChannel from './Channel';

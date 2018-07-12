@@ -1,6 +1,6 @@
 import Uuid from 'uuid';
 
-import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
+import {Artist, Album, Track} from '@radon-extension/framework/Models/Metadata/Music';
 
 import LibraryTransaction from './LibraryTransaction';
 import {ItemDatabase} from '../../Database/Item';

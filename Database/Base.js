@@ -5,8 +5,8 @@ import Map from 'lodash-es/map';
 import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
-import {LocalStorage} from 'neon-extension-framework/Storage';
-import {resolveOne, runSequential} from 'neon-extension-framework/Utilities/Promise';
+import {LocalStorage} from '@radon-extension/framework/Storage';
+import {resolveOne, runSequential} from '@radon-extension/framework/Utilities/Promise';
 
 import Log from '../Core/Logger';
 

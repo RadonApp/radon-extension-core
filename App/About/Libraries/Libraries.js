@@ -2,7 +2,7 @@ import IsNil from 'lodash-es/isNil';
 import React from 'react';
 import {translate} from 'react-i18next';
 
-import PageHeader from 'neon-extension-framework/Components/Page/Header';
+import PageHeader from '@radon-extension/framework/Components/Page/Header';
 
 import './Libraries.scss';
 
