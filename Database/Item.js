@@ -11,6 +11,7 @@ import MD5 from 'crypto-js/md5';
 import Item from 'neon-extension-framework/Models/Metadata/Core/Base';
 import ItemDecoder from 'neon-extension-framework/Models/Metadata/Core/Decoder';
 import {MediaTypes} from 'neon-extension-framework/Core/Enums';
+import {PropertyConflictError} from 'neon-extension-framework/Properties/Core/Exceptions';
 import {runSequential} from 'neon-extension-framework/Utilities/Promise';
 
 import Log from '../Core/Logger';
@@ -392,6 +393,8 @@ export class ItemDatabase extends Database {
 
         Log.trace('Upserting item: %o', item);
 
+        let previous = item.createState();
+
         // Create selectors
         let selectors;
 
@@ -409,18 +412,35 @@ export class ItemDatabase extends Database {
         Log.trace('Finding items matching: %o', selectors);
 
         return this.match(selectors).then((result) => {
+            if(IsNil(result)) {
+                return null;
+            }
+
+            Log.debug('Updating item: %o', item);
+
+            // Set item identifier
+            item.apply({ id: result['_id'] });
+
+            // Update item in database
+            return this.update(item).then(({ updated, item }) => ({
+                created: false,
+                updated,
+
+                item
+            })).catch((err) => {
+                if(err instanceof PropertyConflictError && err.property === 'keys') {
+                    Log.debug('Item conflicts with existing keys, creating new item instead');
+
+                    // Revert changes to `item`
+                    item.revert(previous);
+                    return null;
+                }
+
+                return Promise.reject(err);
+            });
+        }).then((result) => {
             if(!IsNil(result)) {
-                item.apply({
-                    id: result['_id']
-                });
-
-                // Update item in database
-                return this.update(item).then(({ updated, item }) => ({
-                    created: false,
-                    updated,
-
-                    item
-                }));
+                return result;
             }
 
             return this.create(item).then((item) => ({
@@ -429,7 +449,10 @@ export class ItemDatabase extends Database {
 
                 item
             }));
-        }, (err) => {
+        }).catch((err) => {
+            // Revert changes to `item`
+            item.revert(previous);
+
             // Unknown error
             Log.error('Unable to upsert item: %s', err.message, err);
             return Promise.reject(err);
