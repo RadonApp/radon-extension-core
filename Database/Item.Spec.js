@@ -895,9 +895,9 @@ describe('ItemDatabase', function() {
                     expect(created).toBe(true);
                     expect(updated).toBe(false);
 
-                    expect(item);
-                    expect(item.season);
-                    expect(item.season.show);
+                    expect(item).toBeDefined();
+                    expect(item.season).toBeDefined();
+                    expect(item.season.show).toBeDefined();
                 });
             });
         });
