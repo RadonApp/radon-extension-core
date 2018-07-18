@@ -57,36 +57,46 @@ export default class ScrobbleService extends Service {
         }).then((result) => {
             Log.debug('Updating %d active session(s) for client "%s"', result.docs.length, client.id);
 
-            // Fire "stopped" event for sessions that are still active
-            result.docs.forEach((data) => {
-                // Parse session
-                let session = Session.fromDocument(data);
+            // Fire "stopped" event for active sessions
+            result.docs.forEach((data) =>
+                Promise.resolve().then(() => {
+                    // Parse session
+                    let session = Session.fromDocument(data);
 
-                if(IsNil(session) || IsNil(session.item)) {
-                    Log.warn('Unable to parse session: %o', data);
-                    return;
-                }
+                    if(IsNil(session) || IsNil(session.item)) {
+                        Log.warn('Unable to parse session: %o', data);
+                        return;
+                    }
 
-                // Update session state
-                session.state = 'ended';
+                    // Update session state
+                    session.state = 'ended';
 
-                // Emit session "stopped" event
-                this.process('stopped', session, client);
-            });
+                    // Emit session "stopped" event
+                    this.process('stopped', session, client);
+                }).catch((err) => {
+                    Log.error('Unable to stop session:', (err && err.message) ? err.message : err);
+                })
+            );
         });
     }
 
     onSessionUpdated(event, payload, sender) {
-        // Parse session
-        let session = Session.fromPlainObject(payload);
+        Promise.resolve().then(() => {
+            let session = Session.fromPlainObject(payload);
 
-        if(IsNil(session) || IsNil(session.item)) {
-            Log.warn('Unable to parse session: %o', payload);
-            return;
-        }
+            // Ensure session is valid
+            if(IsNil(session) || IsNil(session.item)) {
+                Log.warn('Unable to parse session: %o', payload);
 
-        // Process session event
-        this.process(event, session, sender);
+                // Reject promise
+                return Promise.reject('Unable to parse session');
+            }
+
+            // Process event
+            return this.process(event, session, sender);
+        }).catch((err) => {
+            Log.error('Unable to process event:', (err && err.message) ? err.message : err);
+        });
     }
 
     process(event, session, sender) {
@@ -94,7 +104,7 @@ export default class ScrobbleService extends Service {
         this.onClientConnected(sender);
 
         // Fetch item from database
-        ItemDatabase.fetch(session.item).catch(() => false).then(() => {
+        return ItemDatabase.fetch(session.item).catch(() => false).then(() => {
             // Process event
             return this.processEvent(event, session, sender);
         });
