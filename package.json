@@ -1,6 +1,6 @@
 {
   "name": "neon-extension-core",
-  "version": "2.0.1",
+  "version": "2.1.0-beta.1",
   "description": "Radon Extension: Core",
   "keywords": [
     "neon",
@@ -72,7 +72,7 @@
     "whatwg-fetch": "^2.0.4"
   },
   "peerDependencies": {
-    "neon-extension-framework": "^2.0"
+    "neon-extension-framework": "^2.1.0-beta"
   },
   "scripts": {
     "lint": "eslint .",
