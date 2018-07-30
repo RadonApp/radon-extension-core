@@ -204,7 +204,7 @@ export class ItemDatabase extends Database {
 
                 return this.get(result['_id']);
             }).catch((err) => {
-                Log.warn('Unable to find item matching: %o (%s)', selectors, (err && err.message) ? err.message : err);
+                Log.debug('Unable to find item matching: %o (%s)', selectors, (err && err.message) ? err.message : err);
                 return null;
             });
         } else {
