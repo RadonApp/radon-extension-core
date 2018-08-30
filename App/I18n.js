@@ -6,7 +6,7 @@ import I18nManager from '@radon-extension/framework/Core/I18n';
 export default I18nManager.createInstance({
     plugins: [reactI18nextModule],
 
-    ns: 'neon-extension/common',
+    ns: 'core/common',
 
     react: {
         defaultTransParent: 'div',

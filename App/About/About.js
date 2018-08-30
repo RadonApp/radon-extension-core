@@ -53,12 +53,12 @@ class About extends React.Component {
         const { t } = this.props;
 
         // Update page title
-        document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
+        document.title = `${t('title')} - ${t('core/common:title')}`;
 
         // Render page
         return (
             <div id="container" className="expanded row">
-                <PageHeader title={t('neon-extension/common:title')} subtitle={this.renderVersion(FrameworkPlugin)}/>
+                <PageHeader title={t('core/common:title')} subtitle={this.renderVersion(FrameworkPlugin)}/>
 
                 <div data-view="neon-extension-core:about" className="row">
                     <div className="modules">
@@ -105,6 +105,6 @@ class About extends React.Component {
 }
 
 export default translate([
-    'neon-extension/about',
-    'neon-extension/common'
+    'core/about',
+    'core/common'
 ], { wait: true })(About);

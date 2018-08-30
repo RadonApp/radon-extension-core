@@ -41,7 +41,7 @@ class Libraries extends React.Component {
         const { t } = this.props;
 
         // Update page title
-        document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
+        document.title = `${t('title')} - ${t('core/common:title')}`;
 
         // Render libraries page
         return (
@@ -84,6 +84,6 @@ class Libraries extends React.Component {
 }
 
 export default translate([
-    'neon-extension/libraries',
-    'neon-extension/common'
+    'core/libraries',
+    'core/common'
 ], { wait: true })(Libraries);

@@ -68,7 +68,7 @@ class Configuration extends React.Component {
         const { t } = this.props;
 
         // Update page title
-        document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
+        document.title = `${t('title')} - ${t('core/common:title')}`;
 
         // Render configuration page
         return (
@@ -126,8 +126,8 @@ Configuration.contextTypes = {
 };
 
 export default translate([
-    'neon-extension/configuration',
-    'neon-extension/common',
+    'core/configuration',
+    'core/common',
 
     // Load "core" page namespaces
     ...Map(Preferences.pages['core'], (page) =>

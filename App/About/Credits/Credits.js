@@ -67,7 +67,7 @@ class Credits extends React.Component {
         const { t } = this.props;
 
         // Update page title
-        document.title = `${t('title')} - ${t('neon-extension/common:title')}`;
+        document.title = `${t('title')} - ${t('core/common:title')}`;
 
         // Render credits page
         return (
@@ -146,6 +146,6 @@ class Credits extends React.Component {
 }
 
 export default translate([
-    'neon-extension/credits',
-    'neon-extension/common'
+    'core/credits',
+    'core/common'
 ], { wait: true })(Credits);

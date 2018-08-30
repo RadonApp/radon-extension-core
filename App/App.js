@@ -79,7 +79,7 @@ class App extends React.Component {
                         </button>
                         <ul className="menu">
                             <li className="menu-text">
-                                {t('neon-extension/common:title')}
+                                {t('core/common:title')}
                             </li>
 
                             <li><Link to="/configuration" activeClassName="active">
@@ -95,7 +95,7 @@ class App extends React.Component {
 
                                 <ul className="menu vertical">
                                     <li><Link to="/about">
-                                        {t('neon-extension/common:title')}
+                                        {t('core/common:title')}
                                     </Link></li>
 
                                     <li><Link to="/about/credits">
@@ -118,6 +118,6 @@ class App extends React.Component {
 }
 
 export default translate([
-    'neon-extension/navigation',
-    'neon-extension/common'
+    'core/navigation',
+    'core/common'
 ], { wait: true })(App);
