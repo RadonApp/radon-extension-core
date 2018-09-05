@@ -1,6 +1,6 @@
 {
   "name": "@radon-extension/core",
-  "version": "2.1.0",
+  "version": "2.2.0-beta.1",
   "description": "Radon Extension: Core",
   "keywords": [
     "radon",
@@ -72,7 +72,7 @@
     "whatwg-fetch": "^2.0.4"
   },
   "peerDependencies": {
-    "@radon-extension/framework": "^2.1"
+    "@radon-extension/framework": "^2.2.0-beta"
   },
   "scripts": {
     "lint": "eslint .",
