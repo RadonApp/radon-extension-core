@@ -1,3 +1,4 @@
+import Debounce from 'lodash-es/debounce';
 import IsString from 'lodash-es/isString';
 import Runtime from 'wes/runtime';
 import Tabs from 'wes/tabs';
@@ -8,13 +9,15 @@ import Registry from '@radon-extension/framework/Core/Registry';
 
 export default class AppService {
     constructor() {
+        this.updatePlugins = Debounce(this._updatePlugins.bind(this), 1000);
+
         // Bind to extension events
         if(Runtime.$exists() && Runtime.$has('onInstalled')) {
             Runtime.onInstalled.addListener(this._onInstalled.bind(this));
         }
 
         // Update plugin registration
-        this._updatePlugins();
+        this.updatePlugins();
     }
 
     _onInstalled({reason, previousVersion}) {
@@ -26,7 +29,7 @@ export default class AppService {
         }
 
         // Update plugin registration
-        this._updatePlugins();
+        this.updatePlugins();
     }
 
     _shouldDisplayConfigurationPage(reason, previousVersion) {
@@ -72,7 +75,7 @@ export default class AppService {
 
                 return true;
             })
-            // Check permissions have been granted
+            // Ensure permissions have been granted
             .then(() => plugin.isPermissionsGranted().then((granted) => {
                 if(!granted) {
                     return Promise.reject('Permissions for plugin "' + plugin.id + '" haven\'t been granted');
@@ -82,18 +85,13 @@ export default class AppService {
             }, (err) => {
                 Log.error(`Unable to check permissions have been granted for the "${plugin.id}" plugin`, err);
             }))
-            // Ensure content scripts are registered
-            .then(() => plugin.isContentScriptsRegistered().then((registered) => {
-                if(registered) {
-                    return true;
-                }
-
-                // Register plugin content scripts
-                return plugin.registerContentScripts().then(() => {
-                    return true;
-                });
-            }, (err) => {
-                Log.error(`Unable to ensure content scripts have been registered for the "${plugin.id}" plugin`, err);
+            // Remove existing content scripts
+            .then(() => plugin.removeContentScripts().catch((err) => {
+                Log.error(`Unable to remove existing content scripts for the "${plugin.id}" plugin`, err);
+            }))
+            // Register content scripts
+            .then(() => plugin.registerContentScripts().catch((err) => {
+                Log.error(`Unable to register content scripts for the "${plugin.id}" plugin`, err);
             }));
     }
 }
