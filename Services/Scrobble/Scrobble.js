@@ -290,7 +290,7 @@ export default class ScrobbleService extends Service {
             );
         } else if(item.type === MediaTypes.Video.Episode) {
             Log.debug(
-                '[%s] %s (%s) - Season %2d (%s) - Episode %2d : [event: %s, state: %s, progress: %.2f]',
+                '[%s] %s (%s) - Season %d (%s) - Episode %d : [event: %s, state: %s, progress: %.2f]',
                 session.id,
 
                 // Show
