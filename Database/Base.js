@@ -6,7 +6,7 @@ import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 
 import {LocalStorage} from '@radon-extension/framework/Storage';
-import {resolveOne, runSequential} from '@radon-extension/framework/Utilities/Promise';
+import {runSequential} from '@radon-extension/framework/Utilities/Promise';
 
 import Log from '../Core/Logger';
 
@@ -106,7 +106,7 @@ export default class Database {
         }
 
         // Execute selectors sequentially, and return the first document matched
-        return resolveOne(selectors, (selector) => {
+        return runSequential(selectors, (selector) => {
             return this.find({ fields, selector }).then((result) => {
                 if(!IsNil(result.warning)) {
                     Log.warn('find() %o: %s', selector, result.warning);
@@ -116,8 +116,16 @@ export default class Database {
                     return Promise.reject();
                 }
 
-                return result.docs[0];
+                return result.docs;
             });
+        }).then((results) => {
+            const docs = [];
+
+            for(let i = 0; i < results.length; i++) {
+                docs.push.apply(docs, results[i]);
+            }
+
+            return docs;
         });
     }
 

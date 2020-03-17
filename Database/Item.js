@@ -197,12 +197,8 @@ export class ItemDatabase extends Database {
             // Find item
             Log.trace('Finding items matching: %o', selectors);
 
-            resolve = this.match(selectors).then((result) => {
-                if(IsNil(result) || IsNil(result['_id'])) {
-                    return Promise.reject(new Error('No match found'));
-                }
-
-                return this.get(result['_id']);
+            resolve = this.match(selectors).then((docs) => {
+                return this.get(docs[0]['_id']);
             }).catch((err) => {
                 Log.debug('Unable to find item matching: %o (%s)', selectors, (err && err.message) ? err.message : err);
                 return null;
@@ -411,37 +407,65 @@ export class ItemDatabase extends Database {
         // Find items
         Log.trace('Finding items matching: %o', selectors);
 
-        return this.match(selectors).then((result) => {
-            if(IsNil(result)) {
-                return null;
-            }
+        return this.match(selectors).then((docs) => {
+            return new Promise((resolve, reject) => {
+                let pos = 0;
 
-            Log.debug('Updating item: %o', item);
+                Log.debug('Updating item: %o', item);
 
-            // Set item identifier
-            item.apply({ id: result['_id'] });
+                const next = () => {
+                    if(pos >= docs.length) {
+                        resolve(null);
+                        return;
+                    }
 
-            // Update item in database
-            return this.update(item).then(({ updated, item }) => ({
-                created: false,
-                updated,
+                    const doc = docs[pos];
 
-                item
-            })).catch((err) => {
-                if(err instanceof PropertyConflictError && err.property === 'keys') {
-                    Log.debug('Item conflicts with existing keys, creating new item instead');
+                    // Increment position
+                    pos++;
 
-                    // Revert changes to `item`
-                    item.revert(previous);
-                    return null;
-                }
+                    // Set item identifier
+                    item.apply({ id: doc['_id'] });
 
-                return Promise.reject(err);
+                    // Update item in database
+                    this.update(item).then(({ updated, item }) => ({
+                        created: false,
+                        updated,
+
+                        item
+                    })).then((result) => {
+                        // Resolve with update result
+                        resolve(result);
+                    }, (err) => {
+                        if(err instanceof PropertyConflictError && err.property === 'keys') {
+                            console.log(err);
+
+                            Log.debug(
+                                'Item conflicts with keys in matched item (%o), trying next match',
+                                docs[0]['_id']
+                            );
+
+                            // Revert changes to `item`
+                            item.revert(previous);
+
+                            // Try next matched document
+                            next();
+                            return;
+                        }
+
+                        // Reject promise with error
+                        reject(err);
+                    });
+                };
+
+                next();
             });
         }).then((result) => {
             if(!IsNil(result)) {
                 return result;
             }
+
+            Log.debug('Creating item: %o', item);
 
             return this.create(item).then((item) => ({
                 created: true,
