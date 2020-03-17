@@ -411,8 +411,6 @@ export class ItemDatabase extends Database {
             return new Promise((resolve, reject) => {
                 let pos = 0;
 
-                Log.debug('Updating item: %o', item);
-
                 const next = () => {
                     if(pos >= docs.length) {
                         resolve(null);
@@ -437,9 +435,9 @@ export class ItemDatabase extends Database {
                         // Resolve with update result
                         resolve(result);
                     }, (err) => {
-                        if(err instanceof PropertyConflictError && err.property === 'keys') {
-                            console.log(err);
+                        console.log('Unable to update item:', err);
 
+                        if(err instanceof PropertyConflictError && err.property === 'keys') {
                             Log.debug(
                                 'Item conflicts with keys in matched item (%o), trying next match',
                                 docs[0]['_id']
@@ -465,8 +463,6 @@ export class ItemDatabase extends Database {
                 return result;
             }
 
-            Log.debug('Creating item: %o', item);
-
             return this.create(item).then((item) => ({
                 created: true,
                 updated: false,
@@ -478,7 +474,7 @@ export class ItemDatabase extends Database {
             item.revert(previous);
 
             // Unknown error
-            Log.error('Unable to upsert item: %s', err.message, err);
+            Log.error('Unable to upsert item:', err);
             return Promise.reject(err);
         });
     }

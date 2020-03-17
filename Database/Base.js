@@ -112,10 +112,6 @@ export default class Database {
                     Log.warn('find() %o: %s', selector, result.warning);
                 }
 
-                if(result.docs.length < 1) {
-                    return Promise.reject();
-                }
-
                 return result.docs;
             });
         }).then((results) => {
