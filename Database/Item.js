@@ -198,6 +198,10 @@ export class ItemDatabase extends Database {
             Log.trace('Finding items matching: %o', selectors);
 
             resolve = this.match(selectors).then((docs) => {
+                if(docs.length < 1 || !docs[0]['_id']) {
+                    return null;
+                }
+
                 return this.get(docs[0]['_id']);
             }).catch((err) => {
                 Log.debug('Unable to find item matching: %o (%s)', selectors, (err && err.message) ? err.message : err);
@@ -440,7 +444,7 @@ export class ItemDatabase extends Database {
                         if(err instanceof PropertyConflictError && err.property === 'keys') {
                             Log.debug(
                                 'Item conflicts with keys in matched item (%o), trying next match',
-                                docs[0]['_id']
+                                doc['_id']
                             );
 
                             // Revert changes to `item`
