@@ -439,24 +439,32 @@ export class ItemDatabase extends Database {
                         // Resolve with update result
                         resolve(result);
                     }, (err) => {
-                        console.log('Unable to update item:', err);
-
                         if(err instanceof PropertyConflictError && err.property === 'keys') {
-                            Log.debug(
-                                'Item conflicts with keys in matched item (%o), trying next match',
+                            Log.warn(
+                                'Item conflicts with keys in matched item (%o), using matched item without changes',
                                 doc['_id']
                             );
 
+                            // Retrieve item from database
+                            resolve(Promise.resolve().then(this.get(doc['_id']).then((existingDoc) => {
+                                // Use item from database
+                                item.revert(ItemDecoder.fromDocument(existingDoc).createState());
+
+                                // Resolve promise
+                                return {
+                                    updated: true,
+                                    item
+                                };
+                            })));
+                        } else {
+                            console.log('Unable to update item:', err);
+
                             // Revert changes to `item`
                             item.revert(previous);
-
-                            // Try next matched document
-                            next();
-                            return;
                         }
 
-                        // Reject promise with error
-                        reject(err);
+                        // Try next matched item
+                        next();
                     });
                 };
 
@@ -467,6 +475,15 @@ export class ItemDatabase extends Database {
                 return result;
             }
 
+            // Item mismatch
+            if(item.id) {
+                return {
+                    updated: false,
+                    item
+                };
+            }
+
+            // Create item
             return this.create(item).then((item) => ({
                 created: true,
                 updated: false,
